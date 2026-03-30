@@ -17,6 +17,9 @@ require_once __DIR__ . '/config.php';
     
     <!-- CSS Global -->
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+
+    <!-- LOGO TAB -->
+    <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/img/logo.png">
     
     <!-- JavaScript Global -->
     <script src="<?= BASE_URL ?>/assets/js/public.js"></script>
