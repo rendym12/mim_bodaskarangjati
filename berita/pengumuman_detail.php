@@ -14,9 +14,6 @@ if (!$data) {
     exit;
 }
 
-// Update views (jika ada kolom views)
-// mysqli_query($conn, "UPDATE pengumuman SET views = views + 1 WHERE id = $id");
-
 // Ambil pengumuman terkait
 $related_query = mysqli_query($conn, "SELECT * FROM pengumuman WHERE id != $id AND status = 'publish' ORDER BY tanggal DESC LIMIT 3");
 ?>
@@ -81,7 +78,7 @@ $related_query = mysqli_query($conn, "SELECT * FROM pengumuman WHERE id != $id A
                     <li><i class="fas fa-calendar-alt"></i> Tanggal: <?= date('d/m/Y', strtotime($data['tanggal'])) ?></li>
                     <li><i class="fas fa-user"></i> Penulis: <?= htmlspecialchars($data['penulis'] ?? 'Admin') ?></li>
                     <li><i class="fas fa-tag"></i> Kategori: Pengumuman</li>
-                    <li><i class="fas fa-eye"></i> Dilihat: <?= $data['views'] ?? '0' ?> kali</li>
+                    <!-- BARIS DILIHAT DIHAPUS DARI SINI -->
                 </ul>
             </div>
             
