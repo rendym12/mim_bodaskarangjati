@@ -112,7 +112,7 @@ if ($is_public_page) {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title><?= $page_title ?> - MI Muhammadiyah Bodaskarangjati</title>
     
     <!-- Font Awesome 6 -->
@@ -126,15 +126,43 @@ if ($is_public_page) {
 </head>
 <body>
     <div class="admin-wrapper">
+        
+        <!-- MOBILE HEADER - STICKY DI ATAS (HANYA UNTUK MOBILE) -->
+        <?php if (!$is_public_page): ?>
+        <div class="mobile-header">
+            <button class="mobile-menu-btn" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="mobile-header-title">
+                <i class="fas fa-school"></i>
+                <span><?= $page_title ?></span>
+            </div>
+            <div class="mobile-header-right">
+                <div class="mobile-profile" id="mobileProfileBtn">
+                    <div class="profile-avatar">
+                        <img src="<?= $base_url ?>/uploads/<?= $admin_foto ?>" alt="Profile">
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+            
+            <!-- Dropdown profile mobile -->
+            <div class="mobile-profile-dropdown" id="mobileProfileDropdown">
+                <a href="users/index.php" class="dropdown-item">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Kelola Admin</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="logout.php" class="dropdown-item text-danger">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+        <?php endif; ?>
+        
         <!-- OVERLAY untuk mobile -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
-        
-        <!-- FLOATING HAMBURGER BUTTON - HANYA UNTUK HALAMAN NON-PUBLIK -->
-        <?php if (!$is_public_page): ?>
-        <button class="mobile-hamburger" id="floatingMenuToggle">
-            <i class="fas fa-bars"></i>
-        </button>
-        <?php endif; ?>
         
         <!-- SIDEBAR - HANYA TAMPIL JIKA BUKAN HALAMAN PUBLIK -->
         <?php if (!$is_public_page): ?>
@@ -338,17 +366,6 @@ if ($is_public_page) {
 
         <!-- MAIN CONTENT AREA -->
         <main class="admin-main">
-            <!-- Topbar untuk mobile - HANYA UNTUK MOBILE -->
-            <?php if (!$is_public_page): ?>
-            <div class="topbar mobile-topbar">
-                <div class="topbar-left">
-                    <button class="mobile-menu-toggle" id="mobileMenuToggle">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <span class="page-title"><?= $page_title ?></span>
-                </div>
-                <div class="topbar-right">
-                    <!-- Notifikasi bisa ditambahkan di sini -->
-                </div>
-            </div>
-            <?php endif; ?>
+            <!-- Topbar tidak diperlukan lagi karena profile sudah di dashboard header -->
+            <!-- KOSONGKAN - profile dropdown sudah ada di dashboard-header -->
+        </main>

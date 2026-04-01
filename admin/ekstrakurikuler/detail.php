@@ -85,7 +85,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="#" onclick="confirmDeleteEkstra(<?= $id ?>, '<?= htmlspecialchars($row['nama_eks']) ?>')" class="btn-danger">
+            <a href="#" class="btn-danger btn-delete-detail" data-id="<?= $id ?>" data-name="<?= htmlspecialchars($row['nama_eks']) ?>">
                 <i class="fas fa-trash"></i> Hapus
             </a>
         </div>
@@ -97,19 +97,19 @@ require_once dirname(__DIR__) . '/includes/header.php';
     <div class="modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
-            <p class="delete-item-name" id="deleteItemName" style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;"></p>
-            <p class="warning-text" style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
+            <p>Apakah Anda yakin ingin menghapus ekstrakurikuler berikut?</p>
+            <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
+            <p style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
             </p>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" class="btn-danger" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" class="btn-secondary" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
+            <button type="button" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

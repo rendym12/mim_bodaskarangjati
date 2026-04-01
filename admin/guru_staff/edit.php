@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
         
         if (in_array($ext, $allowed) && $_FILES['foto']['size'] <= 2 * 1024 * 1024) {
-            // Hapus foto lama jika bukan default
             if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg' && file_exists("../../uploads/guru/" . $row['foto'])) {
                 unlink("../../uploads/guru/" . $row['foto']);
             }
@@ -56,7 +55,6 @@ include "../includes/header.php";
 ?>
 
 <div class="content-wrapper guru-page">
-    <!-- Content Header -->
     <div class="content-header">
         <h1><i class="fas fa-edit"></i> Edit Guru/Staff</h1>
         <a href="index.php" class="btn-secondary">
@@ -64,88 +62,65 @@ include "../includes/header.php";
         </a>
     </div>
 
-    <!-- Alert Error -->
     <?php if (isset($error)): ?>
-        <div class="alert alert-danger">
-            <i class="fas fa-exclamation-circle"></i>
-            <?= $error ?>
-        </div>
+        <div class="alert alert-danger"><?= $error ?></div>
     <?php endif; ?>
 
-    <!-- Form Container -->
     <div class="form-container">
-        <form method="POST" action="" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="guruForm">
             <div class="form-row">
                 <div class="form-group">
-                    <label>
-                        <i class="fas fa-user"></i>
-                        Nama Lengkap <span style="color: red;">*</span>
-                    </label>
+                    <label>Nama Lengkap <span class="required">*</span></label>
                     <input type="text" name="nama" class="form-control" required value="<?= htmlspecialchars($row['nama']) ?>">
                 </div>
                 <div class="form-group">
-                    <label>
-                        <i class="fas fa-id-card"></i>
-                        NIP
-                    </label>
+                    <label>NIP</label>
                     <input type="text" name="nip" class="form-control" value="<?= htmlspecialchars($row['nip'] ?? '') ?>">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>
-                        <i class="fas fa-briefcase"></i>
-                        Jabatan
-                    </label>
+                    <label>Jabatan</label>
                     <input type="text" name="jabatan" class="form-control" value="<?= htmlspecialchars($row['jabatan'] ?? '') ?>">
                 </div>
                 <div class="form-group">
-                    <label>
-                        <i class="fas fa-book"></i>
-                        Mata Pelajaran
-                    </label>
+                    <label>Mata Pelajaran</label>
                     <input type="text" name="mapel" class="form-control" value="<?= htmlspecialchars($row['mapel'] ?? '') ?>">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label>
-                        <i class="fas fa-sort-numeric-up"></i>
-                        Urutan Tampil
-                    </label>
+                    <label>Urutan Tampil</label>
                     <input type="number" name="urutan" class="form-control" value="<?= $row['urutan'] ?? 0 ?>" min="0">
-                    <small style="color: #6c757d;">Semakin kecil angka, semakin atas tampilnya</small>
+                    <small>Semakin kecil angka, semakin atas tampilnya</small>
                 </div>
                 <div class="form-group">
-                    <label>
-                        <i class="fas fa-camera"></i>
-                        Foto
-                    </label>
+                    <label>Foto</label>
                     
                     <?php if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg'): ?>
-                    <div style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-                        <img src="../../uploads/guru/<?= $row['foto'] ?>" alt="Foto" style="max-width: 100px; max-height: 100px; border-radius: 5px;">
-                        <p style="margin-top: 5px;"><?= $row['foto'] ?></p>
+                    <div class="current-file">
+                        <img src="../../uploads/guru/<?= $row['foto'] ?>" alt="Foto">
+                        <p><?= $row['foto'] ?></p>
                     </div>
                     <?php endif; ?>
                     
-                    <div style="border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 5px;">
-                        <input type="file" name="foto" accept="image/*" style="margin-bottom: 10px;">
-                        <small style="display: block; color: #6c757d;">Biarkan kosong jika tidak ingin mengganti foto</small>
-                        <small style="display: block; color: #6c757d;">Format: JPG, PNG (Max. 2MB)</small>
+                    <div class="file-upload" id="fileUploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Klik untuk ganti foto</p>
+                        <small>Format: JPG, PNG (Maks. 2MB)</small>
+                        <input type="file" name="foto" id="foto" accept="image/*">
+                    </div>
+                    <div id="previewContainer" style="display: none;">
+                        <img id="previewImage" src="#" alt="Preview">
                     </div>
                 </div>
             </div>
 
             <div class="form-actions">
-                <button type="submit" style="background: #4f46e5; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
-                    <i class="fas fa-save"></i> Update
-                </button>
-                <a href="index.php" style="background: #6c757d; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block;">
-                    <i class="fas fa-times"></i> Batal
-                </a>
+                <button type="submit" class="btn-primary" id="btnSubmit">Update</button>
+                <a href="index.php" class="btn-secondary">Batal</a>
             </div>
         </form>
     </div>

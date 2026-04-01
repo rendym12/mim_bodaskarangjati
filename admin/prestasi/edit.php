@@ -16,28 +16,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tingkat = mysqli_real_escape_string($conn, $_POST['tingkat']);
     $penyelenggara = mysqli_real_escape_string($conn, $_POST['penyelenggara']);
     $tahun = (int)$_POST['tahun'];
-    $urutan = (int)$_POST['urutan'];
+    $juara = (int)$_POST['juara'];
     
-    // Validasi
     $errors = [];
     if (empty($nama_prestasi)) {
         $errors[] = "Nama prestasi harus diisi";
     }
     
-    $gambar = $row['gambar']; // default pakai gambar lama
-    
-    // Upload gambar baru jika ada
+    // Upload gambar
+    $gambar = $row['gambar'];
     if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] == 0) {
-        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
         $ext = strtolower(pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION));
         $size = $_FILES['gambar']['size'];
         
         if (!in_array($ext, $allowed)) {
-            $errors[] = "Format file harus JPG, JPEG, PNG, atau GIF";
-        } elseif ($size > 2 * 1024 * 1024) {
-            $errors[] = "Ukuran file maksimal 2MB";
+            $errors[] = "Format file harus JPG, JPEG, PNG, WEBP, atau GIF";
+        } elseif ($size > 5 * 1024 * 1024) {
+            $errors[] = "Ukuran file maksimal 5MB";
         } else {
-            // Hapus gambar lama jika ada
             if (!empty($row['gambar']) && file_exists("../../uploads/prestasi/" . $row['gambar'])) {
                 unlink("../../uploads/prestasi/" . $row['gambar']);
             }
@@ -52,15 +49,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     
-    // Jika tidak ada error, update database
     if (empty($errors)) {
         $query = "UPDATE prestasi SET 
-                  nama_prestasi = '$nama_prestasi',
-                  tingkat = " . ($tingkat ? "'$tingkat'" : "NULL") . ",
-                  penyelenggara = " . ($penyelenggara ? "'$penyelenggara'" : "NULL") . ",
-                  tahun = $tahun,
-                  gambar = " . ($gambar ? "'$gambar'" : "NULL") . ",
-                  urutan = $urutan
+                  nama_prestasi = '$nama_prestasi', 
+                  tingkat = " . ($tingkat ? "'$tingkat'" : "NULL") . ", 
+                  penyelenggara = " . ($penyelenggara ? "'$penyelenggara'" : "NULL") . ", 
+                  tahun = $tahun, 
+                  juara = $juara,
+                  gambar = " . ($gambar ? "'$gambar'" : "NULL") . " 
                   WHERE id = $id";
         
         if (mysqli_query($conn, $query)) {
@@ -84,7 +80,6 @@ include "../includes/header.php";
         </a>
     </div>
 
-    <!-- Error Messages -->
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
             <i class="fas fa-exclamation-circle"></i>
@@ -96,80 +91,105 @@ include "../includes/header.php";
         </div>
     <?php endif; ?>
 
-    <div class="form-container">
-        <form method="POST" action="" enctype="multipart/form-data">
-            <div class="form-group">
-                <label><i class="fas fa-tag"></i> Nama Prestasi <span style="color: red;">*</span></label>
-                <input type="text" name="nama_prestasi" class="form-control" required 
-                       value="<?= htmlspecialchars($row['nama_prestasi']) ?>">
-            </div>
-
-            <div class="form-row">
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label><i class="fas fa-chart-bar"></i> Tingkat</label>
-                    <select name="tingkat" class="form-control">
-                        <option value="">- Pilih Tingkat -</option>
-                        <option value="Internasional" <?= $row['tingkat'] == 'Internasional' ? 'selected' : '' ?>>Internasional</option>
-                        <option value="Nasional" <?= $row['tingkat'] == 'Nasional' ? 'selected' : '' ?>>Nasional</option>
-                        <option value="Provinsi" <?= $row['tingkat'] == 'Provinsi' ? 'selected' : '' ?>>Provinsi</option>
-                        <option value="Kabupaten/Kota" <?= $row['tingkat'] == 'Kabupaten/Kota' ? 'selected' : '' ?>>Kabupaten/Kota</option>
-                        <option value="Kecamatan" <?= $row['tingkat'] == 'Kecamatan' ? 'selected' : '' ?>>Kecamatan</option>
-                    </select>
+                    <label><i class="fas fa-tag"></i> Nama Prestasi <span style="color: red;">*</span></label>
+                    <input type="text" name="nama_prestasi" class="form-control" required 
+                           value="<?= htmlspecialchars($row['nama_prestasi']) ?>">
                 </div>
-                <div class="form-group">
-                    <label><i class="fas fa-building"></i> Penyelenggara</label>
-                    <input type="text" name="penyelenggara" class="form-control" 
-                           value="<?= htmlspecialchars($row['penyelenggara'] ?? '') ?>">
-                </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label><i class="fas fa-calendar"></i> Tahun</label>
-                    <input type="number" name="tahun" class="form-control" 
-                           value="<?= $row['tahun'] ?? date('Y') ?>" 
-                           min="2000" max="<?= date('Y') ?>">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-chart-bar"></i> Tingkat</label>
+                        <select name="tingkat" class="form-control">
+                            <option value="">- Pilih Tingkat -</option>
+                            <option value="Internasional" <?= $row['tingkat'] == 'Internasional' ? 'selected' : '' ?>>Internasional</option>
+                            <option value="Nasional" <?= $row['tingkat'] == 'Nasional' ? 'selected' : '' ?>>Nasional</option>
+                            <option value="Provinsi" <?= $row['tingkat'] == 'Provinsi' ? 'selected' : '' ?>>Provinsi</option>
+                            <option value="Kabupaten/Kota" <?= $row['tingkat'] == 'Kabupaten/Kota' ? 'selected' : '' ?>>Kabupaten/Kota</option>
+                            <option value="Kecamatan" <?= $row['tingkat'] == 'Kecamatan' ? 'selected' : '' ?>>Kecamatan</option>
+                            <option value="Sekolah" <?= $row['tingkat'] == 'Sekolah' ? 'selected' : '' ?>>Sekolah</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-building"></i> Penyelenggara</label>
+                        <input type="text" name="penyelenggara" class="form-control" 
+                               value="<?= htmlspecialchars($row['penyelenggara']) ?>">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label><i class="fas fa-sort-numeric-up"></i> Urutan</label>
-                    <input type="number" name="urutan" class="form-control" 
-                           value="<?= $row['urutan'] ?? 0 ?>">
-                </div>
-            </div>
 
-            <div class="form-group">
-                <label><i class="fas fa-image"></i> Gambar</label>
-                
-                <!-- Gambar Lama -->
-                <?php if (!empty($row['gambar'])): ?>
-                <div style="margin-bottom: 15px; padding: 10px; background: #f8fafc; border-radius: 8px;">
-                    <img src="../../uploads/prestasi/<?= $row['gambar'] ?>" alt="Current" style="max-width: 100px; max-height: 100px; border-radius: 5px;">
-                    <p style="margin-top: 5px; font-size: 0.9rem;"><?= $row['gambar'] ?></p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar"></i> Tahun</label>
+                        <select name="tahun" class="form-control">
+                            <option value="">- Pilih Tahun -</option>
+                            <?php 
+                            $current_year = date('Y');
+                            for ($year = $current_year; $year >= 2000; $year--): 
+                            ?>
+                                <option value="<?= $year ?>" <?= $row['tahun'] == $year ? 'selected' : '' ?>><?= $year ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-medal"></i> Juara / Peringkat</label>
+                        <select name="juara" class="form-control">
+                            <option value="0" <?= $row['juara'] == 0 ? 'selected' : '' ?>>- Peserta / Tidak Berperingkat -</option>
+                            <option value="1" <?= $row['juara'] == 1 ? 'selected' : '' ?>>🥇 Juara 1 (Emas)</option>
+                            <option value="2" <?= $row['juara'] == 2 ? 'selected' : '' ?>>🥈 Juara 2 (Perak)</option>
+                            <option value="3" <?= $row['juara'] == 3 ? 'selected' : '' ?>>🥉 Juara 3 (Perunggu)</option>
+                            <?php for($i = 4; $i <= 10; $i++): ?>
+                                <option value="<?= $i ?>" <?= $row['juara'] == $i ? 'selected' : '' ?>>Juara <?= $i ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
                 </div>
-                <?php endif; ?>
-                
-                <div class="file-upload" onclick="document.getElementById('gambar').click()">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Klik untuk ganti gambar</p>
-                    <small>Format: JPG, PNG, GIF (Maks. 2MB)</small>
-                    <input type="file" name="gambar" id="gambar" accept="image/*" style="display: none;">
-                </div>
-                
-                <!-- Preview Image Baru -->
-                <div id="preview-container" class="preview-container" style="display: none; margin-top: 15px;">
-                    <img id="preview-image" src="#" alt="Preview" class="preview-image">
-                </div>
-            </div>
 
-            <div class="form-actions">
-                <a href="index.php" class="btn-secondary">
-                    <i class="fas fa-times"></i> Batal
-                </a>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save"></i> Update
-                </button>
-            </div>
-        </form>
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Gambar Saat Ini</label>
+                    <?php if (!empty($row['gambar'])): ?>
+                        <div style="margin-bottom: 15px;">
+                            <img src="../../uploads/prestasi/<?= $row['gambar'] ?>" 
+                                 alt="Current Image" 
+                                 style="max-width: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                            <p style="margin-top: 5px;">
+                                <small><i class="fas fa-file-image"></i> <?= $row['gambar'] ?></small>
+                            </p>
+                        </div>
+                    <?php else: ?>
+                        <p><i class="fas fa-info-circle"></i> Tidak ada gambar</p>
+                    <?php endif; ?>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-upload"></i> Ganti Gambar</label>
+                    <div class="file-upload" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Klik atau drag & drop untuk upload gambar baru</p>
+                        <small>Format: JPG, PNG, WEBP, GIF (Maks. 5MB)</small>
+                        <input type="file" name="gambar" id="gambarInput" accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <div id="previewContainer" style="display: none; margin-top: 15px;">
+                        <img id="previewImage" src="#" alt="Preview" style="max-width: 200px; border-radius: 8px;">
+                        <button type="button" class="btn-remove" id="removePreviewBtn" style="margin-left: 10px;">
+                            <i class="fas fa-times"></i> Hapus
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 20px; display: flex; gap: 10px;">
+                    <a href="index.php" class="btn-secondary">
+                        <i class="fas fa-times"></i> Batal
+                    </a>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Update
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

@@ -17,10 +17,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
     <div class="content-header">
         <h1><i class="fas fa-bullhorn"></i> Detail Pengumuman</h1>
         <div>
-            <a href="edit.php?id=<?= $id ?>" class="btn btn-primary">
+            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="index.php" class="btn btn-secondary">
+            <a href="index.php" class="btn-secondary">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
         </div>
@@ -46,9 +46,9 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     <i class="fas fa-eye"></i>
                     <strong>Status:</strong> 
                     <?php if ($row['status'] == 'publish'): ?>
-                        <span class="badge badge-success">Publish</span>
+                        <span class="badge-success">Publish</span>
                     <?php else: ?>
-                        <span class="badge badge-warning">Draft</span>
+                        <span class="badge-warning">Draft</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -66,7 +66,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <?php if (!empty($row['file_lampiran'])): ?>
             <div class="detail-lampiran">
                 <h4><i class="fas fa-paperclip"></i> File Lampiran</h4>
-                <a href="../../uploads/lampiran/<?= $row['file_lampiran'] ?>" class="btn btn-primary" download>
+                <a href="../../uploads/lampiran/<?= $row['file_lampiran'] ?>" class="btn-primary" download>
                     <i class="fas fa-download"></i> Download <?= $row['file_lampiran'] ?>
                 </a>
             </div>
@@ -74,12 +74,40 @@ require_once dirname(__DIR__) . '/includes/header.php';
         </div>
         
         <div class="detail-footer">
-            <a href="edit.php?id=<?= $id ?>" class="btn btn-primary">
+            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="?delete=<?= $id ?>" class="btn btn-danger" onclick="return confirm('Yakin ingin menghapus pengumuman ini?')">
+            <a href="#" class="btn-danger btn-delete-detail" data-id="<?= $id ?>" data-name="<?= htmlspecialchars($row['judul']) ?>" data-has-gambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>" data-has-lampiran="<?= (!empty($row['file_lampiran']) ? 'true' : 'false') ?>">
                 <i class="fas fa-trash"></i> Hapus
             </a>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Hapus -->
+<div id="deleteModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Apakah Anda yakin ingin menghapus pengumuman berikut?</p>
+            <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
+            <div id="fileWarningContainer" style="display: none;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="fileWarningText"></span>
+                </div>
+            </div>
+            <p style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px; margin-top: 10px;">
+                <i class="fas fa-exclamation-circle"></i>
+                Data yang sudah dihapus tidak dapat dikembalikan!
+            </p>
+        </div>
+        <div class="modal-footer">
+            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
+            <button type="button" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

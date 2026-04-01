@@ -14,72 +14,73 @@ include "../includes/header.php";
 ?>
 
 <div class="content-wrapper guru-page">
-    <!-- Content Header -->
     <div class="content-header">
         <h1><i class="fas fa-chalkboard-teacher"></i> Detail Guru/Staff</h1>
         <div>
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary" style="background: #4f46e5; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; margin-right: 5px;">
-                <i class="fas fa-edit"></i> Edit
-            </a>
-            <a href="index.php" class="btn-secondary" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
+            <a href="edit.php?id=<?= $id ?>" class="btn-primary">Edit</a>
+            <a href="index.php" class="btn-secondary">Kembali</a>
         </div>
     </div>
 
-    <!-- Detail Card -->
-    <div style="background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden;">
-        <div style="background: linear-gradient(135deg, #4f46e5, #818cf8); color: white; padding: 20px;">
-            <h2 style="margin: 0;"><i class="fas fa-user-tie"></i> <?= htmlspecialchars($row['nama']) ?></h2>
+    <div class="detail-card">
+        <div class="detail-header">
+            <h2><?= htmlspecialchars($row['nama']) ?></h2>
         </div>
         
-        <div style="display: flex; padding: 30px; gap: 30px; flex-wrap: wrap;">
-            <!-- Foto -->
-            <div style="flex: 0 0 200px; text-align: center;">
+        <div class="detail-body">
+            <div class="detail-photo">
                 <?php if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg'): ?>
-                    <img src="../../uploads/guru/<?= $row['foto'] ?>" alt="Foto" style="width: 200px; height: 200px; border-radius: 50%; object-fit: cover; border: 5px solid #f0f0f0;">
+                    <img src="../../uploads/guru/<?= $row['foto'] ?>" alt="Foto">
                 <?php else: ?>
-                    <i class="fas fa-user-circle" style="font-size: 200px; color: #ccc;"></i>
+                    <i class="fas fa-user-circle"></i>
                 <?php endif; ?>
             </div>
             
-            <!-- Informasi Detail -->
-            <div style="flex: 1;">
-                <table style="width: 100%; border-collapse: collapse;">
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee; width: 150px;">
-                            <strong><i class="fas fa-id-card"></i> NIP</strong>
-                        </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <?= !empty($row['nip']) ? htmlspecialchars($row['nip']) : '-' ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <strong><i class="fas fa-briefcase"></i> Jabatan</strong>
-                        </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <?= !empty($row['jabatan']) ? htmlspecialchars($row['jabatan']) : '-' ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <strong><i class="fas fa-book"></i> Mata Pelajaran</strong>
-                        </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <?= !empty($row['mapel']) ? htmlspecialchars($row['mapel']) : '-' ?>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <strong><i class="fas fa-sort-numeric-up"></i> Urutan Tampil</strong>
-                        </td>
-                        <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                            <?= $row['urutan'] ?? '0' ?>
-                        </td>
-                    </tr>
-                </table>
+            <div class="detail-info">
+                <div class="info-row">
+                    <span class="info-label">NIP</span>
+                    <span class="info-value"><?= !empty($row['nip']) ? htmlspecialchars($row['nip']) : '-' ?></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Jabatan</span>
+                    <span class="info-value"><?= !empty($row['jabatan']) ? htmlspecialchars($row['jabatan']) : '-' ?></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Mata Pelajaran</span>
+                    <span class="info-value"><?= !empty($row['mapel']) ? htmlspecialchars($row['mapel']) : '-' ?></span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Urutan Tampil</span>
+                    <span class="info-value"><?= $row['urutan'] ?? '0' ?></span>
+                </div>
             </div>
+        </div>
+        
+        <div class="detail-footer">
+            <a href="edit.php?id=<?= $id ?>" class="btn-primary">Edit</a>
+            <a href="#" class="btn-danger btn-delete-detail" data-id="<?= $id ?>" data-name="<?= htmlspecialchars($row['nama']) ?>" data-has-foto="<?= (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg') ? 'true' : 'false' ?>">Hapus</a>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL KONFIRMASI HAPUS -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-triangle"></i> Konfirmasi Hapus</h3>
+            <span class="modal-close">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Apakah Anda yakin ingin menghapus data berikut?</p>
+            <p class="delete-item-name" id="deleteItemName"></p>
+            <div id="fileWarning" style="display: none;">
+                <p><i class="fas fa-exclamation-circle"></i> <span id="fileWarningText"></span></p>
+            </div>
+            <p class="warning-text"><i class="fas fa-exclamation-circle"></i> Data yang sudah dihapus tidak dapat dikembalikan!</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" class="btn-secondary" id="btnCloseModal">Batal</button>
         </div>
     </div>
 </div>

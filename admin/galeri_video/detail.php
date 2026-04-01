@@ -25,8 +25,8 @@ include "../includes/header.php";
 <div class="content-wrapper galeri-video-page">
     <div class="content-header">
         <h1><i class="fas fa-video"></i> Detail Video</h1>
-        <div>
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
+        <div class="action-buttons">
+            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
                 <i class="fas fa-edit"></i> Edit
             </a>
             <a href="index.php" class="btn-secondary">
@@ -86,13 +86,19 @@ include "../includes/header.php";
             </div>
         </div>
         
-        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;">
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
+        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end;">
+            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="#" onclick="confirmDeleteVideo(<?= $id ?>, '<?= htmlspecialchars($row['judul']) ?>', <?= (!empty($row['thumbnail']) ? 'true' : 'false') ?>)" class="btn-danger">
+            <button type="button" 
+                    class="btn-delete" 
+                    data-id="<?= $id ?>" 
+                    data-name="<?= htmlspecialchars($row['judul']) ?>"
+                    data-module="video"
+                    data-has-thumbnail="<?= (!empty($row['thumbnail']) ? 'true' : 'false') ?>"
+                    class="btn-danger">
                 <i class="fas fa-trash"></i> Hapus
-            </a>
+            </button>
         </div>
     </div>
 </div>
@@ -102,25 +108,25 @@ include "../includes/header.php";
     <div class="modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
             <p>Apakah Anda yakin ingin menghapus video berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             <div id="fileWarningContainer" style="display: none;">
-                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span id="fileWarningText">Video ini memiliki thumbnail yang akan ikut terhapus.</span>
+                    <span id="fileWarningText"></span>
                 </div>
             </div>
-            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px; margin-top: 10px;">
+            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

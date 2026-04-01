@@ -14,17 +14,29 @@ if (isset($_GET['delete'])) {
         $nama = $data['nama_lengkap'];
         
         // Hapus foto jika bukan default
+        $hasFoto = false;
         if ($data && !empty($data['foto']) && $data['foto'] != 'default-avatar.jpg' && file_exists("../../uploads/" . $data['foto'])) {
-            unlink("../../uploads/" . $data['foto']);
+            if (unlink("../../uploads/" . $data['foto'])) {
+                $hasFoto = true;
+            }
         }
         
-        mysqli_query($conn, "DELETE FROM admin_users WHERE id = $id");
-        
-        $_SESSION['success'] = [
-            'message' => "Admin <strong>\"$nama\"</strong> berhasil dihapus",
-            'file_deleted' => true,
-            'type' => 'admin'
-        ];
+        if (mysqli_query($conn, "DELETE FROM admin_users WHERE id = $id")) {
+            if ($hasFoto) {
+                $_SESSION['success'] = [
+                    'message' => "Admin <strong>\"$nama\"</strong> berhasil dihapus",
+                    'file_deleted' => true,
+                    'type' => 'admin'
+                ];
+            } else {
+                $_SESSION['success'] = [
+                    'message' => "Admin <strong>\"$nama\"</strong> berhasil dihapus",
+                    'type' => 'admin'
+                ];
+            }
+        } else {
+            $_SESSION['error'] = "Gagal menghapus data: " . mysqli_error($conn);
+        }
     } else {
         $_SESSION['error'] = "Data admin tidak ditemukan";
     }
@@ -99,34 +111,39 @@ include "../includes/header.php";
                             <th width="20%">Username</th>
                             <th width="25%">Email</th>
                             <th width="15%">Aksi</th>
-                        </tr>
-                    </thead>
+                        </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
                             $no = 1;
                             while ($row = mysqli_fetch_assoc($query)): 
                         ?>
                         <tr>
-                            <td><?= $no++ ?></td>
-                            <td>
+                            <td class="text-center"><?= $no++ ?></td>
+                            <td class="text-center">
                                 <?php if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg'): ?>
-                                    <img src="../../uploads/<?= $row['foto'] ?>" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--secondary);">
+                                    <img src="../../uploads/<?= $row['foto'] ?>" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0;">
                                 <?php else: ?>
-                                    <i class="fas fa-user-circle" style="font-size: 2rem; color: var(--gray);"></i>
+                                    <i class="fas fa-user-circle" style="font-size: 2rem; color: #6c757d;"></i>
                                 <?php endif; ?>
                             </td>
                             <td><strong><?= htmlspecialchars($row['nama_lengkap']) ?></strong></td>
                             <td><?= htmlspecialchars($row['username']) ?></td>
                             <td><?= htmlspecialchars($row['email'] ?? '-') ?></td>
-                            <td>
+                            <td class="text-center">
                                 <div class="action-buttons">
                                     <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <?php if ($row['id'] != $_SESSION['admin_id']): ?>
-                                    <a href="#" onclick="confirmDelete(<?= $row['id'] ?>, '<?= htmlspecialchars($row['nama_lengkap']) ?>', <?= (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg' ? 'true' : 'false') ?>)" class="btn-delete" title="Hapus">
+                                    <button type="button" 
+                                            class="btn-delete" 
+                                            data-id="<?= $row['id'] ?>" 
+                                            data-name="<?= htmlspecialchars($row['nama_lengkap']) ?>"
+                                            data-module="admin"
+                                            data-has-foto="<?= (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg' ? 'true' : 'false') ?>"
+                                            title="Hapus">
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </button>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -152,16 +169,16 @@ include "../includes/header.php";
     <div class="modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus admin berikut?</p>
+            <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             
             <div id="fileWarningContainer" style="display: none;">
                 <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span id="fileWarningText">Admin ini memiliki foto profil yang akan ikut terhapus.</span>
+                    <span id="fileWarningText"></span>
                 </div>
             </div>
             
@@ -171,8 +188,8 @@ include "../includes/header.php";
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

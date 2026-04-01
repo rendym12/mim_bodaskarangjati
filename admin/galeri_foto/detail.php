@@ -31,9 +31,15 @@ include "../includes/header.php";
         <div class="card-body">
             <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                 <div style="flex: 0 0 300px;">
-                    <img src="../../uploads/galeri_foto/<?= $row['file_foto'] ?>" 
-                         alt="<?= htmlspecialchars($row['judul']) ?>" 
-                         style="width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <?php if (!empty($row['file_foto'])): ?>
+                        <img src="../../uploads/galeri_foto/<?= $row['file_foto'] ?>" 
+                             alt="<?= htmlspecialchars($row['judul']) ?>" 
+                             style="width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <?php else: ?>
+                        <div style="width: 100%; height: 200px; background: #f0f4ff; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-image" style="font-size: 5rem; color: #0B3D91; opacity: 0.3;"></i>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 
                 <div style="flex: 1;">
@@ -73,9 +79,15 @@ include "../includes/header.php";
             <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="#" onclick="confirmDeleteFoto(<?= $id ?>, '<?= htmlspecialchars($row['judul']) ?>', true)" class="btn-danger">
+            <button type="button" 
+                    class="btn-delete" 
+                    data-id="<?= $id ?>" 
+                    data-name="<?= htmlspecialchars($row['judul']) ?>"
+                    data-module="foto"
+                    data-has-file="<?= (!empty($row['file_foto']) ? 'true' : 'false') ?>"
+                    class="btn-danger">
                 <i class="fas fa-trash"></i> Hapus
-            </a>
+            </button>
         </div>
     </div>
 </div>
@@ -85,25 +97,27 @@ include "../includes/header.php";
     <div class="modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus foto berikut?</p>
+            <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
+            
             <div id="fileWarningContainer" style="display: none;">
-                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span id="fileWarningText">File gambar akan ikut terhapus!</span>
+                    <span id="fileWarningText"></span>
                 </div>
             </div>
-            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px; margin-top: 10px;">
+            
+            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

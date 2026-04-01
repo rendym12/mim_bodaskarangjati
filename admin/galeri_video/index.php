@@ -11,6 +11,7 @@ if (isset($_GET['delete'])) {
     
     $file_deleted = false;
     
+    // Cek apakah data ada
     $check = mysqli_query($conn, "SELECT * FROM galeri_video WHERE id = $id");
     
     if (mysqli_num_rows($check) > 0) {
@@ -23,19 +24,21 @@ if (isset($_GET['delete'])) {
             }
         }
         
-        mysqli_query($conn, "DELETE FROM galeri_video WHERE id = $id");
-        
-        if ($file_deleted) {
-            $_SESSION['success'] = [
-                'message' => "Video <strong>\"$judul\"</strong> berhasil dihapus",
-                'file_deleted' => true,
-                'type' => 'video'
-            ];
+        if (mysqli_query($conn, "DELETE FROM galeri_video WHERE id = $id")) {
+            if ($file_deleted) {
+                $_SESSION['success'] = [
+                    'message' => "Video <strong>\"$judul\"</strong> berhasil dihapus",
+                    'file_deleted' => true,
+                    'type' => 'video'
+                ];
+            } else {
+                $_SESSION['success'] = [
+                    'message' => "Video <strong>\"$judul\"</strong> berhasil dihapus",
+                    'type' => 'video'
+                ];
+            }
         } else {
-            $_SESSION['success'] = [
-                'message' => "Video <strong>\"$judul\"</strong> berhasil dihapus",
-                'type' => 'video'
-            ];
+            $_SESSION['error'] = "Gagal menghapus data: " . mysqli_error($conn);
         }
     } else {
         $_SESSION['error'] = "Data video tidak ditemukan";
@@ -112,29 +115,28 @@ include "../includes/header.php";
                             <th width="10%">Urutan</th>
                             <th width="15%">Keterangan</th>
                             <th width="10%">Aksi</th>
-                        </tr>
-                    </thead>
+                        </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
                             $no = 1;
                             while ($row = mysqli_fetch_assoc($query)): 
                         ?>
                         <tr>
-                            <td><?= $no++ ?></td>
-                            <td>
+                            <td class="text-center"><?= $no++ ?></td>
+                            <td class="text-center">
                                 <?php if (!empty($row['thumbnail'])): ?>
                                     <img src="../../uploads/galeri_video/<?= $row['thumbnail'] ?>" 
                                          alt="<?= $row['judul'] ?>" 
                                          style="width: 80px; height: 60px; object-fit: cover; border-radius: 5px;">
                                 <?php else: ?>
-                                    <i class="fas fa-video" style="font-size: 2rem; color: var(--gray);"></i>
+                                    <i class="fas fa-video" style="font-size: 2rem; color: #6c757d;"></i>
                                 <?php endif; ?>
                             </td>
                             <td><strong><?= htmlspecialchars($row['judul']) ?></strong></td>
                             <td><a href="<?= htmlspecialchars($row['url_video']) ?>" target="_blank">Lihat Video</a></td>
-                            <td><?= $row['urutan'] ?? '0' ?></td>
+                            <td class="text-center"><?= $row['urutan'] ?? '0' ?></td>
                             <td><?= htmlspecialchars(substr($row['keterangan'] ?? '-', 0, 50)) ?>...</td>
-                            <td>
+                            <td class="text-center">
                                 <div class="action-buttons">
                                     <a href="detail.php?id=<?= $row['id'] ?>" class="btn-view" title="Detail">
                                         <i class="fas fa-eye"></i>
@@ -142,9 +144,15 @@ include "../includes/header.php";
                                     <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="#" onclick="confirmDeleteVideo(<?= $row['id'] ?>, '<?= htmlspecialchars($row['judul']) ?>', <?= (!empty($row['thumbnail']) ? 'true' : 'false') ?>)" class="btn-delete" title="Hapus">
+                                    <button type="button" 
+                                            class="btn-delete" 
+                                            data-id="<?= $row['id'] ?>" 
+                                            data-name="<?= htmlspecialchars($row['judul']) ?>"
+                                            data-module="video"
+                                            data-has-thumbnail="<?= (!empty($row['thumbnail']) ? 'true' : 'false') ?>"
+                                            title="Hapus">
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -169,7 +177,7 @@ include "../includes/header.php";
     <div class="modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
             <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
@@ -187,8 +195,8 @@ include "../includes/header.php";
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

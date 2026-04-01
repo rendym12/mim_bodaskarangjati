@@ -144,9 +144,15 @@ include "../includes/header.php";
                                     <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="#" onclick="confirmDelete(<?= $row['id'] ?>, '<?= htmlspecialchars($row['nama_sarana']) ?>', 'sarana', <?= (!empty($row['gambar']) ? 'true' : 'false') ?>)" class="btn-delete" title="Hapus">
+                                    <!-- Tombol hapus dengan data attribute -->
+                                    <button type="button" 
+                                            class="btn-delete" 
+                                            data-id="<?= $row['id'] ?>" 
+                                            data-name="<?= htmlspecialchars($row['nama_sarana']) ?>"
+                                            data-hasgambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>"
+                                            title="Hapus">
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -174,16 +180,16 @@ include "../includes/header.php";
             <span class="modal-close" onclick="closeModal()">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
+            <p>Apakah Anda yakin ingin menghapus <span id="itemType">Sarana Prasarana</span> berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             
             <!-- Warning untuk file gambar -->
             <div id="fileWarningContainer" style="display: none;">
                 <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
-                    <span id="fileWarningText">Sarana ini memiliki GAMBAR yang akan ikut terhapus.</span>
+                    <span id="fileWarningText"></span>
                     <div style="margin-top: 8px; padding-left: 20px;">
-                        <div><i class="fas fa-image"></i> File gambar</div>
+                        <div><i class="fas fa-image"></i> File gambar akan ikut terhapus</div>
                     </div>
                 </div>
             </div>
@@ -195,8 +201,8 @@ include "../includes/header.php";
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" onclick="closeModal()" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

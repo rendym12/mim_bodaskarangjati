@@ -3160,6 +3160,282 @@ nav ul li ul li a:hover {
 }
 
 /* ==============================================
+   STRUKTUR ORGANISASI - STYLE
+   ============================================= */
+
+/* Struktur Section */
+.struktur-section {
+    margin-bottom: 60px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 10px 30px -15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.struktur-section:hover {
+    box-shadow: 0 20px 40px -20px rgba(11,61,145,0.2);
+}
+
+.struktur-image {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.img-struktur {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.img-struktur:hover {
+    transform: scale(1.02);
+}
+
+.struktur-placeholder {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border-radius: 16px;
+    padding: 80px 40px;
+    text-align: center;
+    border: 2px dashed #cbd5e1;
+}
+
+.struktur-placeholder i {
+    font-size: 4rem;
+    color: #94a3b8;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.struktur-placeholder p {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.struktur-caption {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.struktur-caption p {
+    color: #64748b;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.struktur-caption i {
+    color: #0B3D91;
+    margin-right: 5px;
+}
+
+/* Section Title (jika belum ada) */
+.section-title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-title h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0B3D91;
+    margin-bottom: 10px;
+}
+
+.section-title h2 i {
+    color: #FFD700;
+    margin-right: 12px;
+}
+
+.section-title p {
+    color: #64748b;
+    font-size: 1rem;
+}
+
+/* Guru Grid */
+.guru-section {
+    margin-bottom: 60px;
+}
+
+.guru-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.guru-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    text-align: center;
+    padding: 25px 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.guru-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 35px -15px rgba(11,61,145,0.2);
+    border-color: #FFD700;
+}
+
+.guru-foto {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #FFD700;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.guru-foto img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.guru-card:hover .guru-foto img {
+    transform: scale(1.1);
+}
+
+.guru-foto-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.guru-foto-placeholder i {
+    font-size: 5rem;
+    color: #94a3b8;
+}
+
+.guru-nama {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0B3D91;
+    margin-bottom: 5px;
+}
+
+.guru-nip {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 8px;
+}
+
+.guru-jabatan {
+    font-size: 0.9rem;
+    color: #FFD700;
+    font-weight: 600;
+    margin-bottom: 8px;
+    background: rgba(255,215,0,0.1);
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 30px;
+}
+
+.guru-mapel {
+    font-size: 0.85rem;
+    color: #475569;
+    margin-top: 8px;
+}
+
+.guru-mapel i {
+    color: #0B3D91;
+    margin-right: 5px;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8fafc;
+    border-radius: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: #94a3b8;
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.empty-state p {
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.empty-state .btn-primary {
+    display: inline-block;
+    padding: 10px 24px;
+    background: #0B3D91;
+    color: white;
+    border-radius: 30px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.empty-state .btn-primary:hover {
+    background: #FFD700;
+    color: #0B3D91;
+    transform: translateY(-2px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .struktur-section {
+        padding: 20px;
+    }
+    
+    .section-title h2 {
+        font-size: 1.5rem;
+    }
+    
+    .guru-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 20px;
+    }
+    
+    .guru-foto {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .guru-nama {
+        font-size: 1rem;
+    }
+    
+    .guru-jabatan {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .struktur-placeholder {
+        padding: 40px 20px;
+    }
+    
+    .struktur-placeholder i {
+        font-size: 3rem;
+    }
+    
+    .guru-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ==============================================
    7. HALAMAN BERITA
 ============================================== */
 .pengumuman-grid {

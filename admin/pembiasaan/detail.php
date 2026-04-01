@@ -17,8 +17,8 @@ include "../includes/header.php";
 <div class="content-wrapper pembiasaan-page">
     <div class="content-header">
         <h1><i class="fas fa-sun"></i> Detail Pembiasaan</h1>
-        <div>
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
+        <div class="action-buttons">
+            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
                 <i class="fas fa-edit"></i> Edit
             </a>
             <a href="index.php" class="btn-secondary">
@@ -41,39 +41,45 @@ include "../includes/header.php";
                         <tr>
                             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 150px;">
                                 <strong><i class="fas fa-icons"></i> Ikon</strong>
-                            </td>
+                             </td>
                             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
                                 : <i class="fas <?= $row['ikon'] ?? 'fa-sun' ?>"></i> <?= $row['ikon'] ?? 'fa-sun' ?>
-                            </td>
-                        </tr>
-                        <tr>
+                             </td>
+                         </tr>
+                         <tr>
                             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
                                 <strong><i class="fas fa-sort-numeric-up"></i> Urutan</strong>
-                            </td>
+                             </td>
                             <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
                                 : <?= $row['urutan'] ?? '0' ?>
-                            </td>
-                        </tr>
-                        <tr>
+                             </td>
+                         </tr>
+                         <tr>
                             <td style="padding: 12px;">
                                 <strong><i class="fas fa-align-left"></i> Deskripsi</strong>
-                            </td>
+                             </td>
                             <td style="padding: 12px;">
                                 : <?= nl2br(htmlspecialchars($row['deskripsi'] ?? '-')) ?>
-                            </td>
-                        </tr>
-                    </table>
+                             </td>
+                         </tr>
+                     </table>
                 </div>
             </div>
         </div>
         
-        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;">
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
+        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end;">
+            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="#" onclick="confirmDeletePembiasaan(<?= $id ?>, '<?= htmlspecialchars($row['nama_kegiatan']) ?>')" class="btn-danger">
+            <button type="button" 
+                    class="btn-delete" 
+                    data-id="<?= $id ?>" 
+                    data-name="<?= htmlspecialchars($row['nama_kegiatan']) ?>"
+                    data-module="pembiasaan"
+                    data-has-file="false"
+                    title="Hapus">
                 <i class="fas fa-trash"></i> Hapus
-            </a>
+            </button>
         </div>
     </div>
 </div>
@@ -83,19 +89,25 @@ include "../includes/header.php";
     <div class="modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
             <p>Apakah Anda yakin ingin menghapus kegiatan pembiasaan berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
-            <p style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
+            <div id="fileWarningContainer" style="display: none;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="fileWarningText"></span>
+                </div>
+            </div>
+            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
-            </p>
+            </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

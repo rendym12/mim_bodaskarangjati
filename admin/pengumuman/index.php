@@ -70,7 +70,7 @@ include "../includes/header.php";
                 <?= $_SESSION['success']['message'] ?>
                 
                 <?php if (!empty($_SESSION['success']['file_deleted'])): ?>
-                    <div style="margin-top: 10px; padding: 8px; background: #d4edda; border-radius: 5px;">
+                    <div class="file-info">
                         <small>
                             <i class="fas fa-paperclip"></i> File yang ikut terhapus: 
                             <?= implode(' dan ', $_SESSION['success']['file_deleted']) ?>
@@ -78,13 +78,13 @@ include "../includes/header.php";
                     </div>
                 <?php endif; ?>
                 
-                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+                <button type="button" class="close">&times;</button>
             </div>
         <?php else: ?>
             <div class="alert alert-success alert-dismissible">
                 <i class="fas fa-check-circle"></i>
                 <?= $_SESSION['success'] ?>
-                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+                <button type="button" class="close">&times;</button>
             </div>
         <?php endif; ?>
         <?php unset($_SESSION['success']); ?>
@@ -95,7 +95,7 @@ include "../includes/header.php";
         <div class="alert alert-danger alert-dismissible">
             <i class="fas fa-exclamation-circle"></i>
             <?= $_SESSION['error'] ?>
-            <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+            <button type="button" class="close">&times;</button>
         </div>
         <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
@@ -118,8 +118,7 @@ include "../includes/header.php";
                             <th width="8%">Gambar</th>
                             <th width="8%">Lampiran</th>
                             <th width="15%">Aksi</th>
-                        </tr>
-                    </thead>
+                        </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
                             $no = 1;
@@ -157,13 +156,13 @@ include "../includes/header.php";
                             </td>
                             <td>
                                 <div class="action-buttons">
-                                    <a href="detail.php?id=<?= $row['id'] ?>" class="btn-view" title="Detail">
+                                    <a href="detail.php?id=<?= $row['id'] ?>" class="btn-view">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
+                                    <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="#" onclick="confirmDeletePengumuman(<?= $row['id'] ?>, '<?= htmlspecialchars($row['judul']) ?>', <?= (!empty($row['gambar']) ? 'true' : 'false') ?>, <?= (!empty($row['file_lampiran']) ? 'true' : 'false') ?>)" class="btn-delete" title="Hapus">
+                                    <a href="#" class="btn-delete" data-id="<?= $row['id'] ?>" data-name="<?= htmlspecialchars($row['judul']) ?>" data-has-gambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>" data-has-lampiran="<?= (!empty($row['file_lampiran']) ? 'true' : 'false') ?>">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
@@ -190,13 +189,13 @@ include "../includes/header.php";
     <div class="modal-content">
         <div class="modal-header">
             <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
             <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             <div id="fileWarningContainer" style="display: none;">
-                <div id="fileWarning" style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
                     <span id="fileWarningText"></span>
                     <div id="fileList" style="margin-top: 8px; padding-left: 20px;"></div>
@@ -209,7 +208,7 @@ include "../includes/header.php";
         </div>
         <div class="modal-footer">
             <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" onclick="closeModal()" style="background: #6c757d; color: white; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer;">Batal</button>
+            <button type="button" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

@@ -3,8 +3,8 @@
 require_once '../includes/config.php';
 include '../includes/header.php';
 
-// Ambil data prestasi
-$query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, urutan ASC, id DESC");
+// Ambil data prestasi - urutkan berdasarkan tahun terbaru dan juara (1,2,3 lebih atas)
+$query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, juara ASC, id DESC");
 ?>
 
 <!-- PAGE HEADER -->
@@ -21,19 +21,40 @@ $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, urutan
         <!-- STATISTIK PRESTASI -->
         <?php
         $total = mysqli_num_rows($query);
+        // Reset query untuk statistik
+        $stat_query = mysqli_query($conn, "SELECT * FROM prestasi");
+        $total_prestasi = mysqli_num_rows($stat_query);
+        
         $tahun_terbanyak = mysqli_query($conn, "SELECT tahun, COUNT(*) as jumlah FROM prestasi GROUP BY tahun ORDER BY jumlah DESC LIMIT 1");
         $tahun_data = mysqli_fetch_assoc($tahun_terbanyak);
+        
+        // Hitung jumlah juara 1,2,3
+        $juara1 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM prestasi WHERE juara = 1"))['total'];
+        $juara2 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM prestasi WHERE juara = 2"))['total'];
+        $juara3 = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM prestasi WHERE juara = 3"))['total'];
         ?>
+        
         <div class="prestasi-stats">
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-trophy"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-number"><?= $total ?></span>
+                    <span class="stat-number"><?= $total_prestasi ?></span>
                     <span class="stat-label">Total Prestasi</span>
                 </div>
             </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <div class="stat-content">
+                    <span class="stat-number">🥇 <?= $juara1 ?> 🥈 <?= $juara2 ?> 🥉 <?= $juara3 ?></span>
+                    <span class="stat-label">Juara 1, 2, 3</span>
+                </div>
+            </div>
+            
             <?php if ($tahun_data): ?>
             <div class="stat-card">
                 <div class="stat-icon">
@@ -60,7 +81,35 @@ $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, urutan
         
         <!-- GRID PRESTASI -->
         <div class="prestasi-grid">
-            <?php while ($row = mysqli_fetch_assoc($query)): ?>
+            <?php 
+            // Reset query untuk menampilkan data
+            $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, juara ASC, id DESC");
+            while ($row = mysqli_fetch_assoc($query)): 
+                // Tentukan kelas badge berdasarkan juara
+                $badge_class = '';
+                $medali = '';
+                if ($row['juara'] == 1) {
+                    $badge_class = 'badge-gold';
+                    $medali = '🥇';
+                    $juara_text = 'Juara 1';
+                } elseif ($row['juara'] == 2) {
+                    $badge_class = 'badge-silver';
+                    $medali = '🥈';
+                    $juara_text = 'Juara 2';
+                } elseif ($row['juara'] == 3) {
+                    $badge_class = 'badge-bronze';
+                    $medali = '🥉';
+                    $juara_text = 'Juara 3';
+                } elseif ($row['juara'] > 0) {
+                    $badge_class = 'badge-juara';
+                    $medali = '🏆';
+                    $juara_text = 'Juara ' . $row['juara'];
+                } else {
+                    $badge_class = 'badge-peserta';
+                    $medali = '📋';
+                    $juara_text = 'Peserta';
+                }
+            ?>
             <div class="prestasi-card" data-tahun="<?= $row['tahun'] ?>">
                 <?php if (!empty($row['gambar'])): ?>
                 <div class="prestasi-gambar">
@@ -69,6 +118,7 @@ $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, urutan
                          onerror="this.src='<?= BASE_URL ?>/assets/img/prestasi-default.jpg'">
                     <div class="prestasi-overlay">
                         <span class="prestasi-tahun"><?= $row['tahun'] ?></span>
+                        <span class="prestasi-juara <?= $badge_class ?>"><?= $medali ?> <?= $juara_text ?></span>
                     </div>
                 </div>
                 <?php else: ?>
@@ -76,6 +126,7 @@ $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, urutan
                     <i class="fas fa-trophy"></i>
                     <div class="prestasi-overlay">
                         <span class="prestasi-tahun"><?= $row['tahun'] ?></span>
+                        <span class="prestasi-juara <?= $badge_class ?>"><?= $medali ?> <?= $juara_text ?></span>
                     </div>
                 </div>
                 <?php endif; ?>
@@ -96,21 +147,6 @@ $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, urutan
                         <span><?= htmlspecialchars($row['penyelenggara']) ?></span>
                     </div>
                     <?php endif; ?>
-                    
-                    <?php if (!empty($row['deskripsi'])): ?>
-                    <p class="prestasi-deskripsi"><?= htmlspecialchars($row['deskripsi']) ?></p>
-                    <?php endif; ?>
-                    
-                    <div class="prestasi-footer">
-                        <span class="prestasi-medali">
-                            <?php
-                            $medali = ['🥇', '🥈', '🥉'];
-                            $random_medal = $medali[array_rand($medali)];
-                            echo $random_medal;
-                            ?>
-                        </span>
-                        <span class="prestasi-urutan">#<?= $row['urutan'] ?? '1' ?></span>
-                    </div>
                 </div>
             </div>
             <?php endwhile; ?>
