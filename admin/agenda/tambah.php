@@ -26,7 +26,7 @@ require_once dirname(__DIR__) . '/includes/header.php';
 <div class="content-wrapper agenda-page">
     <div class="content-header">
         <h1><i class="fas fa-plus-circle"></i> Tambah Agenda</h1>
-        <a href="index.php" class="btn btn-secondary">
+        <a href="index.php" class="btn-secondary">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
@@ -82,10 +82,10 @@ require_once dirname(__DIR__) . '/includes/header.php';
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn-primary">
                     <i class="fas fa-save"></i> Simpan
                 </button>
-                <a href="index.php" class="btn btn-secondary">
+                <a href="index.php" class="btn-secondary">
                     <i class="fas fa-times"></i> Batal
                 </a>
             </div>

@@ -121,9 +121,9 @@ include "../includes/header.php";
                             <td class="text-center"><?= $no++ ?></td>
                             <td class="text-center">
                                 <?php if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg'): ?>
-                                    <img src="../../uploads/<?= $row['foto'] ?>" alt="Foto" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e2e8f0;">
+                                    <img src="../../uploads/<?= $row['foto'] ?>" alt="Foto" class="user-avatar">
                                 <?php else: ?>
-                                    <i class="fas fa-user-circle" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <i class="fas fa-user-circle default-avatar-icon"></i>
                                 <?php endif; ?>
                             </td>
                             <td><strong><?= htmlspecialchars($row['nama_lengkap']) ?></strong></td>
@@ -168,7 +168,7 @@ include "../includes/header.php";
 <div id="deleteModal" class="modal" style="display:none;">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
+            <h3><i class="fas fa-exclamation-triangle" style="color: #FFD700;"></i> Konfirmasi Hapus</h3>
             <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">

@@ -1,7 +1,7 @@
 // ==============================================
-// FILE: admin.js
+// FILE: admin.js (FIXED)
 // ADMIN PANEL - MI MUHAMMADIYAH BODASKARANGJATI
-// VERSI: 3.0 - RAPIKAN & FIX DELETE ALL MODULES
+// VERSI: 3.2 - FIX GURU STAFF MODAL
 // ==============================================
 
 // ==============================================
@@ -13,7 +13,7 @@ let currentDeleteId = null;
 // MAIN INITIALIZATION
 // ==============================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Admin JS v3.0 Loaded');
+    console.log('✅ Admin JS v3.2 Loaded');
     
     // Inisialisasi semua modul
     initGlobalFunctions();
@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initSmoothScroll();
     initIOSFix();
     initTouchScroll();
+    initBackButtons();
     
     // Inisialisasi halaman spesifik
     if (document.querySelector('.login-page')) initLoginPage();
@@ -145,6 +146,7 @@ function initDeleteButtons() {
     console.log('🔍 Found ' + deleteButtons.length + ' delete buttons');
     
     deleteButtons.forEach(function(button) {
+        // Hapus event listener lama untuk menghindari duplikasi
         button.removeEventListener('click', handleDeleteClick);
         button.addEventListener('click', handleDeleteClick);
     });
@@ -224,7 +226,6 @@ function escHandler(event) {
 // DELETE MODAL INIT
 // ==============================================
 function initDeleteModal() {
-    // Pastikan fungsi sudah ada
     if (typeof window.confirmDeleteItem === 'undefined') {
         window.confirmDeleteItem = function(id, name, module, hasFile) {
             if (confirm('Yakin ingin menghapus "' + name + '"?')) {
@@ -273,7 +274,7 @@ function initAutoCloseAlerts() {
 function initMobileSidebar() {
     const sidebar = document.getElementById('adminSidebar');
     const closeBtn = document.getElementById('sidebarClose');
-    const mobileToggle = document.getElementById('mobileMenuToggle');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const floatingToggle = document.getElementById('floatingMenuToggle');
     
     if (!sidebar) return;
@@ -290,7 +291,7 @@ function initMobileSidebar() {
         sidebar.classList.add('show');
         overlay.classList.add('show');
         document.body.style.overflow = 'hidden';
-        if (mobileToggle) mobileToggle.style.display = 'none';
+        if (mobileMenuBtn) mobileMenuBtn.style.display = 'none';
         if (floatingToggle) floatingToggle.style.display = 'none';
     }
     
@@ -299,28 +300,45 @@ function initMobileSidebar() {
         overlay.classList.remove('show');
         document.body.style.overflow = '';
         if (window.innerWidth <= 992) {
-            if (mobileToggle) mobileToggle.style.display = 'flex';
+            if (mobileMenuBtn) mobileMenuBtn.style.display = 'flex';
             if (floatingToggle) floatingToggle.style.display = 'flex';
         }
     }
     
-    if (mobileToggle) mobileToggle.addEventListener('click', openSidebar);
-    if (floatingToggle) floatingToggle.addEventListener('click', openSidebar);
-    if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
-    overlay.addEventListener('click', closeSidebar);
+    if (mobileMenuBtn) {
+        mobileMenuBtn.removeEventListener('click', openSidebar);
+        mobileMenuBtn.addEventListener('click', openSidebar);
+    }
+    if (floatingToggle) {
+        floatingToggle.removeEventListener('click', openSidebar);
+        floatingToggle.addEventListener('click', openSidebar);
+    }
+    if (closeBtn) {
+        closeBtn.removeEventListener('click', closeSidebar);
+        closeBtn.addEventListener('click', closeSidebar);
+    }
+    if (overlay) {
+        overlay.removeEventListener('click', closeSidebar);
+        overlay.addEventListener('click', closeSidebar);
+    }
     
-    window.addEventListener('resize', function() {
+    window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize);
+    
+    function handleResize() {
         if (window.innerWidth > 992) {
             closeSidebar();
-            if (mobileToggle) mobileToggle.style.display = 'none';
+            if (mobileMenuBtn) mobileMenuBtn.style.display = 'none';
             if (floatingToggle) floatingToggle.style.display = 'none';
         } else {
             if (!sidebar.classList.contains('show')) {
-                if (mobileToggle) mobileToggle.style.display = 'flex';
+                if (mobileMenuBtn) mobileMenuBtn.style.display = 'flex';
                 if (floatingToggle) floatingToggle.style.display = 'flex';
             }
         }
-    });
+    }
+    
+    console.log('✅ Mobile sidebar initialized');
 }
 
 // ==============================================
@@ -348,6 +366,39 @@ function initProfileDropdown() {
         
         profileDropdown.addEventListener('click', function(e) { e.stopPropagation(); });
     }
+    
+    // Mobile Profile Dropdown
+    const mobileProfileBtn = document.getElementById('mobileProfileBtn');
+    const mobileProfileDropdown = document.getElementById('mobileProfileDropdown');
+    
+    if (mobileProfileBtn && mobileProfileDropdown) {
+        mobileProfileBtn.removeEventListener('click', mobileProfileHandler);
+        mobileProfileBtn.addEventListener('click', mobileProfileHandler);
+        
+        function mobileProfileHandler(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            mobileProfileDropdown.classList.toggle('show');
+            const chevron = this.querySelector('i');
+            if (chevron) {
+                chevron.style.transform = mobileProfileDropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
+            }
+        }
+        
+        document.addEventListener('click', function(e) {
+            if (!mobileProfileBtn.contains(e.target) && !mobileProfileDropdown.contains(e.target)) {
+                mobileProfileDropdown.classList.remove('show');
+                const chevron = mobileProfileBtn.querySelector('i');
+                if (chevron) chevron.style.transform = 'rotate(0deg)';
+            }
+        });
+        
+        mobileProfileDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    
+    console.log('✅ Profile dropdown initialized');
 }
 
 // ==============================================
@@ -558,16 +609,588 @@ function initDashboard() {
     }
 }
 
+
 // ==============================================
-// 12. VISI MISI PAGE
+// GURU STAFF PAGE - FIXED VERSION (SEDERHANA)
+// ==============================================
+
+function initGuruStaffPage() {
+    'use strict';
+    
+    console.log('👥 Initializing Guru Staff page...');
+    
+    // ========== MODAL STRUKTUR ORGANISASI ==========
+    const strukturModal = document.getElementById('strukturModal');
+    const btnKelolaStruktur = document.getElementById('btnKelolaStruktur');
+    
+    if (!strukturModal || !btnKelolaStruktur) {
+        console.error('❌ Struktur modal or button not found!');
+        return;
+    }
+    
+    // Elemen-elemen
+    const strukturUploadArea = document.getElementById('strukturUploadArea');
+    const strukturInput = document.getElementById('strukturInput');
+    const strukturPreviewArea = document.getElementById('strukturPreviewArea');
+    const strukturPreviewImg = document.getElementById('strukturPreviewImg');
+    const cancelPreviewBtn = document.getElementById('cancelPreviewBtn');
+    const selectAnotherBtn = document.getElementById('selectAnotherBtn');
+    const btnCloseStrukturModal = document.getElementById('btnCloseStrukturModal');
+    const modalClose = strukturModal.querySelector('.modal-close');
+    const currentStrukturWrapper = document.getElementById('currentStrukturWrapper');
+    const noStrukturWrapper = document.getElementById('noStrukturWrapper');
+    const currentStrukturImg = document.getElementById('currentStrukturImg');
+    
+    // Fungsi reset preview
+    function resetStrukturPreview() {
+        console.log('🔄 Reset preview...');
+        
+        if (strukturPreviewArea) {
+            strukturPreviewArea.style.display = 'none';
+        }
+        if (strukturInput) {
+            strukturInput.value = '';
+        }
+        if (strukturPreviewImg) {
+            strukturPreviewImg.src = '#';
+            // Reset gaya yang mungkin tersisa
+            strukturPreviewImg.style.maxWidth = '100%';
+            strukturPreviewImg.style.maxHeight = '230px';
+            strukturPreviewImg.style.width = 'auto';
+            strukturPreviewImg.style.height = 'auto';
+        }
+        
+        // Tampilkan kembali current struktur jika ada
+        if (currentStrukturWrapper && noStrukturWrapper) {
+            const hasStruktur = currentStrukturImg && currentStrukturImg.src && 
+                               currentStrukturImg.src !== '#' && 
+                               !currentStrukturImg.src.includes('undefined') &&
+                               currentStrukturImg.src !== window.location.href;
+            
+            if (hasStruktur) {
+                currentStrukturWrapper.style.display = 'block';
+                noStrukturWrapper.style.display = 'none';
+            } else {
+                currentStrukturWrapper.style.display = 'none';
+                noStrukturWrapper.style.display = 'block';
+            }
+        }
+    }
+    
+    // Fungsi buka modal
+    function openStrukturModal() {
+        console.log('🔓 Membuka modal struktur...');
+        strukturModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        resetStrukturPreview();
+    }
+    
+    // Fungsi tutup modal
+    function closeStrukturModal() {
+        console.log('🔒 Menutup modal struktur...');
+        strukturModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        resetStrukturPreview();
+    }
+    
+    // Event tombol Kelola Struktur
+    btnKelolaStruktur.onclick = function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openStrukturModal();
+    };
+    
+    // Event close modal
+    if (modalClose) modalClose.onclick = closeStrukturModal;
+    if (btnCloseStrukturModal) btnCloseStrukturModal.onclick = closeStrukturModal;
+    
+    // Klik di luar modal
+    strukturModal.onclick = function(e) {
+        if (e.target === strukturModal) {
+            closeStrukturModal();
+        }
+    };
+    
+    // ========== PREVIEW GAMBAR ==========
+    if (strukturUploadArea && strukturInput) {
+        
+        // Klik area upload
+        strukturUploadArea.onclick = function(e) {
+            e.stopPropagation();
+            strukturInput.click();
+        };
+        
+        // 🔥 PREVIEW FILE - PERBAIKAN UTAMA
+        strukturInput.onchange = function(e) {
+            const file = e.target.files[0];
+            console.log('📁 File selected:', file ? file.name : 'none');
+            
+            if (!file) return;
+            
+            // Validasi file
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('❌ Format file harus JPG, JPEG, PNG, atau WEBP!');
+                strukturInput.value = '';
+                return;
+            }
+            
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('❌ Ukuran file maksimal 5MB!');
+                strukturInput.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                console.log('✅ File loaded, showing preview');
+                
+                if (strukturPreviewImg) {
+                    strukturPreviewImg.src = event.target.result;
+                    
+                    // 🔥 FORCE UKURAN GAMBAR - INI YANG PENTING!
+                    strukturPreviewImg.style.maxWidth = '100%';
+                    strukturPreviewImg.style.maxHeight = '230px';
+                    strukturPreviewImg.style.width = 'auto';
+                    strukturPreviewImg.style.height = 'auto';
+                    strukturPreviewImg.style.objectFit = 'contain';
+                }
+                
+                if (strukturPreviewArea) {
+                    strukturPreviewArea.style.display = 'block';
+                }
+                
+                // Sembunyikan current struktur sementara
+                if (currentStrukturWrapper) {
+                    currentStrukturWrapper.style.display = 'none';
+                }
+                if (noStrukturWrapper) {
+                    noStrukturWrapper.style.display = 'none';
+                }
+                
+                console.log('✅ Preview displayed with correct size');
+            };
+            reader.onerror = function() {
+                console.error('❌ Error reading file');
+                alert('Gagal membaca file');
+            };
+            reader.readAsDataURL(file);
+        };
+    }
+    
+    // Tombol Batal Preview
+    if (cancelPreviewBtn) {
+        cancelPreviewBtn.onclick = function() {
+            resetStrukturPreview();
+        };
+    }
+    
+    // Tombol Pilih Gambar Lain
+    if (selectAnotherBtn) {
+        selectAnotherBtn.onclick = function() {
+            resetStrukturPreview();
+            if (strukturInput) strukturInput.click();
+        };
+    }
+    
+    // Hapus Struktur
+    const deleteStrukturBtn = document.getElementById('btnDeleteStruktur');
+    if (deleteStrukturBtn) {
+        deleteStrukturBtn.onclick = function(e) {
+            e.preventDefault();
+            if (confirm('Yakin ingin menghapus gambar struktur organisasi?')) {
+                window.location.href = '?delete_struktur=1';
+            }
+        };
+    }
+    
+    // Submit Struktur
+    const submitStrukturBtn = document.getElementById('submitStrukturBtn');
+    const strukturForm = document.getElementById('strukturForm');
+    
+    if (submitStrukturBtn && strukturForm) {
+        submitStrukturBtn.onclick = function(e) {
+            if (strukturInput && strukturInput.files.length === 0) {
+                e.preventDefault();
+                alert('Silakan pilih gambar terlebih dahulu!');
+                return false;
+            }
+            strukturForm.submit();
+        };
+    }
+    
+    console.log('🎉 Guru Staff page initialization COMPLETE!');
+}
+
+// ==============================================
+// 23. GALERI FOTO PAGE
+// ==============================================
+function initGaleriFotoPage() {
+    console.log('📸 Galeri Foto page initialized');
+    
+    // File upload preview
+    const form = document.getElementById('fotoForm');
+    const fileInput = document.getElementById('file_foto');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    
+    if (fileInput && previewImage && fileUploadArea) {
+        fileUploadArea.onclick = function() {
+            fileInput.click();
+        };
+        
+        fileInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (file && previewImage && previewContainer) {
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('❌ Format file harus JPG, JPEG, PNG, atau GIF!');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                const maxSize = 2 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('❌ Ukuran file maksimal 2MB!');
+                    fileInput.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+    
+    // Modal delete handler
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    
+    function showDeleteModal(id, name, hasFile) {
+        const deleteItemName = document.getElementById('deleteItemName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const fileWarningContainer = document.getElementById('fileWarningContainer');
+        const fileWarningText = document.getElementById('fileWarningText');
+        
+        if (deleteItemName) deleteItemName.innerText = name;
+        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
+        
+        if (fileWarningContainer && fileWarningText) {
+            if (hasFile === 'true') {
+                fileWarningText.innerText = 'Foto ini memiliki file yang akan ikut terhapus!';
+                fileWarningContainer.style.display = 'block';
+            } else {
+                fileWarningContainer.style.display = 'none';
+            }
+        }
+        
+        if (deleteModal) {
+            deleteModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeDeleteModal() {
+        if (deleteModal) {
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    deleteButtons.forEach(button => {
+        button.onclick = function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const hasFile = this.getAttribute('data-has-file');
+            showDeleteModal(id, name, hasFile);
+        };
+    });
+    
+    const modalClose = deleteModal ? deleteModal.querySelector('.modal-close') : null;
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    
+    if (modalClose) modalClose.onclick = closeDeleteModal;
+    if (btnCloseModal) btnCloseModal.onclick = closeDeleteModal;
+    
+    if (deleteModal) {
+        deleteModal.onclick = function(e) {
+            if (e.target === deleteModal) closeDeleteModal();
+        };
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && deleteModal && deleteModal.style.display === 'flex') {
+            closeDeleteModal();
+        }
+    });
+    
+    const submitBtn = document.getElementById('btnSubmit');
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            submitBtn.disabled = true;
+        });
+    }
+}
+
+// ==============================================
+// 24. EKSTRAKURIKULER PAGE
+// ==============================================
+function initEkstrakurikulerPage() {
+    console.log('⚽ Ekstrakurikuler page initialized');
+    
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    
+    function showDeleteModal(id, name) {
+        const deleteItemName = document.getElementById('deleteItemName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        
+        if (deleteItemName) deleteItemName.innerText = name;
+        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
+        
+        if (deleteModal) {
+            deleteModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeDeleteModal() {
+        if (deleteModal) {
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    deleteButtons.forEach(button => {
+        button.onclick = function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            showDeleteModal(id, name);
+        };
+    });
+    
+    const modalClose = deleteModal ? deleteModal.querySelector('.modal-close') : null;
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    
+    if (modalClose) modalClose.onclick = closeDeleteModal;
+    if (btnCloseModal) btnCloseModal.onclick = closeDeleteModal;
+    
+    if (deleteModal) {
+        deleteModal.onclick = function(e) {
+            if (e.target === deleteModal) closeDeleteModal();
+        };
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && deleteModal && deleteModal.style.display === 'flex') {
+            closeDeleteModal();
+        }
+    });
+}
+
+// ==============================================
+// 25. AGENDA PAGE
+// ==============================================
+function initAgendaPage() {
+    console.log('📅 Agenda page initialized');
+}
+
+// ==============================================
+// 26. SARANA PAGE
+// ==============================================
+function initSaranaPage() {
+    console.log('🏢 Sarana page initialized');
+    
+    // File upload preview
+    const gambarInput = document.getElementById('gambar');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImage = document.getElementById('preview-image');
+    
+    if (gambarInput && previewImage && previewContainer) {
+        gambarInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('❌ Format file harus JPG, JPEG, PNG, atau GIF!');
+                    gambarInput.value = '';
+                    return;
+                }
+                
+                const maxSize = 2 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('❌ Ukuran file maksimal 2MB!');
+                    gambarInput.value = '';
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+    
+    // Modal delete handler
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    
+    function showDeleteModal(id, name, hasGambar) {
+        const deleteItemName = document.getElementById('deleteItemName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const fileWarningContainer = document.getElementById('fileWarningContainer');
+        const fileWarningText = document.getElementById('fileWarningText');
+        
+        if (deleteItemName) deleteItemName.innerText = name;
+        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
+        
+        if (fileWarningContainer && fileWarningText) {
+            if (hasGambar === 'true') {
+                fileWarningText.innerText = 'Sarana ini memiliki GAMBAR yang akan ikut terhapus!';
+                fileWarningContainer.style.display = 'block';
+            } else {
+                fileWarningContainer.style.display = 'none';
+            }
+        }
+        
+        if (deleteModal) {
+            deleteModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeDeleteModal() {
+        if (deleteModal) {
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    deleteButtons.forEach(button => {
+        button.onclick = function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const hasGambar = this.getAttribute('data-has-gambar') || this.getAttribute('data-hasgambar');
+            showDeleteModal(id, name, hasGambar);
+        };
+    });
+    
+    const modalClose = deleteModal ? deleteModal.querySelector('.modal-close') : null;
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    
+    if (modalClose) modalClose.onclick = closeDeleteModal;
+    if (btnCloseModal) btnCloseModal.onclick = closeDeleteModal;
+    
+    if (deleteModal) {
+        deleteModal.onclick = function(e) {
+            if (e.target === deleteModal) closeDeleteModal();
+        };
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && deleteModal && deleteModal.style.display === 'flex') {
+            closeDeleteModal();
+        }
+    });
+}
+
+// ==============================================
+// 27. USERS PAGE
+// ==============================================
+function initUsersPage() {
+    console.log('👥 Users page initialized');
+    
+    const fotoInput = document.getElementById('foto');
+    const previewImage = document.getElementById('previewImage');
+    const previewContainer = document.getElementById('previewContainer');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    
+    if (fotoInput && previewImage && fileUploadArea) {
+        fileUploadArea.addEventListener('click', () => fotoInput.click());
+        
+        fotoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && previewImage && previewContainer) {
+                const reader = new FileReader();
+                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    const form = document.getElementById('userForm');
+    const submitBtn = document.getElementById('btnSubmit');
+    if (form && submitBtn) {
+        form.addEventListener('submit', function() {
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+            submitBtn.disabled = true;
+        });
+    }
+}
+
+// ==============================================
+// 28. BUTTON KEMBALI
+// ==============================================
+function initBackButtons() {
+    const backButtons = document.querySelectorAll('.btn-secondary, a[href*="index.php"], a[href*="../index.php"], .btn-back');
+    
+    backButtons.forEach(function(btn) {
+        const isBackButton = (btn.textContent && (btn.textContent.includes('Kembali') || btn.textContent.includes('kembali'))) ||
+                            (btn.innerHTML && btn.innerHTML.includes('fa-arrow-left'));
+        
+        if (isBackButton) {
+            btn.removeEventListener('click', backClickHandler);
+            btn.addEventListener('click', backClickHandler);
+        }
+    });
+}
+
+function backClickHandler(e) {
+    const btn = e.currentTarget;
+    const href = btn.getAttribute('href');
+    
+    e.preventDefault();
+    
+    if (href && href !== '#' && href !== 'javascript:void(0)') {
+        window.location.href = href;
+    } else if (document.referrer && document.referrer.includes(window.location.hostname)) {
+        window.history.back();
+    } else {
+        window.location.href = 'index.php';
+    }
+}
+
+// ==============================================
+// VISI MISI PAGE
 // ==============================================
 function initVisiMisi() {
+    console.log('👁️ Visi Misi page initialized');
+    
     const form = document.getElementById('visiMisiForm');
     if (!form) return;
     
     if (typeof CKEDITOR !== 'undefined') {
-        if (document.getElementById('editor_visi')) CKEDITOR.replace('editor_visi', { height: 200 });
-        if (document.getElementById('editor_misi')) CKEDITOR.replace('editor_misi', { height: 300 });
+        if (document.getElementById('editor_visi')) {
+            CKEDITOR.replace('editor_visi', { height: 200 });
+        }
+        if (document.getElementById('editor_misi')) {
+            CKEDITOR.replace('editor_misi', { height: 300 });
+        }
     }
     
     const submitBtn = document.getElementById('btnSubmit');
@@ -585,9 +1208,11 @@ function initVisiMisi() {
 }
 
 // ==============================================
-// 13. SEJARAH PAGE
+// SEJARAH PAGE
 // ==============================================
 function initSejarahPage() {
+    console.log('📜 Sejarah page initialized');
+    
     const form = document.getElementById('sejarahForm');
     if (!form) return;
     
@@ -596,27 +1221,48 @@ function initSejarahPage() {
     }
     
     const gambarInput = document.getElementById('gambar');
-    if (gambarInput) {
-        const previewImage = document.getElementById('previewImage');
-        const previewContainer = document.getElementById('previewContainer');
-        const fileUploadArea = document.getElementById('fileUploadArea');
+    const previewImage = document.getElementById('previewImage');
+    const previewContainer = document.getElementById('previewContainer');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const currentFile = document.getElementById('currentFile');
+    
+    if (gambarInput && fileUploadArea) {
+        fileUploadArea.onclick = function() { gambarInput.click(); };
         
-        if (fileUploadArea) fileUploadArea.addEventListener('click', () => gambarInput.click());
-        
-        gambarInput.addEventListener('change', function(e) {
+        gambarInput.onchange = function(e) {
             const file = e.target.files[0];
             if (file && previewImage && previewContainer) {
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('❌ Format file harus JPG, JPEG, PNG, GIF, atau WEBP!');
+                    gambarInput.value = '';
+                    return;
+                }
+                
+                const maxSize = 2 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('❌ Ukuran file maksimal 2MB!');
+                    gambarInput.value = '';
+                    return;
+                }
+                
                 const reader = new FileReader();
-                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                    if (currentFile) currentFile.style.display = 'none';
+                };
                 reader.readAsDataURL(file);
             }
-        });
+        };
     }
     
     const submitBtn = document.getElementById('btnSubmit');
     if (submitBtn) {
         form.addEventListener('submit', function() {
-            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.editor) CKEDITOR.instances.editor.updateElement();
+            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.editor) {
+                CKEDITOR.instances.editor.updateElement();
+            }
             submitBtn.classList.add('loading');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
             submitBtn.disabled = true;
@@ -625,9 +1271,11 @@ function initSejarahPage() {
 }
 
 // ==============================================
-// 14. SAMBUTAN PAGE
+// SAMBUTAN PAGE
 // ==============================================
 function initSambutanPage() {
+    console.log('🎤 Sambutan page initialized');
+    
     const form = document.getElementById('sambutanForm');
     if (!form) return;
     
@@ -636,27 +1284,48 @@ function initSambutanPage() {
     }
     
     const fotoInput = document.getElementById('foto');
-    if (fotoInput) {
-        const previewImage = document.getElementById('previewImage');
-        const previewContainer = document.getElementById('previewContainer');
-        const fileUploadArea = document.getElementById('fileUploadArea');
+    const previewImage = document.getElementById('previewImage');
+    const previewContainer = document.getElementById('previewContainer');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const currentFile = document.getElementById('currentFile');
+    
+    if (fotoInput && fileUploadArea) {
+        fileUploadArea.onclick = function() { fotoInput.click(); };
         
-        if (fileUploadArea) fileUploadArea.addEventListener('click', () => fotoInput.click());
-        
-        fotoInput.addEventListener('change', function(e) {
+        fotoInput.onchange = function(e) {
             const file = e.target.files[0];
             if (file && previewImage && previewContainer) {
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('❌ Format file harus JPG, JPEG, PNG, atau WEBP!');
+                    fotoInput.value = '';
+                    return;
+                }
+                
+                const maxSize = 2 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('❌ Ukuran file maksimal 2MB!');
+                    fotoInput.value = '';
+                    return;
+                }
+                
                 const reader = new FileReader();
-                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                    if (currentFile) currentFile.style.display = 'none';
+                };
                 reader.readAsDataURL(file);
             }
-        });
+        };
     }
     
     const submitBtn = document.getElementById('btnSubmit');
     if (submitBtn) {
         form.addEventListener('submit', function() {
-            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.editor) CKEDITOR.instances.editor.updateElement();
+            if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances.editor) {
+                CKEDITOR.instances.editor.updateElement();
+            }
             submitBtn.classList.add('loading');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
             submitBtn.disabled = true;
@@ -665,9 +1334,11 @@ function initSambutanPage() {
 }
 
 // ==============================================
-// 15. PRESTASI PAGE
+// PRESTASI PAGE
 // ==============================================
 function initPrestasiPage() {
+    console.log('🏆 Prestasi page initialized');
+    
     const uploadArea = document.getElementById('uploadArea');
     const gambarInput = document.getElementById('gambarInput');
     const previewContainer = document.getElementById('previewContainer');
@@ -680,8 +1351,26 @@ function initPrestasiPage() {
         gambarInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file && previewImage && previewContainer) {
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('❌ Format file harus JPG, JPEG, PNG, WEBP, atau GIF!');
+                    gambarInput.value = '';
+                    return;
+                }
+                
+                const maxSize = 5 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    alert('❌ Ukuran file maksimal 5MB!');
+                    gambarInput.value = '';
+                    return;
+                }
+                
                 const reader = new FileReader();
-                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; uploadArea.style.display = 'none'; };
+                reader.onload = e => { 
+                    previewImage.src = e.target.result; 
+                    previewContainer.style.display = 'block'; 
+                    uploadArea.style.display = 'none';
+                };
                 reader.readAsDataURL(file);
             }
         });
@@ -697,26 +1386,13 @@ function initPrestasiPage() {
 }
 
 // ==============================================
-// 16. PPDB PAGE
+// PPDB PAGE
 // ==============================================
 function initPpdbPage() {
     const form = document.getElementById('ppdbForm');
     if (!form) return;
     
     let syaratCounter = document.querySelectorAll('#syaratContainer .syarat-item').length || 2;
-    
-    function addFileItem(container, fileIndex) {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.style.cssText = 'display:flex;gap:10px;margin-bottom:10px;align-items:center';
-        fileItem.innerHTML = `
-            <input type="text" name="syarat_files[${fileIndex}][icon][]" class="form-control" value="fa-file-alt" placeholder="Icon" style="width:100px">
-            <input type="text" name="syarat_files[${fileIndex}][name][]" class="form-control" placeholder="Nama berkas" style="flex:1">
-            <button type="button" class="btn-remove-file" style="background:#ef4444;color:white;border:none;border-radius:5px;width:32px;height:32px;cursor:pointer"><i class="fas fa-times"></i></button>
-        `;
-        container.appendChild(fileItem);
-        fileItem.querySelector('.btn-remove-file').addEventListener('click', () => fileItem.remove());
-    }
     
     const addSyaratBtn = document.getElementById('addSyaratBtn');
     if (addSyaratBtn) {
@@ -764,25 +1440,80 @@ function initPpdbPage() {
 }
 
 // ==============================================
-// 17. PENGUMUMAN PAGE
+// PENGUMUMAN PAGE
 // ==============================================
 function initPengumumanPage() {
     console.log('📢 Pengumuman page initialized');
 }
 
 // ==============================================
-// 18. PEMBIASAAN PAGE
+// PEMBIASAAN PAGE
 // ==============================================
 function initPembiasaanPage() {
     console.log('🌅 Pembiasaan page initialized');
+    
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    
+    function showDeleteModal(id, name) {
+        const deleteItemName = document.getElementById('deleteItemName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const fileWarningContainer = document.getElementById('fileWarningContainer');
+        
+        if (deleteItemName) deleteItemName.innerText = name;
+        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
+        if (fileWarningContainer) fileWarningContainer.style.display = 'none';
+        
+        if (deleteModal) {
+            deleteModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+    
+    function closeDeleteModal() {
+        if (deleteModal) {
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    deleteButtons.forEach(button => {
+        button.onclick = function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            showDeleteModal(id, name);
+        };
+    });
+    
+    const modalClose = deleteModal ? deleteModal.querySelector('.modal-close') : null;
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    
+    if (modalClose) modalClose.onclick = closeDeleteModal;
+    if (btnCloseModal) btnCloseModal.onclick = closeDeleteModal;
+    
+    if (deleteModal) {
+        deleteModal.onclick = function(e) {
+            if (e.target === deleteModal) closeDeleteModal();
+        };
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && deleteModal && deleteModal.style.display === 'flex') {
+            closeDeleteModal();
+        }
+    });
 }
 
 // ==============================================
-// 19. KONTAK PAGE
+// KONTAK PAGE
 // ==============================================
 function initKontakPage() {
+    console.log('📞 Kontak page initialized');
+    
     const form = document.getElementById('kontakForm');
     const submitBtn = document.getElementById('btnSubmit');
+    
     if (form && submitBtn) {
         form.addEventListener('submit', function() {
             submitBtn.classList.add('loading');
@@ -793,45 +1524,132 @@ function initKontakPage() {
 }
 
 // ==============================================
-// 20. HERO SLIDER PAGE
+// HERO SLIDER PAGE
 // ==============================================
 function initHeroSliderPage() {
-    const gambarInput = document.getElementById('gambarInput');
-    if (!gambarInput) return;
+    console.log('🎠 Hero Slider page initialized');
     
+    const gambarInput = document.getElementById('gambarInput');
     const previewContainer = document.getElementById('previewContainer');
     const previewImage = document.getElementById('previewImage');
     const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const previewFileSize = document.getElementById('previewFileSize');
     
-    if (fileUploadArea) fileUploadArea.addEventListener('click', () => gambarInput.click());
-    
-    gambarInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    if (gambarInput && fileUploadArea) {
+        fileUploadArea.onclick = function() { gambarInput.click(); };
         
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-        if (!allowedTypes.includes(file.type)) {
-            alert('❌ Hanya file JPG, PNG, GIF, WEBP yang diperbolehkan!');
-            this.value = '';
-            return;
+        gambarInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('❌ Format file harus JPG, JPEG, PNG, GIF, atau WEBP!');
+                gambarInput.value = '';
+                return;
+            }
+            
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert(`❌ Ukuran file maksimal 10MB!`);
+                gambarInput.value = '';
+                return;
+            }
+            
+            if (fileInfo) {
+                fileName.innerText = file.name;
+                fileSize.innerText = formatFileSize(file.size);
+                fileInfo.style.display = 'block';
+            }
+            
+            if (previewContainer && previewImage) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    previewContainer.style.display = 'block';
+                    if (previewFileSize) previewFileSize.innerText = formatFileSize(file.size);
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    const deleteModal = document.getElementById('deleteModal');
+    const deleteButtons = document.querySelectorAll('.btn-delete');
+    
+    function showDeleteModal(id, name, hasGambar) {
+        const deleteItemName = document.getElementById('deleteItemName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const fileWarningContainer = document.getElementById('fileWarningContainer');
+        const fileWarningText = document.getElementById('fileWarningText');
+        
+        if (deleteItemName) deleteItemName.innerText = name;
+        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
+        
+        if (fileWarningContainer && fileWarningText) {
+            if (hasGambar === 'true') {
+                fileWarningText.innerText = 'Slide ini memiliki GAMBAR yang akan ikut terhapus!';
+                fileWarningContainer.style.display = 'block';
+            } else {
+                fileWarningContainer.style.display = 'none';
+            }
         }
         
-        const maxSize = 10 * 1024 * 1024;
-        if (file.size > maxSize) {
-            alert(`❌ Ukuran file maksimal 10MB!`);
-            this.value = '';
-            return;
+        if (deleteModal) {
+            deleteModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
-        
-        if (previewContainer && previewImage) {
-            const reader = new FileReader();
-            reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
-            reader.readAsDataURL(file);
+    }
+    
+    function closeDeleteModal() {
+        if (deleteModal) {
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    }
+    
+    deleteButtons.forEach(button => {
+        button.onclick = function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const hasGambar = this.getAttribute('data-has-gambar');
+            showDeleteModal(id, name, hasGambar);
+        };
+    });
+    
+    const modalClose = deleteModal ? deleteModal.querySelector('.modal-close') : null;
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    
+    if (modalClose) modalClose.onclick = closeDeleteModal;
+    if (btnCloseModal) btnCloseModal.onclick = closeDeleteModal;
+    
+    if (deleteModal) {
+        deleteModal.onclick = function(e) {
+            if (e.target === deleteModal) closeDeleteModal();
+        };
+    }
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && deleteModal && deleteModal.style.display === 'flex') {
+            closeDeleteModal();
         }
     });
     
     const submitBtn = document.getElementById('btnSubmit');
     const form = document.getElementById('sliderForm');
+    
     if (form && submitBtn) {
         form.addEventListener('submit', function() {
             submitBtn.classList.add('loading');
@@ -839,214 +1657,6 @@ function initHeroSliderPage() {
             submitBtn.disabled = true;
         });
     }
-}
-
-// ==============================================
-// 21. GURU STAFF PAGE
-// ==============================================
-function initGuruStaffPage() {
-    const strukturModal = document.getElementById('strukturModal');
-    const btnKelolaStruktur = document.getElementById('btnKelolaStruktur');
-    
-    if (btnKelolaStruktur && strukturModal) {
-        btnKelolaStruktur.addEventListener('click', () => strukturModal.style.display = 'flex');
-        
-        const closeModal = () => strukturModal.style.display = 'none';
-        strukturModal.querySelectorAll('.modal-close, #btnCloseStrukturModal').forEach(btn => btn.addEventListener('click', closeModal));
-        strukturModal.addEventListener('click', e => { if (e.target === strukturModal) closeModal(); });
-    }
-    
-    const strukturInput = document.getElementById('strukturInput');
-    if (strukturInput) {
-        const previewImg = document.getElementById('strukturPreviewImg');
-        const preview = document.getElementById('strukturPreview');
-        strukturInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && previewImg && preview) {
-                const reader = new FileReader();
-                reader.onload = e => { previewImg.src = e.target.result; preview.style.display = 'block'; };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-}
-
-// ==============================================
-// 22. GALERI VIDEO PAGE
-// ==============================================
-function initGaleriVideoPage() {
-    console.log('🎬 Galeri Video page initialized');
-    
-    const form = document.getElementById('videoForm');
-    const thumbnailInput = document.getElementById('thumbnail');
-    const previewContainer = document.getElementById('previewContainer');
-    const previewImage = document.getElementById('previewImage');
-    const fileUploadArea = document.getElementById('fileUploadArea');
-    
-    if (thumbnailInput && previewImage && fileUploadArea) {
-        fileUploadArea.addEventListener('click', () => thumbnailInput.click());
-        
-        thumbnailInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && previewImage && previewContainer) {
-                const reader = new FileReader();
-                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-    
-    const submitBtn = document.getElementById('btnSubmit');
-    if (form && submitBtn) {
-        form.addEventListener('submit', function() {
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-            submitBtn.disabled = true;
-        });
-    }
-}
-
-// ==============================================
-// 23. GALERI FOTO PAGE
-// ==============================================
-function initGaleriFotoPage() {
-    console.log('📸 Galeri Foto page initialized');
-    
-    const form = document.getElementById('fotoForm');
-    const fileInput = document.getElementById('file_foto');
-    const previewContainer = document.getElementById('previewContainer');
-    const previewImage = document.getElementById('previewImage');
-    const fileUploadArea = document.getElementById('fileUploadArea');
-    
-    if (fileInput && previewImage && fileUploadArea) {
-        fileUploadArea.addEventListener('click', () => fileInput.click());
-        
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && previewImage && previewContainer) {
-                const reader = new FileReader();
-                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-    
-    const submitBtn = document.getElementById('btnSubmit');
-    if (form && submitBtn) {
-        form.addEventListener('submit', function() {
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-            submitBtn.disabled = true;
-        });
-    }
-}
-
-// ==============================================
-// 24. EKSTRAKURIKULER PAGE
-// ==============================================
-function initEkstrakurikulerPage() {
-    console.log('⚽ Ekstrakurikuler page initialized');
-}
-
-// ==============================================
-// 25. AGENDA PAGE
-// ==============================================
-function initAgendaPage() {
-    console.log('📅 Agenda page initialized');
-}
-
-// ==============================================
-// 26. SARANA PAGE
-// ==============================================
-function initSaranaPage() {
-    console.log('🏢 Sarana page initialized');
-}
-
-// ==============================================
-// 27. USERS PAGE
-// ==============================================
-function initUsersPage() {
-    console.log('👥 Users page initialized');
-    
-    const fotoInput = document.getElementById('foto');
-    const previewImage = document.getElementById('previewImage');
-    const previewContainer = document.getElementById('previewContainer');
-    const fileUploadArea = document.getElementById('fileUploadArea');
-    
-    if (fotoInput && previewImage && fileUploadArea) {
-        fileUploadArea.addEventListener('click', () => fotoInput.click());
-        
-        fotoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && previewImage && previewContainer) {
-                const reader = new FileReader();
-                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-    
-    const form = document.getElementById('userForm');
-    const submitBtn = document.getElementById('btnSubmit');
-    if (form && submitBtn) {
-        form.addEventListener('submit', function() {
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-            submitBtn.disabled = true;
-        });
-    }
-}
-
-// ==============================================
-// 28. MOBILE HEADER
-// ==============================================
-function initMobileHeader() {
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const mobileProfileBtn = document.getElementById('mobileProfileBtn');
-    const mobileProfileDropdown = document.getElementById('mobileProfileDropdown');
-    const sidebar = document.getElementById('adminSidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-    const sidebarClose = document.getElementById('sidebarClose');
-    
-    function openSidebar() {
-        if (sidebar) sidebar.classList.add('show');
-        if (overlay) overlay.classList.add('show');
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function closeSidebar() {
-        if (sidebar) sidebar.classList.remove('show');
-        if (overlay) overlay.classList.remove('show');
-        document.body.style.overflow = '';
-    }
-    
-    if (mobileMenuBtn) mobileMenuBtn.addEventListener('click', openSidebar);
-    if (sidebarClose) sidebarClose.addEventListener('click', closeSidebar);
-    if (overlay) overlay.addEventListener('click', closeSidebar);
-    
-    if (mobileProfileBtn && mobileProfileDropdown) {
-        mobileProfileBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            mobileProfileDropdown.classList.toggle('show');
-            const chevron = this.querySelector('i');
-            if (chevron) chevron.style.transform = mobileProfileDropdown.classList.contains('show') ? 'rotate(180deg)' : 'rotate(0deg)';
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (!mobileProfileBtn.contains(e.target) && !mobileProfileDropdown.contains(e.target)) {
-                mobileProfileDropdown.classList.remove('show');
-                const chevron = mobileProfileBtn.querySelector('i');
-                if (chevron) chevron.style.transform = 'rotate(0deg)';
-            }
-        });
-        
-        mobileProfileDropdown.addEventListener('click', e => e.stopPropagation());
-    }
-    
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 992) closeSidebar();
-    });
 }
 
 // ==============================================
@@ -1058,6 +1668,7 @@ if (typeof MutationObserver !== 'undefined') {
             if (mutation.addedNodes.length) {
                 initDeleteButtons();
                 initModalCloseButtons();
+                initBackButtons();
             }
         });
     });
@@ -1073,102 +1684,4 @@ if (!document.querySelector('#loading-style')) {
     style.id = 'loading-style';
     style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
     document.head.appendChild(style);
-}
-
-// ==============================================
-// FIX: BUTTON KEMBALI DI SEMUA HALAMAN
-// ==============================================
-
-// Fungsi untuk kembali ke halaman sebelumnya
-window.goBack = function(defaultUrl) {
-    console.log('🔙 Go back called, defaultUrl:', defaultUrl);
-    
-    // Cek apakah ada halaman sebelumnya (referrer dari domain yang sama)
-    if (document.referrer && document.referrer !== '' && document.referrer.includes(window.location.hostname)) {
-        window.history.back();
-    } else {
-        // Jika tidak ada history, arahkan ke defaultUrl
-        window.location.href = defaultUrl || 'index.php';
-    }
-    return false;
-};
-
-// Inisialisasi semua tombol kembali
-function initBackButtons() {
-    // Cari semua link dan button yang merupakan tombol kembali
-    const backElements = document.querySelectorAll('.btn-secondary, a[href*="index.php"], a[href*="../index.php"], a[href="#"]');
-    
-    backElements.forEach(function(element) {
-        // Cek apakah ini tombol kembali (berdasarkan teks atau icon)
-        const isBackButton = (element.textContent && (element.textContent.includes('Kembali') || element.textContent.includes('kembali'))) ||
-                            (element.innerHTML && element.innerHTML.includes('fa-arrow-left'));
-        
-        if (isBackButton) {
-            // Hapus event listener lama
-            element.removeEventListener('click', handleBackButton);
-            // Tambah event listener baru
-            element.addEventListener('click', handleBackButton);
-            
-            // Jika href-nya "#", ubah supaya tidak scroll ke atas
-            if (element.getAttribute('href') === '#') {
-                element.setAttribute('href', 'javascript:void(0)');
-            }
-            
-            console.log('✅ Tombol kembali ditemukan dan diperbaiki');
-        }
-    });
-}
-
-// Handler untuk tombol kembali
-function handleBackButton(event) {
-    const element = event.currentTarget;
-    const href = element.getAttribute('href');
-    
-    console.log('🔘 Tombol kembali diklik, href:', href);
-    
-    // Cegah aksi default dulu
-    event.preventDefault();
-    
-    // Jika ada href yang valid (bukan # atau javascript:void(0))
-    if (href && href !== '#' && href !== 'javascript:void(0)' && href !== '') {
-        // Arahkan ke href tersebut
-        window.location.href = href;
-    } else {
-        // Gunakan fungsi goBack
-        window.goBack('index.php');
-    }
-    
-    return false;
-}
-
-// ==============================================
-// FIX: TOMBOL KEMBALI DI DETAIL PAGE
-// ==============================================
-
-// Fungsi khusus untuk tombol kembali di detail page
-window.backToIndex = function() {
-    window.location.href = 'index.php';
-    return false;
-};
-
-// Inisialisasi saat DOM siap
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Initializing back buttons...');
-    initBackButtons();
-});
-
-// Observer untuk tombol yang ditambahkan secara dinamis
-if (typeof MutationObserver !== 'undefined') {
-    const backObserver = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length) {
-                initBackButtons();
-            }
-        });
-    });
-    
-    backObserver.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
 }

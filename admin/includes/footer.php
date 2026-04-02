@@ -1,13 +1,23 @@
-<!-- Admin JavaScript -->
-<script src="<?= $base_url ?>/assets/js/admin.js"></script>
+<?php
+// TUTUP MAIN CONTENT
+?>
+        </main> <!-- TUTUP ADMIN-MAIN -->
+    </div> <!-- TUTUP ADMIN-WRAPPER -->
 
-<!-- Tambahan script khusus halaman -->
-<?php if (isset($custom_js)): ?>
-    <?= $custom_js ?>
-<?php endif; ?>
+    <!-- Floating Hamburger untuk Mobile (Alternatif) -->
+    <button class="mobile-hamburger" id="floatingMenuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
 
-</main>
-</div> <!-- Tutup admin-wrapper -->
+    <!-- JavaScript -->
+    <script src="<?= $base_url ?>/assets/js/admin.js"></script>
+    
+    <!-- Chart.js (untuk dashboard) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>
-<?php ob_end_flush(); ?>
+
+<?php
+// Flush output buffer
+ob_end_flush();
+?>

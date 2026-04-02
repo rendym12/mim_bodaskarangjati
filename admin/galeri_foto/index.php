@@ -5,8 +5,8 @@ include "../includes/auth.php";
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Ambil data file untuk dihapus
-    $q = mysqli_query($conn, "SELECT judul, file_foto FROM galeri_foto WHERE id = $id");
+    // Ambil data untuk dihapus
+    $q = mysqli_query($conn, "SELECT judul, gambar FROM galeri_foto WHERE id = $id");
     $data = mysqli_fetch_assoc($q);
     
     $file_deleted = false;
@@ -17,9 +17,9 @@ if (isset($_GET['delete'])) {
     if (mysqli_num_rows($check) > 0) {
         $judul = $data['judul'];
         
-        // Hapus file foto jika ada
-        if ($data && !empty($data['file_foto']) && file_exists("../../uploads/galeri_foto/" . $data['file_foto'])) {
-            if (unlink("../../uploads/galeri_foto/" . $data['file_foto'])) {
+        // Hapus file gambar jika ada
+        if ($data && !empty($data['gambar']) && file_exists("../../uploads/galeri_foto/" . $data['gambar'])) {
+            if (unlink("../../uploads/galeri_foto/" . $data['gambar'])) {
                 $file_deleted = true;
             }
         }
@@ -56,7 +56,7 @@ include "../includes/header.php";
 
 <div class="content-wrapper galeri-foto-page">
     <div class="content-header">
-        <h1><i class="fas fa-images"></i> Kelola Galeri Foto</h1>
+        <h1><i class="fas fa-image"></i> Kelola Galeri Foto</h1>
         <a href="tambah.php" class="btn-primary">
             <i class="fas fa-plus"></i> Tambah Foto
         </a>
@@ -72,9 +72,9 @@ include "../includes/header.php";
                     
                     <?php if (isset($_SESSION['success']['file_deleted'])): ?>
                         <div class="file-list" style="margin-top: 10px;">
-                            <span class="file-badge"><i class="fas fa-image"></i> File foto</span>
+                            <span class="file-badge"><i class="fas fa-image"></i> File Gambar</span>
                             <small style="display: block; margin-top: 8px; color: #0b5e2e;">
-                                <i class="fas fa-info-circle"></i> File foto ikut terhapus
+                                <i class="fas fa-info-circle"></i> File gambar ikut terhapus
                             </small>
                         </div>
                     <?php endif; ?>
@@ -109,12 +109,11 @@ include "../includes/header.php";
                     <thead>
                         <tr>
                             <th width="5%">No</th>
-                            <th width="15%">Foto</th>
+                            <th width="15%">Gambar</th>
                             <th width="25%">Judul</th>
-                            <th width="15%">Kategori</th>
                             <th width="10%">Urutan</th>
-                            <th width="20%">Keterangan</th>
-                            <th width="10%">Aksi</th>
+                            <th width="25%">Keterangan</th>
+                            <th width="20%">Aksi</th>
                         </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
@@ -122,20 +121,36 @@ include "../includes/header.php";
                             while ($row = mysqli_fetch_assoc($query)): 
                         ?>
                         <tr>
-                            <td class="text-center"><?= $no++ ?> </td>
+                            <td class="text-center"><?= $no++ ?></td>
                             <td class="text-center">
-                                <?php if (!empty($row['file_foto'])): ?>
-                                    <img src="../../uploads/galeri_foto/<?= $row['file_foto'] ?>" 
-                                         alt="<?= $row['judul'] ?>" 
-                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                <?php if (!empty($row['gambar'])): ?>
+                                    <img src="../../uploads/galeri_foto/<?= $row['gambar'] ?>" 
+                                         alt="<?= htmlspecialchars($row['judul']) ?>" 
+                                         style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--secondary); cursor: pointer;"
+                                         onclick="window.open('../../uploads/galeri_foto/<?= $row['gambar'] ?>', '_blank')">
                                 <?php else: ?>
-                                    <i class="fas fa-image" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <div style="width: 80px; height: 60px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                        <i class="fas fa-image" style="font-size: 1.5rem; color: #94a3b8;"></i>
+                                    </div>
                                 <?php endif; ?>
-                             </td>
-                            <td><strong><?= htmlspecialchars($row['judul']) ?></strong> </td>
-                            <td class="text-center"><?= htmlspecialchars($row['kategori'] ?? '-') ?> </td>
-                            <td class="text-center"><?= $row['urutan'] ?? '0' ?> </td>
-                            <td><?= htmlspecialchars(substr($row['keterangan'] ?? '-', 0, 50)) ?>... </td>
+                             </div>
+                            </td>
+                            <td><strong><?= htmlspecialchars($row['judul']) ?></strong></td>
+                            <td class="text-center">
+                                <span style="display: inline-block; padding: 4px 10px; background: #f1f5f9; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">
+                                    <?= $row['urutan'] ?? '0' ?>
+                                </span>
+                            </div>
+                            <td>
+                                <?php 
+                                $keterangan = htmlspecialchars($row['keterangan'] ?? '-');
+                                if (strlen($keterangan) > 50) {
+                                    echo substr($keterangan, 0, 50) . '...';
+                                } else {
+                                    echo $keterangan;
+                                }
+                                ?>
+                             </div>
                             <td class="text-center">
                                 <div class="action-buttons">
                                     <a href="detail.php?id=<?= $row['id'] ?>" class="btn-view" title="Detail">
@@ -149,24 +164,25 @@ include "../includes/header.php";
                                             data-id="<?= $row['id'] ?>" 
                                             data-name="<?= htmlspecialchars($row['judul']) ?>"
                                             data-module="foto"
-                                            data-has-file="<?= (!empty($row['file_foto']) ? 'true' : 'false') ?>"
+                                            data-has-image="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>"
+                                            data-image-name="<?= htmlspecialchars($row['gambar'] ?? '') ?>"
                                             title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
-                             </td>
+                             </div>
                          </tr>
                         <?php endwhile; else: ?>
                          <tr>
-                            <td colspan="7" class="empty-state">
-                                <i class="fas fa-images"></i>
+                            <td colspan="6" class="empty-state">
+                                <i class="fas fa-image"></i>
                                 <p>Belum ada data foto</p>
                                 <a href="tambah.php" class="btn-primary">Tambah Foto</a>
-                             </td>
+                             </div>
                          </tr>
                         <?php endif; ?>
                     </tbody>
-                 </table>
+                </table>
             </div>
         </div>
     </div>
@@ -180,17 +196,16 @@ include "../includes/header.php";
             <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
+            <p>Apakah Anda yakin ingin menghapus foto berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
-            
             <div id="fileWarningContainer" style="display: none;">
-                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
                     <span id="fileWarningText"></span>
+                    <div id="fileList" style="margin-top: 8px; padding-left: 20px;"></div>
                 </div>
             </div>
-            
-            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
+            <div style="color: #ef4444; background: #fee2e2; padding: 10px; border-radius: 8px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
             </div>
@@ -201,5 +216,3 @@ include "../includes/header.php";
         </div>
     </div>
 </div>
-
-<?php include "../includes/footer.php"; ?>

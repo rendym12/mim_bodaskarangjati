@@ -109,13 +109,14 @@ include "../includes/header.php";
                     <thead>
                         <tr>
                             <th width="5%">No</th>
-                            <th width="15%">Thumbnail</th>
-                            <th width="25%">Judul</th>
+                            <th width="12%">Thumbnail</th>
+                            <th width="20%">Judul</th>
                             <th width="20%">URL Video</th>
-                            <th width="10%">Urutan</th>
+                            <th width="8%">Urutan</th>
                             <th width="15%">Keterangan</th>
-                            <th width="10%">Aksi</th>
-                        </thead>
+                            <th width="20%">Aksi</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
                             $no = 1;
@@ -126,16 +127,50 @@ include "../includes/header.php";
                             <td class="text-center">
                                 <?php if (!empty($row['thumbnail'])): ?>
                                     <img src="../../uploads/galeri_video/<?= $row['thumbnail'] ?>" 
-                                         alt="<?= $row['judul'] ?>" 
-                                         style="width: 80px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                         alt="<?= htmlspecialchars($row['judul']) ?>" 
+                                         style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--secondary);">
                                 <?php else: ?>
-                                    <i class="fas fa-video" style="font-size: 2rem; color: #6c757d;"></i>
+                                    <div style="width: 80px; height: 60px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                        <i class="fas fa-video" style="font-size: 1.5rem; color: #94a3b8;"></i>
+                                    </div>
                                 <?php endif; ?>
                             </td>
                             <td><strong><?= htmlspecialchars($row['judul']) ?></strong></td>
-                            <td><a href="<?= htmlspecialchars($row['url_video']) ?>" target="_blank">Lihat Video</a></td>
-                            <td class="text-center"><?= $row['urutan'] ?? '0' ?></td>
-                            <td><?= htmlspecialchars(substr($row['keterangan'] ?? '-', 0, 50)) ?>...</td>
+                            <td>
+                                <!-- TOMBOL LIHAT VIDEO YANG MENARIK -->
+                                <div class="video-url-cell">
+                                    <?php 
+                                    $url_video = htmlspecialchars($row['url_video']);
+                                    // Extract video ID from YouTube URL if needed
+                                    $video_id = '';
+                                    if (preg_match('/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?]+)/', $url_video, $matches)) {
+                                        $video_id = $matches[1];
+                                        $embed_url = "https://www.youtube.com/embed/$video_id";
+                                    } else {
+                                        $embed_url = $url_video;
+                                    }
+                                    ?>
+                                    <a href="<?= $embed_url ?>" target="_blank" class="btn-video-link" title="Tonton Video">
+                                        <i class="fas fa-play"></i> Lihat Video
+                                    </a>
+                                </div>
+                             </div>
+                            </td>
+                            <td class="text-center">
+                                <span style="display: inline-block; padding: 4px 10px; background: #f1f5f9; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">
+                                    <?= $row['urutan'] ?? '0' ?>
+                                </span>
+                            </td>
+                            <td>
+                                <?php 
+                                $keterangan = htmlspecialchars($row['keterangan'] ?? '-');
+                                if (strlen($keterangan) > 40) {
+                                    echo substr($keterangan, 0, 40) . '...';
+                                } else {
+                                    echo $keterangan;
+                                }
+                                ?>
+                            </td>
                             <td class="text-center">
                                 <div class="action-buttons">
                                     <a href="detail.php?id=<?= $row['id'] ?>" class="btn-view" title="Detail">
@@ -150,6 +185,7 @@ include "../includes/header.php";
                                             data-name="<?= htmlspecialchars($row['judul']) ?>"
                                             data-module="video"
                                             data-has-thumbnail="<?= (!empty($row['thumbnail']) ? 'true' : 'false') ?>"
+                                            data-thumbnail-name="<?= htmlspecialchars($row['thumbnail'] ?? '') ?>"
                                             title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -180,16 +216,16 @@ include "../includes/header.php";
             <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
+            <p>Apakah Anda yakin ingin menghapus video berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             <div id="fileWarningContainer" style="display: none;">
-                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 8px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
                     <span id="fileWarningText"></span>
                     <div id="fileList" style="margin-top: 8px; padding-left: 20px;"></div>
                 </div>
             </div>
-            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
+            <div style="color: #ef4444; background: #fee2e2; padding: 10px; border-radius: 8px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
             </div>

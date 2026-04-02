@@ -32,12 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Upload gambar baru jika ada
     $gambar = $sejarah['gambar'] ?? null;
     if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] == 0) {
-        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $ext = strtolower(pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION));
         $size = $_FILES['gambar']['size'];
         
         if (!in_array($ext, $allowed)) {
-            $errors[] = "Format file harus JPG, JPEG, PNG, atau GIF";
+            $errors[] = "Format file harus JPG, JPEG, PNG, GIF, atau WEBP";
         } elseif ($size > 2 * 1024 * 1024) {
             $errors[] = "Ukuran file maksimal 2MB";
         } else {
@@ -75,9 +75,6 @@ include "../includes/header.php";
 <div class="content-wrapper sejarah-page">
     <div class="content-header">
         <h1><i class="fas fa-history"></i> Edit Sejarah Madrasah</h1>
-        <a href="../dashboard.php" class="btn-secondary">
-            <i class="fas fa-arrow-left"></i> Dashboard
-        </a>
     </div>
 
     <!-- NOTIFICATION CONTAINER -->
@@ -109,30 +106,29 @@ include "../includes/header.php";
                 <input type="text" name="judul" class="form-control" value="<?= htmlspecialchars($sejarah['judul'] ?? '') ?>" required>
             </div>
 
-            <div class="form-group">
-                <label><i class="fas fa-calendar"></i> Tahun Berdiri</label>
-                <input type="number" name="tahun_berdiri" class="form-control" value="<?= $sejarah['tahun_berdiri'] ?? date('Y') ?>" min="1900" max="<?= date('Y') ?>" required>
-            </div>
-
-            <div class="form-group">
-                <label><i class="fas fa-image"></i> Gambar</label>
-                
-                <?php if (!empty($sejarah['gambar'])): ?>
-                <div class="current-file" id="currentFile">
-                    <img src="../../uploads/<?= $sejarah['gambar'] ?>" alt="Current" style="max-width: 100px; border-radius: 8px;">
-                    <span class="file-name"><i class="fas fa-image"></i> <?= $sejarah['gambar'] ?></span>
-                    <span class="text-muted">Kosongkan jika tidak ingin mengganti</span>
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fas fa-calendar"></i> Tahun Berdiri</label>
+                    <input type="number" name="tahun_berdiri" class="form-control" value="<?= $sejarah['tahun_berdiri'] ?? date('Y') ?>" min="1900" max="<?= date('Y') ?>" required>
                 </div>
-                <?php endif; ?>
-                
-                <div class="file-upload" id="fileUploadArea">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Klik untuk upload gambar</p>
-                    <small>Format: JPG, PNG, GIF (Maks. 2MB)</small>
-                    <input type="file" name="gambar" id="gambar" accept="image/*" style="display: none;">
-                </div>
-                <div id="previewContainer" class="preview-container" style="display: none; margin-top: 15px;">
-                    <img id="previewImage" src="#" alt="Preview" class="preview-image" style="max-width: 150px; border-radius: 10px;">
+                <div class="form-group">
+                    <label><i class="fas fa-image"></i> Gambar</label>
+                    <?php if (!empty($sejarah['gambar'])): ?>
+                    <div class="current-file" id="currentFile">
+                        <img src="../../uploads/<?= $sejarah['gambar'] ?>" alt="Current" class="current-image">
+                        <span class="file-name"><i class="fas fa-image"></i> <?= $sejarah['gambar'] ?></span>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="file-upload" id="fileUploadArea">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Klik untuk upload gambar</p>
+                        <small>Format: JPG, PNG, WEBP (Maks. 2MB)</small>
+                        <input type="file" name="gambar" id="gambar" accept="image/*" style="display: none;">
+                    </div>
+                    <div id="previewContainer" class="preview-container" style="display: none; margin-top: 15px;">
+                        <img id="previewImage" src="#" alt="Preview" class="preview-image">
+                    </div>
                 </div>
             </div>
 
@@ -145,9 +141,6 @@ include "../includes/header.php";
                 <button type="submit" class="btn-primary" id="btnSubmit">
                     <i class="fas fa-save"></i> Simpan Perubahan
                 </button>
-                <a href="../dashboard.php" class="btn-secondary">
-                    <i class="fas fa-times"></i> Batal
-                </a>
             </div>
         </form>
     </div>

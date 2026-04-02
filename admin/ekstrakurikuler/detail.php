@@ -16,14 +16,9 @@ require_once dirname(__DIR__) . '/includes/header.php';
 <div class="content-wrapper ekstra-page">
     <div class="content-header">
         <h1><i class="fas fa-futbol"></i> Detail Ekstrakurikuler</h1>
-        <div>
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
-                <i class="fas fa-edit"></i> Edit
-            </a>
-            <a href="index.php" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="index.php" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
     </div>
 
     <div class="detail-card">
@@ -102,14 +97,14 @@ require_once dirname(__DIR__) . '/includes/header.php';
         <div class="modal-body">
             <p>Apakah Anda yakin ingin menghapus ekstrakurikuler berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
-            <p style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
+            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
-            </p>
+            </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" class="btn-secondary">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

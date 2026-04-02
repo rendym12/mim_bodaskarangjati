@@ -66,9 +66,6 @@ include "../includes/header.php";
 <div class="content-wrapper kontak-page">
     <div class="content-header">
         <h1><i class="fas fa-address-book"></i> Kelola Kontak</h1>
-        <a href="../index.php" target="_blank" class="btn-secondary">
-            <i class="fas fa-eye"></i> Lihat Halaman Publik
-        </a>
     </div>
 
     <!-- NOTIFICATION CONTAINER -->
@@ -179,9 +176,6 @@ include "../includes/header.php";
                 <button type="submit" class="btn-primary" id="btnSubmit">
                     <i class="fas fa-save"></i> Simpan Perubahan
                 </button>
-                <a href="../dashboard.php" class="btn-secondary">
-                    <i class="fas fa-times"></i> Batal
-                </a>
             </div>
         </form>
     </div>

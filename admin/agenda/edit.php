@@ -1,6 +1,16 @@
 <?php
 require_once dirname(__DIR__) . '/includes/auth.php';
 
+$id = (int)$_GET['id'];
+$query = mysqli_query($conn, "SELECT * FROM agenda WHERE id = $id");
+$data = mysqli_fetch_assoc($query);
+
+if (!$data) {
+    $_SESSION['error'] = "Data agenda tidak ditemukan";
+    header("Location: index.php");
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_agenda = mysqli_real_escape_string($conn, $_POST['nama_agenda']);
     $tanggal_mulai = $_POST['tanggal_mulai'];
@@ -8,15 +18,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $lokasi = mysqli_real_escape_string($conn, $_POST['lokasi']);
     $deskripsi = mysqli_real_escape_string($conn, $_POST['deskripsi']);
     
-    $query = "INSERT INTO agenda (nama_agenda, tanggal_mulai, tanggal_selesai, lokasi, deskripsi) 
-              VALUES ('$nama_agenda', '$tanggal_mulai', " . ($tanggal_selesai ? "'$tanggal_selesai'" : "NULL") . ", '$lokasi', '$deskripsi')";
+    $query_update = "UPDATE agenda SET 
+                        nama_agenda = '$nama_agenda',
+                        tanggal_mulai = '$tanggal_mulai',
+                        tanggal_selesai = " . ($tanggal_selesai ? "'$tanggal_selesai'" : "NULL") . ",
+                        lokasi = '$lokasi',
+                        deskripsi = '$deskripsi'
+                    WHERE id = $id";
     
-    if (mysqli_query($conn, $query)) {
-        $_SESSION['success'] = "Agenda berhasil ditambahkan";
+    if (mysqli_query($conn, $query_update)) {
+        $_SESSION['success'] = "Agenda berhasil diperbarui";
         header("Location: index.php");
         exit;
     } else {
-        $error = "Gagal menambahkan agenda: " . mysqli_error($conn);
+        $error = "Gagal memperbarui agenda: " . mysqli_error($conn);
     }
 }
 
@@ -25,8 +40,8 @@ require_once dirname(__DIR__) . '/includes/header.php';
 
 <div class="content-wrapper agenda-page">
     <div class="content-header">
-        <h1><i class="fas fa-plus-circle"></i> Tambah Agenda</h1>
-        <a href="index.php" class="btn btn-secondary">
+        <h1><i class="fas fa-edit"></i> Edit Agenda</h1>
+        <a href="index.php" class="btn-secondary">
             <i class="fas fa-arrow-left"></i> Kembali
         </a>
     </div>
@@ -45,7 +60,8 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     <i class="fas fa-tag"></i>
                     Nama Agenda <span class="text-danger">*</span>
                 </label>
-                <input type="text" name="nama_agenda" class="form-control" required placeholder="Masukkan nama agenda">
+                <input type="text" name="nama_agenda" class="form-control" required 
+                       value="<?= htmlspecialchars($data['nama_agenda']) ?>">
             </div>
 
             <div class="form-row">
@@ -54,14 +70,16 @@ require_once dirname(__DIR__) . '/includes/header.php';
                         <i class="fas fa-calendar"></i>
                         Tanggal Mulai <span class="text-danger">*</span>
                     </label>
-                    <input type="date" name="tanggal_mulai" class="form-control" required value="<?= date('Y-m-d') ?>">
+                    <input type="date" name="tanggal_mulai" class="form-control" required 
+                           value="<?= $data['tanggal_mulai'] ?>">
                 </div>
                 <div class="form-group">
                     <label>
                         <i class="fas fa-calendar"></i>
                         Tanggal Selesai
                     </label>
-                    <input type="date" name="tanggal_selesai" class="form-control">
+                    <input type="date" name="tanggal_selesai" class="form-control" 
+                           value="<?= $data['tanggal_selesai'] ?>">
                 </div>
             </div>
 
@@ -70,7 +88,8 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     <i class="fas fa-map-marker-alt"></i>
                     Lokasi
                 </label>
-                <input type="text" name="lokasi" class="form-control" placeholder="Masukkan lokasi agenda">
+                <input type="text" name="lokasi" class="form-control" 
+                       value="<?= htmlspecialchars($data['lokasi']) ?>">
             </div>
 
             <div class="form-group">
@@ -78,14 +97,14 @@ require_once dirname(__DIR__) . '/includes/header.php';
                     <i class="fas fa-align-left"></i>
                     Deskripsi
                 </label>
-                <textarea name="deskripsi" class="form-control" rows="5" placeholder="Masukkan deskripsi agenda"></textarea>
+                <textarea name="deskripsi" class="form-control" rows="5"><?= htmlspecialchars($data['deskripsi']) ?></textarea>
             </div>
 
             <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save"></i> Simpan
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Update
                 </button>
-                <a href="index.php" class="btn btn-secondary">
+                <a href="index.php" class="btn-secondary">
                     <i class="fas fa-times"></i> Batal
                 </a>
             </div>

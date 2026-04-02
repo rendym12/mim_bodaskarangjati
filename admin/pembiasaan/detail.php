@@ -17,67 +17,49 @@ include "../includes/header.php";
 <div class="content-wrapper pembiasaan-page">
     <div class="content-header">
         <h1><i class="fas fa-sun"></i> Detail Pembiasaan</h1>
-        <div class="action-buttons">
-            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
-                <i class="fas fa-edit"></i> Edit
-            </a>
-            <a href="index.php" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="index.php" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                <div style="flex: 0 0 100px; text-align: center;">
-                    <i class="fas <?= $row['ikon'] ?? 'fa-sun' ?>" style="font-size: 5rem; color: #FFD700;"></i>
+    <div class="detail-card">
+        <div class="detail-header">
+            <i class="fas <?= $row['ikon'] ?? 'fa-sun' ?>"></i>
+            <h2><?= htmlspecialchars($row['nama_kegiatan']) ?></h2>
+        </div>
+        
+        <div class="detail-body">
+            <div class="detail-info-grid">
+                <div class="detail-info-card">
+                    <i class="fas fa-icons"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Ikon</span>
+                        <span class="info-value"><?= $row['ikon'] ?? 'fa-sun' ?></span>
+                    </div>
                 </div>
-                
-                <div style="flex: 1;">
-                    <h2 style="margin-bottom: 20px; color: var(--primary);"><?= htmlspecialchars($row['nama_kegiatan']) ?></h2>
-                    
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 150px;">
-                                <strong><i class="fas fa-icons"></i> Ikon</strong>
-                             </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <i class="fas <?= $row['ikon'] ?? 'fa-sun' ?>"></i> <?= $row['ikon'] ?? 'fa-sun' ?>
-                             </td>
-                         </tr>
-                         <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <strong><i class="fas fa-sort-numeric-up"></i> Urutan</strong>
-                             </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= $row['urutan'] ?? '0' ?>
-                             </td>
-                         </tr>
-                         <tr>
-                            <td style="padding: 12px;">
-                                <strong><i class="fas fa-align-left"></i> Deskripsi</strong>
-                             </td>
-                            <td style="padding: 12px;">
-                                : <?= nl2br(htmlspecialchars($row['deskripsi'] ?? '-')) ?>
-                             </td>
-                         </tr>
-                     </table>
+                <div class="detail-info-card">
+                    <i class="fas fa-sort-numeric-down"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Urutan</span>
+                        <span class="info-value"><?= $row['urutan'] ?? '0' ?></span>
+                    </div>
                 </div>
+            </div>
+            
+            <div class="detail-deskripsi">
+                <?= nl2br(htmlspecialchars($row['deskripsi'] ?? '-')) ?>
             </div>
         </div>
         
-        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end;">
-            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
+        <div class="detail-footer">
+            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
             <button type="button" 
-                    class="btn-delete" 
+                    class="btn-danger" 
                     data-id="<?= $id ?>" 
                     data-name="<?= htmlspecialchars($row['nama_kegiatan']) ?>"
-                    data-module="pembiasaan"
-                    data-has-file="false"
-                    title="Hapus">
+                    data-module="pembiasaan">
                 <i class="fas fa-trash"></i> Hapus
             </button>
         </div>
@@ -92,7 +74,7 @@ include "../includes/header.php";
             <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus kegiatan pembiasaan berikut?</p>
+            <p>Apakah Anda yakin ingin menghapus data berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             <div id="fileWarningContainer" style="display: none;">
                 <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">

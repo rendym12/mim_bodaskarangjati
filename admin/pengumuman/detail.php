@@ -10,16 +10,47 @@ if (!$row) {
     exit;
 }
 
+// Ambil ukuran file lampiran jika ada
+$file_size = '';
+$file_icon = 'fa-file-alt';
+if (!empty($row['file_lampiran'])) {
+    $file_path = "../../uploads/lampiran/" . $row['file_lampiran'];
+    if (file_exists($file_path)) {
+        $size = filesize($file_path);
+        if ($size >= 1048576) {
+            $file_size = round($size / 1048576, 2) . ' MB';
+        } elseif ($size >= 1024) {
+            $file_size = round($size / 1024, 2) . ' KB';
+        } else {
+            $file_size = $size . ' B';
+        }
+    }
+    
+    // Tentukan icon berdasarkan ekstensi file
+    $ext = strtolower(pathinfo($row['file_lampiran'], PATHINFO_EXTENSION));
+    $file_icons = [
+        'pdf' => 'fa-file-pdf',
+        'doc' => 'fa-file-word',
+        'docx' => 'fa-file-word',
+        'xls' => 'fa-file-excel',
+        'xlsx' => 'fa-file-excel',
+        'jpg' => 'fa-file-image',
+        'jpeg' => 'fa-file-image',
+        'png' => 'fa-file-image',
+        'zip' => 'fa-file-archive',
+        'rar' => 'fa-file-archive',
+        'txt' => 'fa-file-alt'
+    ];
+    $file_icon = $file_icons[$ext] ?? 'fa-file-alt';
+}
+
 require_once dirname(__DIR__) . '/includes/header.php';
 ?>
 
 <div class="content-wrapper pengumuman-page">
     <div class="content-header">
         <h1><i class="fas fa-bullhorn"></i> Detail Pengumuman</h1>
-        <div>
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
-                <i class="fas fa-edit"></i> Edit
-            </a>
+        <div class="action-buttons">
             <a href="index.php" class="btn-secondary">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
@@ -66,9 +97,22 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <?php if (!empty($row['file_lampiran'])): ?>
             <div class="detail-lampiran">
                 <h4><i class="fas fa-paperclip"></i> File Lampiran</h4>
-                <a href="../../uploads/lampiran/<?= $row['file_lampiran'] ?>" class="btn-primary" download>
-                    <i class="fas fa-download"></i> Download <?= $row['file_lampiran'] ?>
-                </a>
+                <div class="lampiran-item">
+                    <div class="lampiran-info">
+                        <div class="lampiran-icon">
+                            <i class="fas <?= $file_icon ?>"></i>
+                        </div>
+                        <div class="lampiran-detail">
+                            <span class="lampiran-name"><?= htmlspecialchars($row['file_lampiran']) ?></span>
+                            <span class="lampiran-size">
+                                <i class="fas fa-database"></i> <?= $file_size ?>
+                            </span>
+                        </div>
+                    </div>
+                    <a href="../../uploads/lampiran/<?= $row['file_lampiran'] ?>" class="btn-download" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
             </div>
             <?php endif; ?>
         </div>
@@ -77,9 +121,13 @@ require_once dirname(__DIR__) . '/includes/header.php';
             <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="#" class="btn-danger btn-delete-detail" data-id="<?= $id ?>" data-name="<?= htmlspecialchars($row['judul']) ?>" data-has-gambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>" data-has-lampiran="<?= (!empty($row['file_lampiran']) ? 'true' : 'false') ?>">
+            <button type="button" class="btn-danger btn-delete-detail" 
+                    data-id="<?= $id ?>" 
+                    data-name="<?= htmlspecialchars($row['judul']) ?>" 
+                    data-has-gambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>" 
+                    data-has-lampiran="<?= (!empty($row['file_lampiran']) ? 'true' : 'false') ?>">
                 <i class="fas fa-trash"></i> Hapus
-            </a>
+            </button>
         </div>
     </div>
 </div>
@@ -106,8 +154,8 @@ require_once dirname(__DIR__) . '/includes/header.php';
             </p>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" style="background: #ef4444; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none;">Ya, Hapus</a>
-            <button type="button" class="btn-secondary">Batal</button>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" class="btn-secondary" id="btnCloseModal">Batal</button>
         </div>
     </div>
 </div>

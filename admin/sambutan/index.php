@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Upload foto baru jika ada
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-        $allowed = ['jpg', 'jpeg', 'png'];
+        $allowed = ['jpg', 'jpeg', 'png', 'webp'];
         $ext = strtolower(pathinfo($_FILES['foto']['name'], PATHINFO_EXTENSION));
         $size = $_FILES['foto']['size'];
         
@@ -68,9 +68,6 @@ include "../includes/header.php";
 <div class="content-wrapper sambutan-page">
     <div class="content-header">
         <h1><i class="fas fa-microphone"></i> Edit Sambutan Kepala Madrasah</h1>
-        <a href="../dashboard.php" class="btn-secondary">
-            <i class="fas fa-arrow-left"></i> Dashboard
-        </a>
     </div>
 
     <!-- NOTIFICATION CONTAINER -->
@@ -94,7 +91,7 @@ include "../includes/header.php";
         <form method="POST" enctype="multipart/form-data" id="sambutanForm">
             <div class="form-row">
                 <div class="form-group">
-                    <label><i class="fas fa-user"></i> Nama Kepala Madrasah <span style="color: red;">*</span></label>
+                    <label><i class="fas fa-user"></i> Nama Kepala Madrasah <span class="text-danger">*</span></label>
                     <input type="text" name="nama_kepala" class="form-control" required value="<?= htmlspecialchars($data['nama_kepala'] ?? '') ?>">
                 </div>
                 <div class="form-group">
@@ -107,31 +104,32 @@ include "../includes/header.php";
                 <label><i class="fas fa-camera"></i> Foto</label>
                 
                 <?php if (!empty($data['foto']) && $data['foto'] != 'default-kepala.jpg'): ?>
-                <div style="margin-bottom: 15px; padding: 10px; background: #f8fafc; border-radius: 8px;">
-                    <img src="../../uploads/<?= $data['foto'] ?>" alt="Foto Kepala" style="max-width: 150px; max-height: 150px; border-radius: 10px;">
-                    <p style="margin-top: 5px;"><?= $data['foto'] ?></p>
+                <div class="current-file">
+                    <img src="../../uploads/<?= $data['foto'] ?>" alt="Foto Kepala" class="current-image">
+                    <p><?= $data['foto'] ?></p>
                 </div>
                 <?php endif; ?>
                 
                 <div class="file-upload" id="fileUploadArea">
                     <i class="fas fa-cloud-upload-alt"></i>
                     <p>Klik untuk upload foto</p>
-                    <small>Format: JPG, PNG (Maks. 2MB)</small>
+                    <small>Format: JPG, PNG, WEBP (Maks. 2MB)</small>
                     <input type="file" name="foto" id="foto" accept="image/*" style="display: none;">
                 </div>
                 <div id="previewContainer" class="preview-container" style="display: none; margin-top: 15px;">
-                    <img id="previewImage" src="#" alt="Preview" class="preview-image" style="max-width: 150px; border-radius: 10px;">
+                    <img id="previewImage" src="#" alt="Preview" class="preview-image">
                 </div>
             </div>
             
             <div class="form-group">
-                <label><i class="fas fa-align-left"></i> Isi Sambutan <span style="color: red;">*</span></label>
-                <textarea name="sambutan" id="editor" class="form-control" rows="10" required><?= htmlspecialchars($data['sambutan'] ?? '') ?></textarea>
+                <label><i class="fas fa-align-left"></i> Isi Sambutan <span class="text-danger">*</span></label>
+                <textarea name="sambutan" id="editor" class="form-control" rows="12" required><?= htmlspecialchars($data['sambutan'] ?? '') ?></textarea>
             </div>
             
             <div class="form-actions">
-                <button type="submit" class="btn-primary" id="btnSubmit"><i class="fas fa-save"></i> Simpan</button>
-                <a href="../dashboard.php" class="btn-secondary"><i class="fas fa-times"></i> Batal</a>
+                <button type="submit" class="btn-primary" id="btnSubmit">
+                    <i class="fas fa-save"></i> Simpan Perubahan
+                </button>
             </div>
         </form>
     </div>

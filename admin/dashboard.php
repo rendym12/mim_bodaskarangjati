@@ -272,7 +272,6 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
             <div class="card">
                 <div class="card-header">
                     <h3><i class="fas fa-clock"></i> Aktivitas Terbaru</h3>
-                    <a href="pengumuman/index.php" class="btn-sm">Lihat Semua</a>
                 </div>
                 <div class="card-body">
                     <div class="activity-timeline" id="activityTimeline">

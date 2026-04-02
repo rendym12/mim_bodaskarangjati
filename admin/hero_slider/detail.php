@@ -16,114 +16,112 @@ include "../includes/header.php";
 
 <div class="content-wrapper slider-page">
     <div class="content-header">
-        <h1><i class="fas fa-image"></i> Detail Slide</h1>
-        <div class="action-buttons">
+        <h1><i class="fas fa-images"></i> Detail Slide</h1>
+        <a href="index.php" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
+    </div>
+
+    <div class="detail-card">
+        <div class="detail-header">
+            <i class="fas fa-image"></i>
+            <h2><?= htmlspecialchars($row['judul']) ?></h2>
+        </div>
+        
+        <div class="detail-body">
+            <div class="detail-info-grid">
+                <div class="detail-info-card">
+                    <i class="fas fa-tag"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Badge</span>
+                        <span class="info-value"><?= htmlspecialchars($row['badge'] ?? '-') ?></span>
+                    </div>
+                </div>
+                <div class="detail-info-card">
+                    <i class="fas fa-sort-numeric-down"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Urutan</span>
+                        <span class="info-value"><?= $row['urutan'] ?? '0' ?></span>
+                    </div>
+                </div>
+                <div class="detail-info-card">
+                    <i class="fas fa-toggle-on"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Status</span>
+                        <span class="info-value">
+                            <?php if ($row['status'] == 'aktif'): ?>
+                                <span class="badge-success">Aktif</span>
+                            <?php else: ?>
+                                <span class="badge-secondary">Nonaktif</span>
+                            <?php endif; ?>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <?php if (!empty($row['subjudul'])): ?>
+            <div class="detail-deskripsi">
+                <strong><i class="fas fa-align-left"></i> Sub Judul:</strong><br>
+                <?= nl2br(htmlspecialchars($row['subjudul'])) ?>
+            </div>
+            <?php endif; ?>
+            
+            <?php if (!empty($row['tombol_text']) && !empty($row['tombol_link'])): ?>
+            <div class="detail-deskripsi" style="margin-top: 15px;">
+                <strong><i class="fas fa-link"></i> Tombol:</strong><br>
+                <a href="<?= htmlspecialchars($row['tombol_link']) ?>" target="_blank" class="btn-primary" style="display: inline-block; margin-top: 8px;">
+                    <?= htmlspecialchars($row['tombol_text']) ?>
+                </a>
+            </div>
+            <?php endif; ?>
+            
+            <?php if (!empty($row['gambar'])): ?>
+            <div class="detail-gambar">
+                <img src="../../uploads/hero/<?= $row['gambar'] ?>" alt="<?= htmlspecialchars($row['judul']) ?>">
+            </div>
+            <?php endif; ?>
+        </div>
+        
+        <div class="detail-footer">
             <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="index.php" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
+            <button type="button" 
+                    class="btn-danger" 
+                    data-id="<?= $id ?>" 
+                    data-name="<?= htmlspecialchars($row['judul']) ?>"
+                    data-has-gambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>"
+                    data-module="slider">
+                <i class="fas fa-trash"></i> Hapus
+            </button>
         </div>
     </div>
+</div>
 
-    <div class="detail-container">
-        <!-- Preview Gambar Full -->
-        <div class="detail-image-section">
-            <h3><i class="fas fa-image"></i> Preview Gambar</h3>
-            <div class="detail-image-frame">
-                <?php if (!empty($row['gambar'])): ?>
-                    <img src="../../uploads/hero/<?= $row['gambar'] ?>" alt="<?= $row['judul'] ?>" class="detail-image">
-                <?php else: ?>
-                    <div class="no-image">
-                        <i class="fas fa-image"></i>
-                        <p>Tidak ada gambar</p>
-                    </div>
-                <?php endif; ?>
-            </div>
-            <p class="image-filename"><i class="fas fa-file-image"></i> <?= $row['gambar'] ?? '-' ?></p>
+<!-- Modal Konfirmasi Hapus -->
+<div id="deleteModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i> Konfirmasi Hapus</h3>
+            <span class="modal-close">&times;</span>
         </div>
-
-        <!-- Detail Informasi -->
-        <div class="detail-info-section">
-            <h3><i class="fas fa-info-circle"></i> Informasi Slide</h3>
-            
-            <table class="detail-table">
-                <tr>
-                    <th width="150">ID Slide</th>
-                    <td>: <strong>#<?= $row['id'] ?></strong></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-tag"></i> Badge</th>
-                    <td>: <?= !empty($row['badge']) ? '<span class="badge-preview">' . htmlspecialchars($row['badge']) . '</span>' : '-' ?></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-heading"></i> Judul</th>
-                    <td>: <strong><?= htmlspecialchars($row['judul']) ?></strong></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-align-left"></i> Sub Judul</th>
-                    <td>: <?= !empty($row['subjudul']) ? nl2br(htmlspecialchars($row['subjudul'])) : '-' ?></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-font"></i> Teks Tombol</th>
-                    <td>: <?= !empty($row['tombol_text']) ? htmlspecialchars($row['tombol_text']) : '-' ?></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-link"></i> Link Tombol</th>
-                    <td>: <?php if (!empty($row['tombol_link'])): ?>
-                        <a href="<?= htmlspecialchars($row['tombol_link']) ?>" target="_blank" class="link-preview">
-                            <?= htmlspecialchars($row['tombol_link']) ?> <i class="fas fa-external-link-alt"></i>
-                        </a>
-                    <?php else: ?>
-                        -
-                    <?php endif; ?></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-sort-numeric-up"></i> Urutan</th>
-                    <td>: <?= $row['urutan'] ?></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-toggle-on"></i> Status</th>
-                    <td>: 
-                        <?php if ($row['status'] == 'aktif'): ?>
-                            <span class="status-badge aktif">Aktif</span>
-                        <?php else: ?>
-                            <span class="status-badge nonaktif">Nonaktif</span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-calendar"></i> Ditambahkan</th>
-                    <td>: <?= date('d/m/Y H:i', strtotime($row['created_at'] ?? 'now')) ?></td>
-                </tr>
-                <tr>
-                    <th><i class="fas fa-clock"></i> Terakhir Update</th>
-                    <td>: <?= date('d/m/Y H:i', strtotime($row['updated_at'] ?? 'now')) ?></td>
-                </tr>
-            </table>
-            
-            <!-- Preview Tampilan di Halaman Depan -->
-            <div class="preview-frontend">
-                <h4><i class="fas fa-eye"></i> Preview Tampilan di Website</h4>
-                <div class="frontend-simulator">
-                    <div class="simulator-slide" style="background: linear-gradient(135deg, #0B3D91, #1e4ca0);">
-                        <div class="simulator-content">
-                            <?php if (!empty($row['badge'])): ?>
-                                <span class="simulator-badge"><?= htmlspecialchars($row['badge']) ?></span>
-                            <?php endif; ?>
-                            <h2 class="simulator-title"><?= htmlspecialchars($row['judul']) ?></h2>
-                            <?php if (!empty($row['subjudul'])): ?>
-                                <p class="simulator-subtitle"><?= htmlspecialchars($row['subjudul']) ?></p>
-                            <?php endif; ?>
-                            <?php if (!empty($row['tombol_text']) && !empty($row['tombol_link'])): ?>
-                                <a href="#" class="simulator-button"><?= htmlspecialchars($row['tombol_text']) ?></a>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+        <div class="modal-body">
+            <p>Apakah Anda yakin ingin menghapus data berikut?</p>
+            <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
+            <div id="fileWarningContainer" style="display: none;">
+                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="fileWarningText"></span>
                 </div>
-                <p class="preview-note"><i class="fas fa-info-circle"></i> Tampilan sebenarnya di halaman depan dengan background gambar yang diupload</p>
             </div>
+            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
+                <i class="fas fa-exclamation-circle"></i>
+                Data yang sudah dihapus tidak dapat dikembalikan!
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

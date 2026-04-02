@@ -45,9 +45,6 @@ include "../includes/header.php";
 <div class="content-wrapper visimisi-page">
     <div class="content-header">
         <h1><i class="fas fa-eye"></i> Kelola Visi & Misi</h1>
-        <a href="../dashboard.php" class="btn-secondary">
-            <i class="fas fa-arrow-left"></i> Dashboard
-        </a>
     </div>
 
     <!-- NOTIFICATION CONTAINER -->
@@ -100,9 +97,6 @@ include "../includes/header.php";
                 <button type="submit" class="btn-primary" id="btnSubmit">
                     <i class="fas fa-save"></i> Simpan Perubahan
                 </button>
-                <a href="../dashboard.php" class="btn-secondary">
-                    <i class="fas fa-times"></i> Batal
-                </a>
             </div>
         </form>
     </div>

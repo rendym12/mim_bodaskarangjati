@@ -366,6 +366,5 @@ if ($is_public_page) {
 
         <!-- MAIN CONTENT AREA -->
         <main class="admin-main">
-            <!-- Topbar tidak diperlukan lagi karena profile sudah di dashboard header -->
-            <!-- KOSONGKAN - profile dropdown sudah ada di dashboard-header -->
-        </main>
+            <!-- KONTEN DINAMIS AKAN DITAMPILKAN DI SINI OLEH FILE PHP LAINNYA -->
+            <!-- TIDAK ADA KONTEN LANGSUNG DI HEADER -->

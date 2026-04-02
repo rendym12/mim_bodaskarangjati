@@ -17,70 +17,79 @@ include "../includes/header.php";
 <div class="content-wrapper agenda-page">
     <div class="content-header">
         <h1><i class="fas fa-calendar-alt"></i> Detail Agenda</h1>
-        <div class="action-buttons">
-            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
-                <i class="fas fa-edit"></i> Edit
-            </a>
-            <a href="index.php" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="index.php" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                <div style="flex: 1;">
-                    <h2 style="margin-bottom: 20px; color: var(--primary);"><?= htmlspecialchars($row['nama_agenda']) ?></h2>
-                    
-                    <table class="detail-table" style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 150px;">
-                                <strong><i class="fas fa-calendar-alt"></i> Tanggal Mulai</strong>
-                            </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= date('d/m/Y', strtotime($row['tanggal_mulai'])) ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <strong><i class="fas fa-calendar-check"></i> Tanggal Selesai</strong>
-                            </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= date('d/m/Y', strtotime($row['tanggal_selesai'])) ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <strong><i class="fas fa-map-marker-alt"></i> Lokasi</strong>
-                            </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= htmlspecialchars($row['lokasi'] ?? '-') ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 12px;">
-                                <strong><i class="fas fa-align-left"></i> Deskripsi</strong>
-                            </td>
-                            <td style="padding: 12px;">
-                                : <?= nl2br(htmlspecialchars($row['deskripsi'] ?? '-')) ?>
-                            </td>
-                        </tr>
-                    </table>
+    <div class="detail-card">
+        <div class="detail-header">
+            <i class="fas fa-calendar-alt"></i>
+            <h2><?= htmlspecialchars($row['nama_agenda']) ?></h2>
+        </div>
+        
+        <div class="detail-body">
+            <!-- Info Grid untuk informasi penting -->
+            <div class="detail-info-grid">
+                <div class="detail-info-card">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Tanggal Mulai</span>
+                        <span class="info-value"><?= date('d F Y', strtotime($row['tanggal_mulai'])) ?></span>
+                    </div>
                 </div>
+                <div class="detail-info-card">
+                    <i class="fas fa-calendar-check"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Tanggal Selesai</span>
+                        <span class="info-value"><?= date('d F Y', strtotime($row['tanggal_selesai'])) ?></span>
+                    </div>
+                </div>
+                <div class="detail-info-card">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Lokasi</span>
+                        <span class="info-value"><?= htmlspecialchars($row['lokasi'] ?? '-') ?></span>
+                    </div>
+                </div>
+                <?php
+                // Tentukan status agenda
+                $today = date('Y-m-d');
+                if ($row['tanggal_mulai'] <= $today && $row['tanggal_selesai'] >= $today) {
+                    $status_text = 'Berlangsung';
+                    $status_class = 'status-berlangsung';
+                } elseif ($row['tanggal_selesai'] < $today) {
+                    $status_text = 'Selesai';
+                    $status_class = 'status-selesai';
+                } else {
+                    $status_text = 'Mendatang';
+                    $status_class = 'status-mendatang';
+                }
+                ?>
+                <div class="detail-info-card">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Status</span>
+                        <span class="info-value <?= $status_class ?>"><?= $status_text ?></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Deskripsi Agenda -->
+            <div class="detail-deskripsi">
+                <?= nl2br(htmlspecialchars($row['deskripsi'] ?? '-')) ?>
             </div>
         </div>
         
-        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end;">
-            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
+        <div class="detail-footer">
+            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
             <button type="button" 
-                    class="btn-delete" 
+                    class="btn-danger" 
                     data-id="<?= $id ?>" 
                     data-name="<?= htmlspecialchars($row['nama_agenda']) ?>"
-                    data-module="agenda"
-                    class="btn-danger">
+                    data-module="agenda">
                 <i class="fas fa-trash"></i> Hapus
             </button>
         </div>

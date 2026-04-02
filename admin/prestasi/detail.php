@@ -17,86 +17,84 @@ include "../includes/header.php";
 <div class="content-wrapper prestasi-page">
     <div class="content-header">
         <h1><i class="fas fa-trophy"></i> Detail Prestasi</h1>
-        <div>
-            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
-                <i class="fas fa-edit"></i> Edit
-            </a>
-            <a href="index.php" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="index.php" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                <?php if (!empty($row['gambar'])): ?>
-                <div style="flex: 0 0 300px;">
-                    <img src="../../uploads/prestasi/<?= $row['gambar'] ?>" 
-                         alt="<?= htmlspecialchars($row['nama_prestasi']) ?>" 
-                         style="width: 100%; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+    <div class="detail-card">
+        <div class="detail-header">
+            <i class="fas fa-trophy"></i>
+            <h2><?= htmlspecialchars($row['nama_prestasi']) ?></h2>
+        </div>
+        
+        <div class="detail-body">
+            <?php if (!empty($row['gambar'])): ?>
+            <div class="detail-gambar">
+                <img src="../../uploads/prestasi/<?= $row['gambar'] ?>" 
+                     alt="<?= htmlspecialchars($row['nama_prestasi']) ?>">
+            </div>
+            <?php endif; ?>
+            
+            <div class="detail-info">
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <i class="fas fa-chart-bar"></i> Tingkat
+                    </div>
+                    <div class="detail-value">
+                        <?= htmlspecialchars($row['tingkat'] ?? '-') ?>
+                    </div>
                 </div>
-                <?php endif; ?>
                 
-                <div style="flex: 1;">
-                    <h2 style="color: var(--primary); margin-bottom: 20px;"><?= htmlspecialchars($row['nama_prestasi']) ?></h2>
-                    
-                    <table style="width: 100%; border-collapse: collapse;">
-                         <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 150px;">
-                                <strong><i class="fas fa-chart-bar"></i> Tingkat</strong>
-                             </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= htmlspecialchars($row['tingkat'] ?? '-') ?>
-                             </td>
-                         </tr>
-                         <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <strong><i class="fas fa-building"></i> Penyelenggara</strong>
-                             </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= htmlspecialchars($row['penyelenggara'] ?? '-') ?>
-                             </td>
-                         </tr>
-                         <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <strong><i class="fas fa-calendar"></i> Tahun</strong>
-                             </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= $row['tahun'] ?? '-' ?>
-                             </td>
-                         </tr>
-                         <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <strong><i class="fas fa-medal"></i> Juara / Peringkat</strong>
-                             </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : 
-                                <?php 
-                                if ($row['juara'] == 1) {
-                                    echo '<span class="badge-gold"><i class="fas fa-medal"></i> Juara 1 (Emas)</span>';
-                                } elseif ($row['juara'] == 2) {
-                                    echo '<span class="badge-silver"><i class="fas fa-medal"></i> Juara 2 (Perak)</span>';
-                                } elseif ($row['juara'] == 3) {
-                                    echo '<span class="badge-bronze"><i class="fas fa-medal"></i> Juara 3 (Perunggu)</span>';
-                                } elseif ($row['juara'] > 0) {
-                                    echo '<span class="badge-juara"><i class="fas fa-star"></i> Juara ' . $row['juara'] . '</span>';
-                                } else {
-                                    echo '<span class="badge-peserta"><i class="fas fa-user"></i> Peserta / Tidak Berperingkat</span>';
-                                }
-                                ?>
-                             </td>
-                         </tr>
-                    </table>
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <i class="fas fa-building"></i> Penyelenggara
+                    </div>
+                    <div class="detail-value">
+                        <?= htmlspecialchars($row['penyelenggara'] ?? '-') ?>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <i class="fas fa-calendar"></i> Tahun
+                    </div>
+                    <div class="detail-value">
+                        <?= $row['tahun'] ?? '-' ?>
+                    </div>
+                </div>
+                
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <i class="fas fa-medal"></i> Juara / Peringkat
+                    </div>
+                    <div class="detail-value">
+                        <?php 
+                        if ($row['juara'] == 1) {
+                            echo '<span class="badge-gold"><i class="fas fa-medal"></i> Juara 1 (Emas)</span>';
+                        } elseif ($row['juara'] == 2) {
+                            echo '<span class="badge-silver"><i class="fas fa-medal"></i> Juara 2 (Perak)</span>';
+                        } elseif ($row['juara'] == 3) {
+                            echo '<span class="badge-bronze"><i class="fas fa-medal"></i> Juara 3 (Perunggu)</span>';
+                        } elseif ($row['juara'] > 0) {
+                            echo '<span class="badge-juara"><i class="fas fa-star"></i> Juara ' . $row['juara'] . '</span>';
+                        } else {
+                            echo '<span class="badge-peserta"><i class="fas fa-user"></i> Peserta / Tidak Berperingkat</span>';
+                        }
+                        ?>
+                    </div>
                 </div>
             </div>
         </div>
         
-        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px;">
+        <div class="detail-footer">
             <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <a href="#" class="btn-danger btn-delete-detail" data-id="<?= $id ?>" data-name="<?= htmlspecialchars($row['nama_prestasi']) ?>" data-has-gambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>">
+            <a href="#" class="btn-danger btn-delete-detail" 
+               data-id="<?= $id ?>" 
+               data-name="<?= htmlspecialchars($row['nama_prestasi']) ?>" 
+               data-has-gambar="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>">
                 <i class="fas fa-trash"></i> Hapus
             </a>
         </div>
@@ -128,7 +126,7 @@ include "../includes/header.php";
         </div>
         <div class="modal-footer">
             <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
-            <button type="button" class="btn-secondary" id="btnCloseModal">Batal</button>
+            <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>
 </div>

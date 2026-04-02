@@ -25,78 +25,64 @@ include "../includes/header.php";
 <div class="content-wrapper galeri-video-page">
     <div class="content-header">
         <h1><i class="fas fa-video"></i> Detail Video</h1>
-        <div class="action-buttons">
-            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
-                <i class="fas fa-edit"></i> Edit
-            </a>
-            <a href="index.php" class="btn-secondary">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
-        </div>
+        <a href="index.php" class="btn-secondary">
+            <i class="fas fa-arrow-left"></i> Kembali
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body">
-            <div style="display: flex; gap: 30px; flex-wrap: wrap;">
-                <!-- Thumbnail / Video Embed -->
-                <div style="flex: 0 0 400px;">
-                    <?php if (!empty($video_id)): ?>
-                        <iframe width="100%" height="225" src="https://www.youtube.com/embed/<?= $video_id ?>" frameborder="0" allowfullscreen style="border-radius: 12px;"></iframe>
-                    <?php elseif (!empty($row['thumbnail'])): ?>
-                        <img src="../../uploads/galeri_video/<?= $row['thumbnail'] ?>" 
-                             alt="<?= htmlspecialchars($row['judul']) ?>" 
-                             style="width: 100%; border-radius: 12px;">
-                    <?php else: ?>
-                        <div style="width: 100%; height: 225px; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-video" style="font-size: 5rem; color: #cbd5e1;"></i>
-                        </div>
-                    <?php endif; ?>
+    <div class="detail-card">
+        <div class="detail-header">
+            <i class="fas fa-video"></i>
+            <h2><?= htmlspecialchars($row['judul']) ?></h2>
+        </div>
+        
+        <div class="detail-body">
+            <div class="detail-info-grid">
+                <div class="detail-info-card">
+                    <i class="fab fa-youtube"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">URL Video</span>
+                        <span class="info-value">
+                            <a href="<?= htmlspecialchars($row['url_video']) ?>" target="_blank" style="color: var(--primary);">
+                                <?= htmlspecialchars($row['url_video']) ?>
+                            </a>
+                        </span>
+                    </div>
                 </div>
-                
-                <div style="flex: 1;">
-                    <h2 style="margin-bottom: 20px; color: var(--primary);"><?= htmlspecialchars($row['judul']) ?></h2>
-                    
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0; width: 150px;">
-                                <strong><i class="fab fa-youtube"></i> URL Video</strong>
-                            </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <a href="<?= htmlspecialchars($row['url_video']) ?>" target="_blank"><?= htmlspecialchars($row['url_video']) ?></a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                <strong><i class="fas fa-sort-numeric-up"></i> Urutan</strong>
-                            </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e2e8f0;">
-                                : <?= $row['urutan'] ?? '0' ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 12px;">
-                                <strong><i class="fas fa-align-left"></i> Keterangan</strong>
-                            </td>
-                            <td style="padding: 12px;">
-                                : <?= nl2br(htmlspecialchars($row['keterangan'] ?? '-')) ?>
-                            </td>
-                        </tr>
-                    </table>
+                <div class="detail-info-card">
+                    <i class="fas fa-sort-numeric-down"></i>
+                    <div class="detail-info-content">
+                        <span class="info-label">Urutan</span>
+                        <span class="info-value"><?= $row['urutan'] ?? '0' ?></span>
+                    </div>
                 </div>
+            </div>
+            
+            <?php if (!empty($video_id)): ?>
+            <div class="detail-gambar">
+                <iframe width="100%" height="400" src="https://www.youtube.com/embed/<?= $video_id ?>" frameborder="0" allowfullscreen style="border-radius: 12px;"></iframe>
+            </div>
+            <?php elseif (!empty($row['thumbnail'])): ?>
+            <div class="detail-gambar">
+                <img src="../../uploads/galeri_video/<?= $row['thumbnail'] ?>" alt="<?= htmlspecialchars($row['judul']) ?>">
+            </div>
+            <?php endif; ?>
+            
+            <div class="detail-deskripsi">
+                <?= nl2br(htmlspecialchars($row['keterangan'] ?? '-')) ?>
             </div>
         </div>
         
-        <div class="card-footer" style="padding: 20px; border-top: 1px solid #e2e8f0; display: flex; gap: 10px; justify-content: flex-end;">
-            <a href="edit.php?id=<?= $id ?>" class="btn-edit">
+        <div class="detail-footer">
+            <a href="edit.php?id=<?= $id ?>" class="btn-primary">
                 <i class="fas fa-edit"></i> Edit
             </a>
             <button type="button" 
-                    class="btn-delete" 
+                    class="btn-danger" 
                     data-id="<?= $id ?>" 
                     data-name="<?= htmlspecialchars($row['judul']) ?>"
                     data-module="video"
-                    data-has-thumbnail="<?= (!empty($row['thumbnail']) ? 'true' : 'false') ?>"
-                    class="btn-danger">
+                    data-has-thumbnail="<?= (!empty($row['thumbnail']) ? 'true' : 'false') ?>">
                 <i class="fas fa-trash"></i> Hapus
             </button>
         </div>
@@ -111,7 +97,7 @@ include "../includes/header.php";
             <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus video berikut?</p>
+            <p>Apakah Anda yakin ingin menghapus data berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             <div id="fileWarningContainer" style="display: none;">
                 <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
