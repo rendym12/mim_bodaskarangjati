@@ -50,12 +50,16 @@ if (!empty($struktur_files)) {
         </div>
         
         <div class="struktur-caption">
-            <p><i class="fas fa-info-circle"></i> Struktur Organisasi MI Muhammadiyah Bodaskarangjati Tahun Pelajaran <?= date('Y') . '/' . (date('Y')+1) ?></p>
+            <p>
+                <i class="fas fa-info-circle"></i> 
+                Struktur Organisasi MI Muhammadiyah Bodaskarangjati 
+                Tahun Pelajaran <?= date('Y') . '/' . (date('Y')+1) ?>
+            </p>
         </div>
     </div>
     
     <!-- ============================================= -->
-    <!-- DAFTAR GURU & STAFF - DI BAWAH STRUKTUR -->
+    <!-- DAFTAR GURU & STAFF -->
     <!-- ============================================= -->
     <div class="guru-section">
         <div class="section-title">
@@ -67,6 +71,8 @@ if (!empty($struktur_files)) {
             <div class="guru-grid">
                 <?php while ($row = mysqli_fetch_assoc($query)): ?>
                 <div class="guru-card">
+                    
+                    <!-- FOTO -->
                     <div class="guru-foto">
                         <?php if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg'): ?>
                             <img src="<?= BASE_URL ?>/uploads/guru/<?= $row['foto'] ?>" 
@@ -78,17 +84,29 @@ if (!empty($struktur_files)) {
                             </div>
                         <?php endif; ?>
                     </div>
+
+                    <!-- INFO -->
                     <div class="guru-info">
                         <h3 class="guru-nama"><?= htmlspecialchars($row['nama']) ?></h3>
+
                         <?php if (!empty($row['nip'])): ?>
-                        <p class="guru-nip">NIP. <?= htmlspecialchars($row['nip']) ?></p>
-                        <?php endif; ?>
-                        <p class="guru-jabatan"><?= htmlspecialchars($row['jabatan'] ?? 'Guru') ?></p>
-                        <?php if (!empty($row['mapel'])): ?>
-                        <p class="guru-mapel">
-                            <i class="fas fa-book-open"></i> <?= htmlspecialchars($row['mapel']) ?>
+                        <p class="guru-nip">
+                            NIP. <?= htmlspecialchars($row['nip']) ?>
                         </p>
                         <?php endif; ?>
+
+                        <p class="guru-jabatan">
+                            <?= htmlspecialchars($row['jabatan'] ?? 'Guru') ?>
+                        </p>
+
+                        <!-- ✅ REVISI DI SINI (MAPEL TIDAK TAMPIL KALAU KOSONG / '-') -->
+                        <?php if (!empty($row['mapel']) && $row['mapel'] != '-'): ?>
+                        <p class="guru-mapel">
+                            <i class="fas fa-book-open"></i> 
+                            <?= htmlspecialchars($row['mapel']) ?>
+                        </p>
+                        <?php endif; ?>
+
                     </div>
                 </div>
                 <?php endwhile; ?>

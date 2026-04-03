@@ -11,47 +11,20 @@ while ($row = mysqli_fetch_assoc($q_hero)) {
     $hero_slides[] = $row;
 }
 
-// Jika tidak ada slide aktif, gunakan slide default
-if (empty($hero_slides)) {
-    $hero_slides = [
-        [
-            'judul' => 'Mencetak Generasi Beriman & Berakhlak',
-            'subjudul' => 'Madrasah Ibtidaiyah yang berkomitmen memberikan pendidikan berkualitas dengan nilai-nilai Islam',
-            'badge' => 'MI MUHAMMADIYAH BODASKARANGJATI',
-            'tombol_text' => 'Daftar PPDB 2026/2027',
-            'tombol_link' => 'ppdb.php',
-            'gambar' => null
-        ],
-        [
-            'judul' => 'Raih Prestasi Bersama Kami',
-            'subjudul' => 'Berbagai prestasi telah diraih oleh siswa-siswi MI Muhammadiyah Bodaskarangjati',
-            'badge' => 'PRESTASI',
-            'tombol_text' => 'Lihat Prestasi',
-            'tombol_link' => 'kesiswaan/prestasi.php',
-            'gambar' => null
-        ],
-        [
-            'judul' => 'PPDB 2026/2027',
-            'subjudul' => 'Pendaftaran dibuka 1 Januari - 13 Juni 2026',
-            'badge' => 'PENERIMAAN MURID BARU',
-            'tombol_text' => 'Daftar Sekarang',
-            'tombol_link' => 'ppdb.php',
-            'gambar' => null
-        ]
-    ];
-}
-
 // ==============================================
 // 2. AMBIL DATA VISI & MISI
 // ==============================================
 $q_visi = mysqli_query($conn, "SELECT * FROM visi_misi LIMIT 1");
 $data_visi = mysqli_fetch_assoc($q_visi);
+$visi_tersedia = ($data_visi && !empty($data_visi['visi']));
+$misi_tersedia = ($data_visi && !empty($data_visi['misi']));
 
 // ==============================================
 // 3. AMBIL DATA SAMBUTAN
 // ==============================================
 $q_sambutan = mysqli_query($conn, "SELECT * FROM sambutan LIMIT 1");
 $data_sambutan = mysqli_fetch_assoc($q_sambutan);
+$sambutan_tersedia = ($data_sambutan && !empty($data_sambutan['sambutan']));
 
 // ==============================================
 // 4. HITUNG STATISTIK
@@ -86,11 +59,31 @@ if($kontak && !empty($kontak['telepon'])) {
         $wa_number = '62' . substr($wa_number, 1);
     }
 }
+
+// Base URL untuk gambar
+$base_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . dirname($_SERVER['SCRIPT_NAME']);
 ?>
 
 <!-- ========== 1. HERO SLIDER - Promosi Utama/PPDB ========== -->
 <section class="hero-slider">
     <div class="slider-container">
+        <?php if (empty($hero_slides)): ?>
+        <div class="slide active" style="background-image: url('assets/img/hero-bg-1.jpg');">
+            <div class="slide-content">
+                <span class="slide-badge">MI MUHAMMADIYAH BODASKARANGJATI</span>
+                <h1 class="slide-title">Mencetak Generasi Beriman & Berakhlak</h1>
+                <p class="slide-subtitle">Madrasah Ibtidaiyah yang berkomitmen memberikan pendidikan berkualitas dengan nilai-nilai Islam</p>
+                <div class="slide-buttons">
+                    <a href="ppdb.php" class="btn-primary btn-large">
+                        <i class="fas fa-edit"></i> Daftar PPDB 2026/2027
+                    </a>
+                    <a href="profil/sejarah.php" class="btn-outline btn-large">
+                        <i class="fas fa-university"></i> Profil Madrasah
+                    </a>
+                </div>
+            </div>
+        </div>
+        <?php else: ?>
         <?php foreach ($hero_slides as $index => $slide): ?>
         <div class="slide <?= $index === 0 ? 'active' : '' ?>" 
              style="background-image: url('<?= !empty($slide['gambar']) ? 'uploads/hero/' . $slide['gambar'] : 'assets/img/hero-bg-' . ($index + 1) . '.jpg' ?>');">
@@ -121,6 +114,7 @@ if($kontak && !empty($kontak['telepon'])) {
             </div>
         </div>
         <?php endforeach; ?>
+        <?php endif; ?>
     </div>
     
     <?php if (count($hero_slides) > 1): ?>
@@ -177,26 +171,25 @@ if($kontak && !empty($kontak['telepon'])) {
                     </div>
                 </div>
                 <div class="berita-content">
-                    <h3>Selamat Datang di Website Resmi</h3>
-                    <p>Website ini menyajikan informasi terkini tentang kegiatan, prestasi, dan profil madrasah...</p>
+                    <h3>Belum Ada Berita</h3>
+                    <p>Saat ini belum tersedia berita atau pengumuman.</p>
                     <div class="berita-footer">
-                        <a href="berita/pengumuman.php" class="btn-read-more">
-                            <span>Baca Selengkapnya</span>
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
+                        <span class="text-muted">Informasi akan segera ditambahkan</span>
                     </div>
                 </div>
             </div>
             <?php } ?>
         </div>
         
+        <?php if(mysqli_num_rows($q_berita) > 0): ?>
         <div class="section-footer">
             <a href="berita/pengumuman.php" class="btn-more">Lihat Semua Berita <i class="fas fa-arrow-right"></i></a>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
-<!-- ========== 3. SAMBUTAN KEPALA - Membangun kepercayaan/Personal touch ========== -->
+<!-- ========== 3. SAMBUTAN KEPALA ========== -->
 <section class="sambutan-section">
     <div class="container">
         <div class="section-header">
@@ -207,9 +200,11 @@ if($kontak && !empty($kontak['telepon'])) {
         <div class="sambutan-wrapper">
             <div class="sambutan-image">
                 <?php 
-                $foto_kepala = $data_sambutan['foto'] ?? 'default-kepala.jpg';
-                $path_foto = 'uploads/' . $foto_kepala;
-                if (!file_exists($_SERVER['DOCUMENT_ROOT'] . '/mim_bodaskarangjati/' . $path_foto)) {
+                $foto_kepala = $data_sambutan['foto'] ?? '';
+                $path_foto = '';
+                if (!empty($foto_kepala) && file_exists($_SERVER['DOCUMENT_ROOT'] . '/mim_bodaskarangjati/uploads/' . $foto_kepala)) {
+                    $path_foto = 'uploads/' . $foto_kepala;
+                } else {
                     $path_foto = 'assets/img/default-avatar.jpg';
                 }
                 ?>
@@ -219,15 +214,15 @@ if($kontak && !empty($kontak['telepon'])) {
                 </div>
             </div>
             <div class="sambutan-content">
-                <h3><?= htmlspecialchars($data_sambutan['nama_kepala'] ?? 'Ahmad Sudirman, S.Pd.I') ?></h3>
+                <h3><?= !empty($data_sambutan['nama_kepala']) ? htmlspecialchars($data_sambutan['nama_kepala']) : 'Kepala Madrasah' ?></h3>
                 <span class="sambutan-jabatan">Kepala Madrasah</span>
                 <div class="sambutan-text">
                     <p>
                         <?php 
-                        if (!empty($data_sambutan['sambutan'])) {
+                        if ($sambutan_tersedia) {
                             echo nl2br(htmlspecialchars($data_sambutan['sambutan']));
                         } else {
-                            echo "Assalamualaikum Warahmatullahi Wabarakatuh. Selamat datang di website resmi MI Muhammadiyah Bodaskarangjati. Kami berkomitmen untuk memberikan pendidikan terbaik bagi putra-putri Anda dalam rangka mencetak generasi yang beriman, berilmu, dan berakhlak mulia.";
+                            echo "Sambutan kepala madrasah belum tersedia.";
                         }
                         ?>
                     </p>
@@ -237,7 +232,7 @@ if($kontak && !empty($kontak['telepon'])) {
     </div>
 </section>
 
-<!-- ========== 4. STATISTIK - Bukti kapasitas ========== -->
+<!-- ========== 4. STATISTIK ========== -->
 <section class="stats-section">
     <div class="container">
         <div class="section-header">
@@ -270,7 +265,7 @@ if($kontak && !empty($kontak['telepon'])) {
     </div>
 </section>
 
-<!-- ========== 5. PRESTASI - Bukti kualitas/Keunggulan ========== -->
+<!-- ========== 5. PRESTASI ========== -->
 <section class="prestasi-section">
     <div class="container">
         <div class="section-header">
@@ -320,25 +315,22 @@ if($kontak && !empty($kontak['telepon'])) {
                     </div>
                 </div>
                 <div class="prestasi-content">
-                    <div class="prestasi-header">
-                        <span class="prestasi-year">2024</span>
-                        <span class="prestasi-level">Kecamatan</span>
-                    </div>
-                    <h3>Juara 1 Lomba Pramuka</h3>
-                    <p class="prestasi-org"><i class="fas fa-building"></i> Kwarran Rembang</p>
-                    <p class="prestasi-desc">Prestasi membanggakan dari regu pramuka...</p>
+                    <h3>Belum Ada Data Prestasi</h3>
+                    <p>Saat ini belum tersedia data prestasi.</p>
                 </div>
             </div>
             <?php } ?>
         </div>
         
+        <?php if(mysqli_num_rows($q_prestasi_terbaru) > 0): ?>
         <div class="section-footer">
             <a href="kesiswaan/prestasi.php" class="btn-more">Lihat Semua Prestasi<i class="fas fa-arrow-right"></i></a>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
-<!-- ========== 6. PEMBIASAAN PAGI - Karakter & Nilai Islami (Unique Selling Point) ========== -->
+<!-- ========== 6. PEMBIASAAN PAGI ========== -->
 <section class="pembiasaan-section">
     <div class="container">
         <div class="section-header">
@@ -360,31 +352,16 @@ if($kontak && !empty($kontak['telepon'])) {
             </div>
             <?php } } else { ?>
             <div class="pembiasaan-card">
-                <div class="pembiasaan-icon"><i class="fas fa-quran"></i></div>
-                <h3>Tahfidz Al-Qur'an</h3>
-                <p>Program menghafal Al-Qur'an untuk membentuk generasi qur'ani</p>
-            </div>
-            <div class="pembiasaan-card">
-                <div class="pembiasaan-icon"><i class="fas fa-sun"></i></div>
-                <h3>Sholat Dhuha</h3>
-                <p>Pembiasaan sholat dhuha berjamaah setiap pagi</p>
-            </div>
-            <div class="pembiasaan-card">
-                <div class="pembiasaan-icon"><i class="fas fa-pray"></i></div>
-                <h3>Sholat Dhuhur Berjamaah</h3>
-                <p>Sholat dhuhur dilaksanakan secara berjamaah</p>
-            </div>
-            <div class="pembiasaan-card">
-                <div class="pembiasaan-icon"><i class="fas fa-hand-holding-heart"></i></div>
-                <h3>Jum'at Religi, Bersih dan Sehat</h3>
-                <p>Kegiatan Jum'at dengan program keagamaan, kebersihan, dan kesehatan</p>
+                <div class="pembiasaan-icon"><i class="fas fa-info-circle"></i></div>
+                <h3>Belum Ada Data</h3>
+                <p>Data kegiatan pembiasaan belum tersedia.</p>
             </div>
             <?php } ?>
         </div>
     </div>
 </section>
 
-<!-- ========== 7. EKSTRAKURIKULER - Minat & Bakat ========== -->
+<!-- ========== 7. EKSTRAKURIKULER ========== -->
 <section class="eks-section">
     <div class="container">
         <div class="section-header">
@@ -406,16 +383,24 @@ if($kontak && !empty($kontak['telepon'])) {
                 <p class="eks-meta"><i class="fas fa-user"></i> <?= htmlspecialchars($ekstra['pembina'] ?? '-') ?></p>
                 <p class="eks-desc"><?= htmlspecialchars(substr(strip_tags($ekstra['deskripsi'] ?? ''), 0, 70)) ?>...</p>
             </div>
-            <?php } } ?>
+            <?php } } else { ?>
+            <div class="eks-card">
+                <div class="eks-icon"><i class="fas fa-info-circle"></i></div>
+                <h3>Belum Ada Data</h3>
+                <p>Data ekstrakurikuler belum tersedia.</p>
+            </div>
+            <?php } ?>
         </div>
         
+        <?php if(mysqli_num_rows($q_ekstra) > 0): ?>
         <div class="section-footer">
             <a href="kesiswaan/ekstrakurikuler.php" class="btn-more">Lihat Semua ekstrakurikuler <i class="fas fa-arrow-right"></i></a>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
-<!-- ========== 8. AGENDA - Informasi kegiatan mendatang ========== -->
+<!-- ========== 8. AGENDA ========== -->
 <section class="agenda-section">
     <div class="container">
         <div class="section-header">
@@ -457,24 +442,26 @@ if($kontak && !empty($kontak['telepon'])) {
             <?php } } else { ?>
             <div class="agenda-item akan-datang">
                 <div class="agenda-date">
-                    <span class="day">15</span>
-                    <span class="month">Jun</span>
+                    <span class="day">-</span>
+                    <span class="month">-</span>
                 </div>
                 <div class="agenda-content">
-                    <h3>Pembagian Raport Semester Genap</h3>
-                    <p class="agenda-meta"><i class="fas fa-map-marker-alt"></i> Madrasah</p>
+                    <h3>Belum Ada Agenda</h3>
+                    <p class="agenda-meta">Saat ini belum tersedia agenda mendatang.</p>
                 </div>
             </div>
             <?php } ?>
         </div>
         
+        <?php if(mysqli_num_rows($q_agenda_terbaru) > 0): ?>
         <div class="section-footer">
             <a href="berita/agenda.php" class="btn-more">Lihat Semua Agenda <i class="fas fa-arrow-right"></i></a>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
-<!-- ========== 9. GALERI - Visualisasi kegiatan ========== -->
+<!-- ========== 9. GALERI ========== -->
 <section class="galeri-section">
     <div class="container">
         <div class="section-header">
@@ -499,16 +486,23 @@ if($kontak && !empty($kontak['telepon'])) {
                 <span class="galeri-badge"><?= htmlspecialchars($galeri['kategori']) ?></span>
                 <?php endif; ?>
             </div>
-            <?php } } ?>
+            <?php } } else { ?>
+            <div class="galeri-item" style="grid-column: 1/-1; text-align: center; padding: 60px; background: #f1f5f9; border-radius: 12px;">
+                <i class="fas fa-images" style="font-size: 3rem; color: #94a3b8; margin-bottom: 15px;"></i>
+                <p style="color: #64748b;">Belum ada dokumentasi galeri</p>
+            </div>
+            <?php } ?>
         </div>
         
+        <?php if(mysqli_num_rows($q_galeri) > 0): ?>
         <div class="section-footer">
             <a href="galeri/foto.php" class="btn-more">Lihat Semua Dokumentasi<i class="fas fa-arrow-right"></i></a>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
-<!-- ========== 10. SARANA - Fasilitas pendukung ========== -->
+<!-- ========== 10. SARANA - DENGAN FOTO ========== -->
 <section class="sarana-section">
     <div class="container">
         <div class="section-header">
@@ -522,22 +516,39 @@ if($kontak && !empty($kontak['telepon'])) {
                 while($sarana = mysqli_fetch_assoc($q_sarana)) {
             ?>
             <div class="sarana-item">
-                <div class="sarana-icon">
-                    <i class="fas <?= $sarana['ikon'] ?>"></i>
+                <!-- TAMPILKAN FOTO SEPERTI DI SARANA.PHP -->
+                <?php if (!empty($sarana['gambar']) && file_exists('uploads/sarana/' . $sarana['gambar'])): ?>
+                <div class="sarana-img">
+                    <img src="uploads/sarana/<?= $sarana['gambar'] ?>" alt="<?= htmlspecialchars($sarana['nama_sarana']) ?>">
                 </div>
+                <?php else: ?>
+                <div class="sarana-icon">
+                    <i class="fas <?= $sarana['ikon'] ?? 'fa-building' ?>"></i>
+                </div>
+                <?php endif; ?>
                 <h4><?= htmlspecialchars($sarana['nama_sarana']) ?></h4>
                 <p><?= htmlspecialchars(substr($sarana['keterangan'] ?? '', 0, 60)) ?>...</p>
             </div>
-            <?php } } ?>
+            <?php } } else { ?>
+            <div class="sarana-item">
+                <div class="sarana-icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <h4>Belum Ada Data</h4>
+                <p>Data sarana prasarana belum tersedia.</p>
+            </div>
+            <?php } ?>
         </div>
         
+        <?php if(mysqli_num_rows($q_sarana) > 0): ?>
         <div class="section-footer">
             <a href="profil/sarana.php" class="btn-more">Lihat Semua Fasilitas<i class="fas fa-arrow-right"></i></a>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 
-<!-- ========== 11. VISI MISI - Filosofi (diletakkan di bawah karena cukup formal) ========== -->
+<!-- ========== 11. VISI MISI ========== -->
 <section class="visi-misi-section">
     <div class="container">
         <div class="section-header">
@@ -549,21 +560,26 @@ if($kontak && !empty($kontak['telepon'])) {
             <div class="visi-card">
                 <div class="visi-icon"><i class="fas fa-eye"></i></div>
                 <h3>Visi</h3>
-                <p><?= strip_tags($data_visi['visi'] ?? 'Terwujudnya generasi beriman, berilmu, berakhlak mulia, dan berwawasan kebangsaan') ?></p>
+                <p><?= $visi_tersedia ? strip_tags($data_visi['visi']) : 'Visi madrasah belum tersedia.' ?></p>
             </div>
             <div class="misi-card">
                 <div class="misi-icon"><i class="fas fa-list"></i></div>
                 <h3>Misi</h3>
                 <?php 
-                $misi = $data_visi['misi'] ?? '<ul><li>Menanamkan aqidah yang lurus dan akhlak mulia</li><li>Menyelenggarakan pembelajaran aktif dan kreatif</li><li>Mengembangkan potensi akademik dan non-akademik</li></ul>';
-                echo $misi;
+                if ($misi_tersedia) {
+                    echo $data_visi['misi'];
+                } else {
+                    echo '<p>Misi madrasah belum tersedia.</p>';
+                }
                 ?>
             </div>
         </div>
         
+        <?php if($visi_tersedia || $misi_tersedia): ?>
         <div class="section-footer">
             <a href="profil/visi_misi.php" class="btn-more">Lihat Selengkapnya <i class="fas fa-arrow-right"></i></a>
         </div>
+        <?php endif; ?>
     </div>
 </section>
 

@@ -837,9 +837,17 @@ function initGaleriFotoPage() {
     const fileUploadArea = document.getElementById('fileUploadArea');
     
     if (fileInput && previewImage && fileUploadArea) {
-        fileUploadArea.onclick = function() {
+        if (fileUploadArea.onclick) {
+            // Hapus event listener lama jika ada
+            fileUploadArea.removeEventListener('click', fileUploadArea.clickHandler);
+        }
+        
+        const handleFileUploadClick = function() {
             fileInput.click();
         };
+        
+        fileUploadArea.onclick = handleFileUploadClick;
+        fileUploadArea.clickHandler = handleFileUploadClick;
         
         fileInput.onchange = function(e) {
             const file = e.target.files[0];
@@ -870,20 +878,36 @@ function initGaleriFotoPage() {
     
     // Modal delete handler
     const deleteModal = document.getElementById('deleteModal');
+    
+    // Pastikan modal tidak null sebelum melanjutkan
+    if (!deleteModal) {
+        console.warn('Delete modal not found');
+        return;
+    }
+    
     const deleteButtons = document.querySelectorAll('.btn-delete');
     
-    function showDeleteModal(id, name, hasFile) {
+    function showDeleteModal(id, name, hasFile, fileName) {
         const deleteItemName = document.getElementById('deleteItemName');
         const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
         const fileWarningContainer = document.getElementById('fileWarningContainer');
         const fileWarningText = document.getElementById('fileWarningText');
+        const fileList = document.getElementById('fileList');
         
         if (deleteItemName) deleteItemName.innerText = name;
         if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
         
         if (fileWarningContainer && fileWarningText) {
-            if (hasFile === 'true') {
+            if (hasFile === 'true' && fileName) {
                 fileWarningText.innerText = 'Foto ini memiliki file yang akan ikut terhapus!';
+                if (fileList) {
+                    fileList.innerHTML = `
+                        <div style="margin-top: 5px;">
+                            <i class="fas fa-image"></i> 
+                            <strong>File:</strong> ${fileName}
+                        </div>
+                    `;
+                }
                 fileWarningContainer.style.display = 'block';
             } else {
                 fileWarningContainer.style.display = 'none';
@@ -903,21 +927,46 @@ function initGaleriFotoPage() {
         }
     }
     
+    // Hapus event listener lama dan tambahkan yang baru
     deleteButtons.forEach(button => {
+        // Hapus event listener lama jika ada
+        const oldClick = button.onclick;
+        if (oldClick) {
+            button.removeEventListener('click', oldClick);
+        }
+        
+        // Tambahkan event listener baru
         button.onclick = function(e) {
             e.preventDefault();
+            e.stopPropagation();
             const id = this.getAttribute('data-id');
             const name = this.getAttribute('data-name');
             const hasFile = this.getAttribute('data-has-file');
-            showDeleteModal(id, name, hasFile);
+            const fileName = this.getAttribute('data-file-name');
+            console.log('Delete button clicked:', {id, name, hasFile, fileName}); // Debug
+            showDeleteModal(id, name, hasFile, fileName);
         };
     });
     
-    const modalClose = deleteModal ? deleteModal.querySelector('.modal-close') : null;
+    const modalClose = deleteModal.querySelector('.modal-close');
     const btnCloseModal = document.getElementById('btnCloseModal');
     
-    if (modalClose) modalClose.onclick = closeDeleteModal;
-    if (btnCloseModal) btnCloseModal.onclick = closeDeleteModal;
+    if (modalClose) {
+        // Hapus event listener lama
+        const oldCloseClick = modalClose.onclick;
+        if (oldCloseClick) {
+            modalClose.removeEventListener('click', oldCloseClick);
+        }
+        modalClose.onclick = closeDeleteModal;
+    }
+    
+    if (btnCloseModal) {
+        const oldBtnClick = btnCloseModal.onclick;
+        if (oldBtnClick) {
+            btnCloseModal.removeEventListener('click', oldBtnClick);
+        }
+        btnCloseModal.onclick = closeDeleteModal;
+    }
     
     if (deleteModal) {
         deleteModal.onclick = function(e) {
@@ -933,12 +982,25 @@ function initGaleriFotoPage() {
     
     const submitBtn = document.getElementById('btnSubmit');
     if (form && submitBtn) {
+        // Hapus event listener lama
+        const oldSubmit = form.onsubmit;
+        if (oldSubmit) {
+            form.removeEventListener('submit', oldSubmit);
+        }
+        
         form.addEventListener('submit', function() {
             submitBtn.classList.add('loading');
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
             submitBtn.disabled = true;
         });
     }
+}
+
+// Panggil fungsi saat halaman siap
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGaleriFotoPage);
+} else {
+    initGaleriFotoPage();
 }
 
 // ==============================================

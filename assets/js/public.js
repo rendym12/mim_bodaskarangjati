@@ -1400,58 +1400,82 @@ function initPrestasiPage() {
 }
 
 // ==============================================
-// PPDB PAGE
+// PPDB PAGE - PUBLIC JAVASCRIPT
 // ==============================================
-function initPpdbPage() {
-    const form = document.getElementById('ppdbForm');
-    if (!form) return;
+
+(function() {
+    'use strict';
     
-    let syaratCounter = document.querySelectorAll('#syaratContainer .syarat-item').length || 2;
-    
-    const addSyaratBtn = document.getElementById('addSyaratBtn');
-    if (addSyaratBtn) {
-        addSyaratBtn.addEventListener('click', function() {
-            const container = document.getElementById('syaratContainer');
-            const newItem = document.createElement('div');
-            newItem.className = 'syarat-item';
-            newItem.innerHTML = `
-                <div class="syarat-header"><h4>Syarat ${syaratCounter + 1}</h4><button type="button" class="btn-remove-syarat">Hapus</button></div>
-                <div class="syarat-fields">
-                    <div class="form-row"><div class="form-group"><label>Icon</label><input type="text" name="syarat_icon[]" class="form-control" value="fa-check"></div>
-                    <div class="form-group"><label>Judul</label><input type="text" name="syarat_title[]" class="form-control" required></div></div>
-                    <div class="form-group"><label>Deskripsi</label><textarea name="syarat_desc[]" class="form-control" rows="2"></textarea></div>
-                    <div class="form-group"><label>Daftar Berkas</label><div class="files-container" data-index="${syaratCounter}"></div>
-                    <button type="button" class="btn-add-file" data-index="${syaratCounter}">Tambah Berkas</button></div>
-                </div>
-            `;
-            container.appendChild(newItem);
-            syaratCounter++;
-        });
-    }
-    
-    const qrInput = document.getElementById('qr_code');
-    if (qrInput) {
-        const previewQr = document.getElementById('previewQr');
-        const previewQrContainer = document.getElementById('previewQrContainer');
-        qrInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && previewQr) {
-                const reader = new FileReader();
-                reader.onload = e => { previewQr.src = e.target.result; if (previewQrContainer) previewQrContainer.style.display = 'block'; };
-                reader.readAsDataURL(file);
+    // Countdown Timer
+    function initCountdown() {
+        const targetDateAttr = document.body.getAttribute('data-ppdb-target-date');
+        if (!targetDateAttr) return;
+        
+        const targetDate = new Date(targetDateAttr).getTime();
+        
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+            
+            if (distance < 0) {
+                const timerDiv = document.getElementById('countdownTimer');
+                if (timerDiv) {
+                    timerDiv.innerHTML = '<div class="countdown-item"><span class="countdown-value">00</span><span class="countdown-label">Hari</span></div>' +
+                                        '<div class="countdown-item"><span class="countdown-value">00</span><span class="countdown-label">Jam</span></div>' +
+                                        '<div class="countdown-item"><span class="countdown-value">00</span><span class="countdown-label">Menit</span></div>' +
+                                        '<div class="countdown-item"><span class="countdown-value">00</span><span class="countdown-label">Detik</span></div>';
+                }
+                return;
             }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            const daysEl = document.getElementById('days');
+            const hoursEl = document.getElementById('hours');
+            const minutesEl = document.getElementById('minutes');
+            const secondsEl = document.getElementById('seconds');
+            
+            if (daysEl) daysEl.textContent = String(days).padStart(2, '0');
+            if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+            if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+            if (secondsEl) secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    }
+    
+    // Scroll Reveal Animation
+    function initScrollReveal() {
+        const cards = document.querySelectorAll('.info-card, .fasilitas-card, .mengapa-card');
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.5s ease';
+            observer.observe(card);
         });
     }
     
-    const submitBtn = document.getElementById('btnSubmit');
-    if (submitBtn) {
-        form.addEventListener('submit', function() {
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-            submitBtn.disabled = true;
-        });
-    }
-}
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        initCountdown();
+        initScrollReveal();
+    });
+})();
 
 // ==============================================
 // PENGUMUMAN PAGE

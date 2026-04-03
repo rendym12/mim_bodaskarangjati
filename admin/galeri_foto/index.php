@@ -6,7 +6,7 @@ if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
     // Ambil data untuk dihapus
-    $q = mysqli_query($conn, "SELECT judul, gambar FROM galeri_foto WHERE id = $id");
+    $q = mysqli_query($conn, "SELECT judul, file_foto FROM galeri_foto WHERE id = $id");
     $data = mysqli_fetch_assoc($q);
     
     $file_deleted = false;
@@ -18,8 +18,8 @@ if (isset($_GET['delete'])) {
         $judul = $data['judul'];
         
         // Hapus file gambar jika ada
-        if ($data && !empty($data['gambar']) && file_exists("../../uploads/galeri_foto/" . $data['gambar'])) {
-            if (unlink("../../uploads/galeri_foto/" . $data['gambar'])) {
+        if ($data && !empty($data['file_foto']) && file_exists("../../uploads/galeri_foto/" . $data['file_foto'])) {
+            if (unlink("../../uploads/galeri_foto/" . $data['file_foto'])) {
                 $file_deleted = true;
             }
         }
@@ -123,11 +123,11 @@ include "../includes/header.php";
                         <tr>
                             <td class="text-center"><?= $no++ ?></td>
                             <td class="text-center">
-                                <?php if (!empty($row['gambar'])): ?>
-                                    <img src="../../uploads/galeri_foto/<?= $row['gambar'] ?>" 
+                                <?php if (!empty($row['file_foto'])): ?>
+                                    <img src="../../uploads/galeri_foto/<?= $row['file_foto'] ?>" 
                                          alt="<?= htmlspecialchars($row['judul']) ?>" 
                                          style="width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid var(--secondary); cursor: pointer;"
-                                         onclick="window.open('../../uploads/galeri_foto/<?= $row['gambar'] ?>', '_blank')">
+                                         onclick="window.open('../../uploads/galeri_foto/<?= $row['file_foto'] ?>', '_blank')">
                                 <?php else: ?>
                                     <div style="width: 80px; height: 60px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
                                         <i class="fas fa-image" style="font-size: 1.5rem; color: #94a3b8;"></i>
@@ -164,8 +164,8 @@ include "../includes/header.php";
                                             data-id="<?= $row['id'] ?>" 
                                             data-name="<?= htmlspecialchars($row['judul']) ?>"
                                             data-module="foto"
-                                            data-has-image="<?= (!empty($row['gambar']) ? 'true' : 'false') ?>"
-                                            data-image-name="<?= htmlspecialchars($row['gambar'] ?? '') ?>"
+                                            data-has-file="<?= (!empty($row['file_foto']) ? 'true' : 'false') ?>"
+                                            data-file-name="<?= htmlspecialchars($row['file_foto'] ?? '') ?>"
                                             title="Hapus">
                                         <i class="fas fa-trash"></i>
                                     </button>
@@ -216,3 +216,5 @@ include "../includes/header.php";
         </div>
     </div>
 </div>
+
+<?php include "../includes/footer.php"; ?>
