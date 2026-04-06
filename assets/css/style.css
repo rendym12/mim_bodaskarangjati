@@ -2652,22 +2652,25 @@ nav ul li ul li a:hover {
     margin: 20px 0 25px;
     border-radius: 12px;
     overflow: hidden;
-    max-height: 350px;
+    /* Hapus max-height */
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     position: relative;
+    background: #f5f5f5;
 }
 
 .card-gambar img {
     width: 100%;
-    height: 100%;
+    height: auto; /* Auto agar proporsional */
     object-fit: cover;
     display: block;
     transition: transform 0.6s ease;
 }
 
+/* Hover effect tetap berfungsi */
 .sejarah-card:hover .card-gambar img {
     transform: scale(1.03);
 }
+
 
 .gambar-caption {
     position: absolute;
@@ -2798,12 +2801,12 @@ nav ul li ul li a:hover {
 .visi-misi-wrapper {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin: 40px auto 50px;
+    gap: 70px;
+    margin: 80px auto 120px; /* 150px jarak ke footer */
     max-width: 1000px;
     justify-content: center;
-}
 
+}
 .visi-card,
 .misi-card {
     background: white;
@@ -2989,7 +2992,6 @@ nav ul li ul li a:hover {
     z-index: -1;
 }
 
-/* URUTAN FOTO */
 .guru-foto {
     width: 160px;
     height: 160px;
@@ -3000,26 +3002,24 @@ nav ul li ul li a:hover {
     box-shadow: 0 15px 30px rgba(11, 61, 145, 0.2);
     position: relative;
     transition: all 0.4s ease;
-
     order: 1;
-}
-
-.guru-card:hover .guru-foto {
-    transform: scale(1.05);
-    border-color: #FFD700;
-    box-shadow: 0 20px 40px rgba(255, 215, 0, 0.3);
+    background: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .guru-foto img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover; /* Ganti dari contain ke cover */
+    object-position: center 20%; /* Geser fokus ke atas (wajah) */
     display: block;
-    transition: transform 0.6s ease;
+    transition: transform 0.4s ease;
 }
 
 .guru-card:hover .guru-foto img {
-    transform: scale(1.15);
+    transform: scale(1.05);
 }
 
 .guru-icon {
@@ -4932,6 +4932,11 @@ nav ul li ul li a:hover {
 /* ==============================================
    9. HALAMAN KESISWAAN
 ============================================== */
+/* ==============================================
+   9. HALAMAN KESISWAAN - PRESTASI
+   ============================================== */
+
+/* ========== STATISTIK PRESTASI ========== */
 .prestasi-stats {
     display: flex;
     justify-content: center;
@@ -5003,6 +5008,7 @@ nav ul li ul li a:hover {
     line-height: 1.4;
 }
 
+/* ========== FILTER TAHUN ========== */
 .prestasi-filter {
     display: flex;
     justify-content: center;
@@ -5011,6 +5017,32 @@ nav ul li ul li a:hover {
     flex-wrap: wrap;
 }
 
+.filter-btn {
+    padding: 10px 25px;
+    border: 2px solid #0B3D91;
+    background: white;
+    color: #0B3D91;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: #0B3D91;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(11, 61, 145, 0.2);
+}
+
+.filter-btn.active {
+    background: #0B3D91;
+    color: white;
+    box-shadow: 0 5px 15px rgba(11, 61, 145, 0.3);
+}
+
+/* ========== GRID PRESTASI ========== */
 .prestasi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -5035,6 +5067,7 @@ nav ul li ul li a:hover {
     border-color: #FFD700;
 }
 
+/* ========== GAMBAR PRESTASI ========== */
 .prestasi-gambar {
     height: 200px;
     position: relative;
@@ -5071,20 +5104,7 @@ nav ul li ul li a:hover {
     50% { transform: translateY(-10px); }
 }
 
-.prestasi-overlay {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: rgba(255, 215, 0, 0.9);
-    color: #0B3D91;
-    padding: 5px 15px;
-    border-radius: 30px;
-    font-weight: 700;
-    font-size: 0.9rem;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    border: 2px solid white;
-}
-
+/* ========== KONTEN PRESTASI ========== */
 .prestasi-content {
     padding: 25px;
 }
@@ -5115,6 +5135,88 @@ nav ul li ul li a:hover {
     width: 80px;
 }
 
+/* ========== TAHUN & JUARA (SEMUA WARNA KUNING) ========== */
+.prestasi-tahun-juara {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.prestasi-tahun-badge {
+    background: #FFD700;
+    color: #0B3D91;
+    padding: 5px 12px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.prestasi-tahun-badge i {
+    color: #0B3D91;
+}
+
+.prestasi-juara-badge {
+    background: #FFD700;
+    color: #0B3D91;
+    padding: 5px 15px;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ========== PESERTA (SISWA/TIM) ========== */
+.prestasi-peserta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #f0f9ff, #e6f3ff);
+    padding: 10px 15px;
+    border-radius: 30px;
+    margin-bottom: 15px;
+    border-left: 3px solid #FFD700;
+    transition: all 0.3s ease;
+}
+
+.prestasi-card:hover .prestasi-peserta {
+    background: linear-gradient(135deg, #e6f3ff, #d4ecff);
+    transform: translateX(3px);
+}
+
+.prestasi-peserta i {
+    font-size: 1rem;
+    color: #FFD700;
+    width: 24px;
+    text-align: center;
+}
+
+.prestasi-peserta-label {
+    font-weight: 700;
+    color: #0B3D91;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(11, 61, 145, 0.1);
+    padding: 2px 8px;
+    border-radius: 20px;
+}
+
+.prestasi-peserta-nama {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.9rem;
+    flex: 1;
+    word-break: break-word;
+}
+
+/* ========== TINGKAT ========== */
 .prestasi-tingkat {
     display: flex;
     align-items: center;
@@ -5133,6 +5235,7 @@ nav ul li ul li a:hover {
     color: #FFD700;
 }
 
+/* ========== PENYELENGGARA ========== */
 .prestasi-penyelenggara {
     display: flex;
     align-items: center;
@@ -5143,7 +5246,7 @@ nav ul li ul li a:hover {
     border-radius: 30px;
     font-size: 0.9rem;
     font-weight: 600;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
     border: 1px solid rgba(255, 215, 0, 0.2);
 }
 
@@ -5151,41 +5254,221 @@ nav ul li ul li a:hover {
     color: #FFD700;
 }
 
-.prestasi-deskripsi {
-    color: #4a5568;
-    font-size: 0.95rem;
-    line-height: 1.7;
-    margin: 15px 0;
-    padding: 15px 0;
-    border-top: 1px dashed #e2e8f0;
-    border-bottom: 1px dashed #e2e8f0;
-}
-
-.prestasi-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 15px;
-}
-
-.prestasi-medali {
-    font-size: 2rem;
-    filter: drop-shadow(0 5px 10px rgba(255, 215, 0, 0.3));
-    animation: shine 2s ease-in-out infinite;
-}
-
-@keyframes shine {
-    0%, 100% { transform: scale(1); filter: drop-shadow(0 5px 10px rgba(255, 215, 0, 0.3)); }
-    50% { transform: scale(1.1); filter: drop-shadow(0 10px 20px rgba(255, 215, 0, 0.5)); }
-}
-
-.prestasi-urutan {
-    background: #edf2f7;
-    color: #4a5568;
-    padding: 5px 12px;
+/* ========== EMPTY STATE ========== */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: white;
     border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    margin: 40px 0;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #cbd5e0;
+    margin-bottom: 20px;
+}
+
+.empty-state p {
+    color: #718096;
+    font-size: 1.1rem;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+    .prestasi-stats {
+        gap: 20px;
+    }
+    
+    .stat-card {
+        padding: 20px 25px;
+        min-width: 220px;
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .prestasi-grid {
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 25px;
+    }
+}
+
+@media (max-width: 768px) {
+    .prestasi-stats {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .stat-card {
+        min-width: auto;
+        padding: 18px 20px;
+    }
+    
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        font-size: 1.3rem;
+    }
+    
+    .stat-number {
+        font-size: 1.8rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+    
+    .filter-btn {
+        padding: 8px 20px;
+        font-size: 0.8rem;
+    }
+    
+    .prestasi-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .prestasi-gambar {
+        height: 180px;
+    }
+    
+    .prestasi-content {
+        padding: 18px;
+    }
+    
+    .prestasi-nama {
+        font-size: 1.1rem;
+    }
+    
+    .prestasi-tahun-juara {
+        gap: 8px;
+    }
+    
+    .prestasi-tahun-badge,
+    .prestasi-juara-badge {
+        padding: 4px 10px;
+        font-size: 0.7rem;
+    }
+    
+    .prestasi-peserta {
+        padding: 8px 12px;
+    }
+    
+    .prestasi-peserta i {
+        width: 20px;
+        font-size: 0.9rem;
+    }
+    
+    .prestasi-peserta-label {
+        font-size: 0.7rem;
+    }
+    
+    .prestasi-peserta-nama {
+        font-size: 0.8rem;
+    }
+    
+    .prestasi-tingkat,
+    .prestasi-penyelenggara {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .prestasi-gambar {
+        height: 160px;
+    }
+    
+    .prestasi-content {
+        padding: 15px;
+    }
+    
+    .prestasi-nama {
+        font-size: 1rem;
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+    
+    .prestasi-tahun-juara {
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+    
+    .prestasi-tahun-badge,
+    .prestasi-juara-badge {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+    
+    .prestasi-peserta {
+        gap: 6px;
+        padding: 6px 10px;
+        margin-bottom: 10px;
+    }
+    
+    .prestasi-peserta i {
+        width: 18px;
+        font-size: 0.8rem;
+    }
+    
+    .prestasi-peserta-label {
+        font-size: 0.65rem;
+    }
+    
+    .prestasi-peserta-nama {
+        font-size: 0.75rem;
+    }
+    
+    .prestasi-tingkat,
+    .prestasi-penyelenggara {
+        padding: 5px 10px;
+        font-size: 0.7rem;
+        margin-bottom: 8px;
+        gap: 6px;
+    }
+    
+    .empty-state {
+        padding: 50px 20px;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+    }
+    
+    .empty-state p {
+        font-size: 0.9rem;
+    }
+}
+
+/* ========== ANIMASI UNTUK FILTER ========== */
+.prestasi-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prestasi-card[style*="display: none"] {
+    display: none !important;
+}
+
+/* ========== SCROLL REVEAL ANIMATION ========== */
+.prestasi-card {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.prestasi-card.revealed {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .eks-grid {
@@ -6016,15 +6299,19 @@ nav ul li ul li a:hover {
     font-size: 0.75rem;
 }
 
-/* Kontak */
-.kontak-wrapper {
+/* ==============================================
+   PPDB PAGE - KONTAK SECTION (TIDAK MEMPENGARUHI KONTAK ASLI)
+   ============================================== */
+
+/* Kontak section di PPDB page - hanya berlaku di dalam .ppdb-page */
+.ppdb-page .kontak-wrapper {
     background: linear-gradient(135deg, #FFD700, #f0b700);
     border-radius: 20px;
     margin-bottom: 40px;
     overflow: hidden;
 }
 
-.kontak-content {
+.ppdb-page .kontak-content {
     display: flex;
     align-items: center;
     gap: 25px;
@@ -6032,7 +6319,7 @@ nav ul li ul li a:hover {
     flex-wrap: wrap;
 }
 
-.kontak-icon {
+.ppdb-page .kontak-icon {
     width: 70px;
     height: 70px;
     background: white;
@@ -6044,33 +6331,50 @@ nav ul li ul li a:hover {
     color: #0B3D91;
 }
 
-.kontak-info {
+.ppdb-page .kontak-info {
     flex: 1;
 }
 
-.kontak-info h3 {
+.ppdb-page .kontak-info h3 {
     font-size: 1.3rem;
     color: #0B3D91;
     margin-bottom: 8px;
     font-weight: 700;
 }
 
-.kontak-phone {
+.ppdb-page .kontak-phone {
     font-size: 1.3rem;
     font-weight: 700;
     color: #0B3D91;
     margin-bottom: 5px;
 }
 
-.kontak-person {
+.ppdb-page .kontak-person {
     color: rgba(11,61,145,0.8);
     font-size: 0.9rem;
 }
 
-.kontak-keterangan {
+.ppdb-page .kontak-keterangan {
     color: rgba(11,61,145,0.7);
     font-size: 0.85rem;
     margin-top: 5px;
+}
+
+/* Responsive PPDB kontak section */
+@media (max-width: 768px) {
+    .ppdb-page .kontak-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 25px;
+    }
+    
+    .ppdb-page .kontak-info h3 {
+        font-size: 1.1rem;
+    }
+    
+    .ppdb-page .kontak-phone {
+        font-size: 1.1rem;
+    }
 }
 
 /* Catatan */
@@ -8490,112 +8794,6 @@ body.kontak-page .kontak-info-section {
     transition: all 0.3s ease;
 }
 
-.menu-toggle:hover {
-    color: #FFD700;
-}
-
-/* Overlay saat menu terbuka */
-.menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.menu-overlay.active {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Responsive Mobile & Tablet */
-@media (max-width: 992px) {
-    .menu-toggle {
-        display: block;
-    }
-    
-    nav {
-        position: fixed;
-        top: 0;
-        right: -100%;
-        width: 280px;
-        height: 100vh;
-        background: white;
-        box-shadow: -5px 0 20px rgba(0,0,0,0.1);
-        transition: right 0.3s ease;
-        z-index: 1000;
-        overflow-y: auto;
-    }
-    
-    nav.active {
-        right: 0;
-    }
-    
-    nav ul {
-        flex-direction: column;
-        padding: 70px 0 20px;
-        gap: 0;
-    }
-    
-    nav ul li {
-        width: 100%;
-        border-bottom: 1px solid #f0f0f0;
-    }
-    
-    nav ul li > a {
-        color: #333;
-        padding: 14px 20px;
-        font-size: 0.9rem;
-        border-radius: 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    nav ul li > a i {
-        color: #999;
-        transition: transform 0.3s ease;
-    }
-    
-    nav ul li > a:hover {
-        background: #f5f5f5;
-        color: #0B3D91;
-    }
-    
-    /* Dropdown di mobile */
-    nav ul li ul {
-        position: static;
-        background: #f9f9f9;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        display: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    nav ul li ul.active {
-        display: block;
-    }
-    
-    nav ul li ul li a {
-        padding: 12px 20px 12px 35px;
-        font-size: 0.85rem;
-        white-space: normal;
-    }
-    
-    nav ul li ul li a:hover {
-        background: #e8f0fe;
-        padding-left: 40px;
-    }
-}
-
 /* ==============================================
    HERO SLIDER MOBILE - PERBAIKAN
 ============================================== */
@@ -9442,3 +9640,443 @@ header .logo-text h1 span {
 .copyright-wrapper {
     overflow: visible !important;
 }
+
+/* ==============================================
+   MOBILE SIDEBAR - PUBLIC VERSION (FIXED)
+   ============================================== */
+
+/* HAPUS BAGIAN .hamburger DI SINI - JANGAN DUPLIKAT */
+
+/* Langsung mulai dari Overlay */
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1002;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile Sidebar */
+.mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 85%;
+    max-width: 320px;
+    height: 100vh;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
+    z-index: 1003;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.mobile-sidebar.active {
+    left: 0;
+}
+
+/* ... sisanya tetap sama ... */
+/* Overlay */
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1002;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mobile Sidebar */
+.mobile-sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 85%;
+    max-width: 320px;
+    height: 100vh;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.15);
+    z-index: 1003;
+    transition: left 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.mobile-sidebar.active {
+    left: 0;
+}
+
+/* Header Sidebar */
+.mobile-sidebar .sidebar-header {
+    background: linear-gradient(135deg, #0B3D91, #082e6b);
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #FFD700;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mobile-sidebar .sidebar-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mobile-sidebar .sidebar-logo img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    background: white;
+    border-radius: 12px;
+    padding: 5px;
+}
+
+.mobile-sidebar .sidebar-logo-text strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.3;
+}
+
+.mobile-sidebar .sidebar-logo-text small {
+    font-size: 0.65rem;
+    color: #FFD700;
+    font-weight: 500;
+}
+
+.mobile-sidebar .sidebar-close {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.8rem;
+    font-weight: 300;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-sidebar .sidebar-close:hover {
+    background: #FFD700;
+    color: #0B3D91;
+    transform: rotate(90deg);
+}
+
+/* Menu Sidebar */
+.mobile-sidebar .sidebar-menu {
+    flex: 1;
+    padding: 10px 0;
+    overflow-y: auto;
+}
+
+.mobile-sidebar .sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.mobile-sidebar .sidebar-nav > li {
+    border-bottom: 1px solid rgba(11, 61, 145, 0.08);
+}
+
+.mobile-sidebar .sidebar-nav > li > a {
+    display: block;
+    padding: 14px 20px;
+    color: #2c3e50;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.mobile-sidebar .sidebar-nav > li > a:hover {
+    background: rgba(11, 61, 145, 0.05);
+    color: #0B3D91;
+    padding-left: 25px;
+}
+
+/* Dropdown di Sidebar */
+.mobile-sidebar .dropdown {
+    position: relative;
+}
+
+.mobile-sidebar .dropdown-link-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.mobile-sidebar .dropdown-link {
+    flex: 1;
+    padding: 14px 20px;
+    color: #2c3e50;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: left;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mobile-sidebar .dropdown-link:hover {
+    background: rgba(11, 61, 145, 0.05);
+    color: #0B3D91;
+}
+
+.mobile-sidebar .dropdown-toggle {
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0B3D91;
+    transition: all 0.3s ease;
+}
+
+.mobile-sidebar .dropdown-toggle i {
+    font-size: 0.8rem;
+    transition: transform 0.3s ease;
+}
+
+.mobile-sidebar .dropdown.open .dropdown-toggle i {
+    transform: rotate(180deg);
+}
+
+/* Submenu */
+.mobile-sidebar .dropdown-content {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(11, 61, 145, 0.03);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.mobile-sidebar .dropdown.open .dropdown-content {
+    max-height: 500px;
+}
+
+.mobile-sidebar .dropdown-content li {
+    border-bottom: none;
+}
+
+.mobile-sidebar .dropdown-content li a {
+    display: block;
+    padding: 12px 20px 12px 40px;
+    color: #4a5568;
+    text-decoration: none;
+    font-size: 0.88rem;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.mobile-sidebar .dropdown-content li a::before {
+    content: '→';
+    position: absolute;
+    left: 20px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    color: #FFD700;
+}
+
+.mobile-sidebar .dropdown-content li a:hover {
+    background: rgba(255, 215, 0, 0.1);
+    color: #0B3D91;
+    padding-left: 48px;
+}
+
+.mobile-sidebar .dropdown-content li a:hover::before {
+    opacity: 1;
+    left: 28px;
+}
+
+/* Footer Sidebar - HANYA HUBUNGI KAMI */
+.mobile-sidebar .sidebar-footer {
+    background: #f1f5f9;
+    padding: 20px;
+    border-top: 1px solid #e2e8f0;
+    margin-top: auto;
+}
+
+.mobile-sidebar .sidebar-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.mobile-sidebar .sidebar-contact .sidebar-wa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.mobile-sidebar .sidebar-contact .sidebar-wa i {
+    font-size: 1.2rem;
+}
+
+.mobile-sidebar .sidebar-contact .sidebar-wa:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+}
+
+.mobile-sidebar .sidebar-copyright {
+    text-align: center;
+    padding-top: 15px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.mobile-sidebar .sidebar-copyright small {
+    color: #64748b;
+    font-size: 0.7rem;
+}
+
+/* Animasi */
+@keyframes slideInLeft {
+    from { transform: translateX(-100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.mobile-sidebar.active {
+    animation: slideInLeft 0.3s ease forwards;
+}
+
+.mobile-overlay.active {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Scrollbar */
+.mobile-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mobile-sidebar::-webkit-scrollbar-track {
+    background: #e2e8f0;
+}
+
+.mobile-sidebar::-webkit-scrollbar-thumb {
+    background: #0B3D91;
+    border-radius: 4px;
+}
+
+/* Prevent body scroll saat sidebar open */
+body.sidebar-open {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+}
+
+/* ==============================================
+   RESPONSIVE MOBILE
+   ============================================== */
+@media (max-width: 992px) {
+    /* Tampilkan hamburger */
+    .hamburger {
+        display: flex !important;
+    }
+    
+    /* Sembunyikan nav menu asli */
+    header .nav-menu {
+        display: none !important;
+    }
+    
+    /* Logo di tengah */
+    header {
+        justify-content: center !important;
+    }
+    
+    header .logo {
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 576px) {
+    .mobile-sidebar {
+        width: 85%;
+        max-width: 280px;
+    }
+    
+    .mobile-sidebar .sidebar-header {
+        padding: 15px;
+    }
+    
+    .mobile-sidebar .sidebar-logo img {
+        width: 38px;
+        height: 38px;
+    }
+    
+    .mobile-sidebar .sidebar-nav > li > a,
+    .mobile-sidebar .dropdown-link {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+    
+    .hamburger {
+        left: 4% !important;
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .hamburger span {
+        width: 20px !important;
+    }
+}
+
+/* Matikan style yang tidak diperlukan */
+.admin-sidebar,
+#adminSidebar,
+.sidebar-overlay,
+.mobile-menu-btn {
+    display: none !important;
+}
+

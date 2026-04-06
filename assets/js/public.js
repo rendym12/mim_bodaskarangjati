@@ -1,7 +1,7 @@
 // ==============================================
-// FILE: admin.js (FULL UPDATED VERSION)
-// ADMIN PANEL - MI MUHAMMADIYAH BODASKARANGJATI
-// VERSI: 4.0 - FIX GURU STAFF MODAL & PREVIEW
+// FILE: Public.js (FULL UPDATED VERSION)
+// MI MUHAMMADIYAH BODASKARANGJATI
+// VERSI: 4.1 - FIX PRESTASI FILTER
 // ==============================================
 
 // ==============================================
@@ -13,24 +13,23 @@ let currentDeleteId = null;
 // MAIN INITIALIZATION
 // ==============================================
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Admin JS v4.0 Loaded');
+    console.log('✅ Public JS Loaded');
     
-    // Inisialisasi semua modul
-    initGlobalFunctions();
-    initMobileSidebar();
-    initProfileDropdown();
-    initDeleteModal();
-    initDeleteButtons();
-    initModalCloseButtons();
-    initAutoCloseAlerts();
-    initFileUpload();
-    initTableSearch();
-    initFormValidation();
-    initNumberInputs();
+    initHeroSlider();
+    initMobileMenu();
+    initScrollTop();
+    initFloatingButtons();
     initSmoothScroll();
-    initIOSFix();
-    initTouchScroll();
-    initBackButtons();
+    initFormValidation();
+    initFilterButtons();
+    initScrollReveal();
+    initCountdown();
+    initLightbox();
+    initVideoModal();
+    initGalleryFilter();
+    initAgendaFilter();    
+    initPrestasiFilter(); 
+
     
     // Inisialisasi halaman spesifik
     if (document.querySelector('.login-page')) initLoginPage();
@@ -265,76 +264,218 @@ function initAutoCloseAlerts() {
 }
 
 // ==============================================
-// 1. MOBILE SIDEBAR TOGGLE
+// MOBILE MENU - ADMIN PANEL VERSION
 // ==============================================
-function initMobileSidebar() {
-    const sidebar = document.getElementById('adminSidebar');
-    const closeBtn = document.getElementById('sidebarClose');
-    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
-    const floatingToggle = document.getElementById('floatingMenuToggle');
+function initMobileMenu() {
+    console.log('🔍 Initializing MOBILE MENU for admin panel...');
     
-    if (!sidebar) return;
+    // Cari tombol hamburger
+    let hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('navMenu');
+    const body = document.body;
     
-    let overlay = document.getElementById('sidebarOverlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'sidebarOverlay';
-        overlay.className = 'sidebar-overlay';
-        document.body.appendChild(overlay);
+    // Jika tidak ada hamburger di admin panel, skip
+    if (!hamburger) {
+        console.log('⚠️ Hamburger button not found in admin panel');
+        return;
     }
     
+    // Buat sidebar mobile
+    let mobileSidebar = document.getElementById('mobileSidebar');
+    let overlay = document.getElementById('mobileOverlay');
+    
+    if (!mobileSidebar) {
+        mobileSidebar = document.createElement('div');
+        mobileSidebar.id = 'mobileSidebar';
+        mobileSidebar.className = 'mobile-sidebar';
+        document.body.appendChild(mobileSidebar);
+        console.log('✅ Mobile sidebar created');
+    }
+    
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'mobileOverlay';
+        overlay.className = 'mobile-overlay';
+        document.body.appendChild(overlay);
+        console.log('✅ Overlay created');
+    }
+    
+    // ========== FUNGSI MEMBANGUN MENU ==========
+    function buildSidebarMenu() {
+        console.log('🏗️ Building sidebar menu...');
+        
+        mobileSidebar.innerHTML = '';
+        
+        // HEADER SIDEBAR
+        const sidebarHeader = document.createElement('div');
+        sidebarHeader.className = 'sidebar-header';
+        sidebarHeader.innerHTML = `
+            <div class="sidebar-logo">
+                <img src="${window.location.origin}/assets/img/logo.png" alt="Logo" onerror="this.style.display='none'">
+                <div class="sidebar-logo-text">
+                    <small>MI Muhammadiyah Bodaskarangjati</small>
+                </div>
+            </div>
+            <button class="sidebar-close" id="sidebarCloseBtn">&times;</button>
+        `;
+        mobileSidebar.appendChild(sidebarHeader);
+        
+        // MENU WRAPPER
+        const menuWrapper = document.createElement('div');
+        menuWrapper.className = 'sidebar-menu';
+        
+        // Ambil menu dari navMenu
+        if (navMenu) {
+            const originalUl = navMenu.querySelector('ul');
+            
+            if (originalUl) {
+                const newUl = document.createElement('ul');
+                newUl.className = 'sidebar-nav';
+                
+                originalUl.querySelectorAll(':scope > li').forEach(originalLi => {
+                    const newLi = document.createElement('li');
+                    const dropdownContent = originalLi.querySelector(':scope > ul.dropdown-content');
+                    const link = originalLi.querySelector(':scope > a');
+                    
+                    if (dropdownContent && link) {
+                        // DROPDOWN
+                        newLi.className = 'dropdown';
+                        
+                        const linkWrapper = document.createElement('div');
+                        linkWrapper.className = 'dropdown-link-wrapper';
+                        
+                        let linkText = link.childNodes[0]?.nodeValue?.trim() || '';
+                        if (!linkText) {
+                            const textClone = link.cloneNode(true);
+                            const icon = textClone.querySelector('i');
+                            if (icon) icon.remove();
+                            linkText = textClone.textContent.trim();
+                        }
+                        
+                        const newLink = document.createElement('button');
+                        newLink.className = 'dropdown-link';
+                        newLink.textContent = linkText;
+                        
+                        const toggleBtn = document.createElement('button');
+                        toggleBtn.className = 'dropdown-toggle';
+                        toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+                        
+                        linkWrapper.appendChild(newLink);
+                        linkWrapper.appendChild(toggleBtn);
+                        newLi.appendChild(linkWrapper);
+                        
+                        const subUl = document.createElement('ul');
+                        subUl.className = 'dropdown-content';
+                        
+                        dropdownContent.querySelectorAll('li').forEach(subLi => {
+                            const subLink = subLi.querySelector('a');
+                            if (subLink) {
+                                const newSubLi = document.createElement('li');
+                                const newSubLink = document.createElement('a');
+                                newSubLink.href = subLink.getAttribute('href') || '#';
+                                newSubLink.textContent = subLink.textContent;
+                                newSubLi.appendChild(newSubLink);
+                                subUl.appendChild(newSubLi);
+                            }
+                        });
+                        
+                        newLi.appendChild(subUl);
+                        
+                        toggleBtn.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            newLi.classList.toggle('open');
+                            const icon = this.querySelector('i');
+                            if (icon) {
+                                icon.style.transform = newLi.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+                            }
+                        });
+                        
+                    } else if (link) {
+                        const newLink = document.createElement('a');
+                        newLink.href = link.getAttribute('href') || '#';
+                        newLink.textContent = link.textContent;
+                        newLi.appendChild(newLink);
+                    }
+                    
+                    newUl.appendChild(newLi);
+                });
+                
+                menuWrapper.appendChild(newUl);
+            }
+        }
+        
+        mobileSidebar.appendChild(menuWrapper);
+        
+        // FOOTER SIDEBAR
+        const sidebarFooter = document.createElement('div');
+        sidebarFooter.className = 'sidebar-footer';
+        sidebarFooter.innerHTML = `
+            <div class="sidebar-copyright">
+                <small>&copy; ${new Date().getFullYear()} Admin Panel</small>
+            </div>
+        `;
+        mobileSidebar.appendChild(sidebarFooter);
+        
+        console.log('✅ Sidebar menu built');
+    }
+    
+    // ========== FUNGSI BUKA/TUTUP ==========
     function openSidebar() {
-        sidebar.classList.add('show');
-        overlay.classList.add('show');
-        document.body.style.overflow = 'hidden';
-        if (mobileMenuBtn) mobileMenuBtn.style.display = 'none';
-        if (floatingToggle) floatingToggle.style.display = 'none';
+        console.log('👉 Opening sidebar');
+        if (mobileSidebar.children.length === 0) {
+            buildSidebarMenu();
+        }
+        mobileSidebar.classList.add('active');
+        overlay.classList.add('active');
+        body.style.overflow = 'hidden';
+        hamburger.classList.add('active');
     }
     
     function closeSidebar() {
-        sidebar.classList.remove('show');
-        overlay.classList.remove('show');
-        document.body.style.overflow = '';
-        if (window.innerWidth <= 992) {
-            if (mobileMenuBtn) mobileMenuBtn.style.display = 'flex';
-            if (floatingToggle) floatingToggle.style.display = 'flex';
-        }
+        console.log('👈 Closing sidebar');
+        mobileSidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        body.style.overflow = '';
+        hamburger.classList.remove('active');
     }
     
-    if (mobileMenuBtn) {
-        mobileMenuBtn.removeEventListener('click', openSidebar);
-        mobileMenuBtn.addEventListener('click', openSidebar);
-    }
-    if (floatingToggle) {
-        floatingToggle.removeEventListener('click', openSidebar);
-        floatingToggle.addEventListener('click', openSidebar);
-    }
-    if (closeBtn) {
-        closeBtn.removeEventListener('click', closeSidebar);
-        closeBtn.addEventListener('click', closeSidebar);
-    }
+    // ========== EVENT HAMBURGER ==========
+    hamburger.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🔥 Hamburger CLICKED in admin panel!');
+        
+        if (mobileSidebar.classList.contains('active')) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+    
+    // ========== EVENT CLOSE BUTTON ==========
+    document.addEventListener('click', function(e) {
+        if (e.target && (e.target.id === 'sidebarCloseBtn' || e.target.parentElement?.id === 'sidebarCloseBtn')) {
+            closeSidebar();
+        }
+    });
+    
+    // ========== EVENT OVERLAY ==========
     if (overlay) {
-        overlay.removeEventListener('click', closeSidebar);
         overlay.addEventListener('click', closeSidebar);
     }
     
-    window.removeEventListener('resize', handleResize);
-    window.addEventListener('resize', handleResize);
-    
-    function handleResize() {
-        if (window.innerWidth > 992) {
+    // ========== RESIZE HANDLER ==========
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 992 && mobileSidebar.classList.contains('active')) {
             closeSidebar();
-            if (mobileMenuBtn) mobileMenuBtn.style.display = 'none';
-            if (floatingToggle) floatingToggle.style.display = 'none';
-        } else {
-            if (!sidebar.classList.contains('show')) {
-                if (mobileMenuBtn) mobileMenuBtn.style.display = 'flex';
-                if (floatingToggle) floatingToggle.style.display = 'flex';
-            }
         }
-    }
+    });
     
-    console.log('✅ Mobile sidebar initialized');
+    // ========== BUILD MENU ==========
+    buildSidebarMenu();
+    
+    console.log('✅ MOBILE MENU initialized for admin panel!');
 }
 
 // ==============================================
@@ -821,7 +962,6 @@ function initGuruStaffPage() {
     }
     
     // ========== CEK SETELAH UPLOAD ==========
-    // Jika ada notifikasi sukses, refresh current struktur
     const successAlert = document.querySelector('.alert-success');
     if (successAlert && successAlert.innerText.includes('Struktur')) {
         setTimeout(function() {
@@ -835,7 +975,6 @@ function initGuruStaffPage() {
         }, 500);
     }
     
-    // Fix current struktur image setiap kali modal dibuka
     fixCurrentStrukturImage();
     
     console.log('🎉 Guru Staff page initialization COMPLETE!');
@@ -1348,55 +1487,49 @@ function initSambutanPage() {
 }
 
 // ==============================================
-// PRESTASI PAGE
+// PRESTASI PAGE - FILTER TAHUN (FIXED)
 // ==============================================
-function initPrestasiPage() {
-    console.log('🏆 Prestasi page initialized');
+
+function initPrestasiFilter() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const prestasiCards = document.querySelectorAll('.prestasi-card');
     
-    const uploadArea = document.getElementById('uploadArea');
-    const gambarInput = document.getElementById('gambarInput');
-    const previewContainer = document.getElementById('previewContainer');
-    const previewImage = document.getElementById('previewImage');
-    const removePreviewBtn = document.getElementById('removePreviewBtn');
-    
-    if (uploadArea && gambarInput) {
-        uploadArea.addEventListener('click', () => gambarInput.click());
-        
-        gambarInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file && previewImage && previewContainer) {
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-                if (!allowedTypes.includes(file.type)) {
-                    alert('❌ Format file harus JPG, JPEG, PNG, WEBP, atau GIF!');
-                    gambarInput.value = '';
-                    return;
-                }
-                
-                const maxSize = 5 * 1024 * 1024;
-                if (file.size > maxSize) {
-                    alert('❌ Ukuran file maksimal 5MB!');
-                    gambarInput.value = '';
-                    return;
-                }
-                
-                const reader = new FileReader();
-                reader.onload = e => { 
-                    previewImage.src = e.target.result; 
-                    previewContainer.style.display = 'block'; 
-                    uploadArea.style.display = 'none';
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-        
-        if (removePreviewBtn) {
-            removePreviewBtn.addEventListener('click', function() {
-                gambarInput.value = '';
-                if (previewContainer) previewContainer.style.display = 'none';
-                if (uploadArea) uploadArea.style.display = 'block';
-            });
-        }
+    if (filterButtons.length === 0 || prestasiCards.length === 0) {
+        console.log('⚠️ Prestasi filter: No buttons or cards found');
+        return;
     }
+    
+    console.log(`🎯 Prestasi filter initialized: ${filterButtons.length} buttons, ${prestasiCards.length} cards`);
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Hapus class active dari semua tombol
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            // Tambah class active ke tombol yang diklik
+            this.classList.add('active');
+            
+            const filterValue = this.getAttribute('data-filter');
+            
+            // Filter kartu prestasi
+            let visibleCount = 0;
+            prestasiCards.forEach(card => {
+                if (filterValue === 'all') {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    const tahunCard = card.getAttribute('data-tahun');
+                    if (tahunCard === filterValue) {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+            
+            console.log(`Filter prestasi: ${filterValue}, menampilkan ${visibleCount} dari ${prestasiCards.length} data`);
+        });
+    });
 }
 
 // ==============================================
@@ -1698,23 +1831,6 @@ function initHeroSliderPage() {
 }
 
 // ==============================================
-// OBSERVER FOR DYNAMIC BUTTONS
-// ==============================================
-if (typeof MutationObserver !== 'undefined') {
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.addedNodes.length) {
-                initDeleteButtons();
-                initModalCloseButtons();
-                initBackButtons();
-            }
-        });
-    });
-    
-    observer.observe(document.body, { childList: true, subtree: true });
-}
-
-// ==============================================
 // LOADING SPINNER STYLE
 // ==============================================
 if (!document.querySelector('#loading-style')) {
@@ -1724,4 +1840,124 @@ if (!document.querySelector('#loading-style')) {
     document.head.appendChild(style);
 }
 
-console.log('✅ Admin JS v4.0 Fully Loaded - All features ready!');
+console.log('✅ Admin JS v4.1 Fully Loaded - PRESTASI FILTER FIXED!');
+
+// ==============================================
+// HERO SLIDER FUNCTION
+// ==============================================
+function initHeroSlider() {
+    const sliderContainer = document.querySelector('.hero-slider .slider-container');
+    const slides = document.querySelectorAll('.hero-slider .slide');
+    const prevBtn = document.querySelector('.hero-slider .slider-prev');
+    const nextBtn = document.querySelector('.hero-slider .slider-next');
+    const dotsContainer = document.querySelector('.hero-slider .slider-dots');
+    
+    if (!slides.length) return;
+    
+    let currentIndex = 0;
+    let slideInterval;
+    const intervalTime = 5000; // 5 detik
+    
+    // Fungsi untuk mengubah slide
+    function goToSlide(index) {
+        // Loop index
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        
+        // Hapus class active dari semua slide
+        slides.forEach(slide => slide.classList.remove('active'));
+        
+        // Tambah class active ke slide yang dipilih
+        slides[index].classList.add('active');
+        currentIndex = index;
+        
+        // Update dots
+        if (dotsContainer) {
+            const dots = dotsContainer.querySelectorAll('.dot');
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === currentIndex);
+            });
+        }
+    }
+    
+    // Fungsi untuk next slide
+    function nextSlide() {
+        goToSlide(currentIndex + 1);
+    }
+    
+    // Fungsi untuk prev slide
+    function prevSlide() {
+        goToSlide(currentIndex - 1);
+    }
+    
+    // Fungsi untuk start auto slide
+    function startAutoSlide() {
+        if (slideInterval) clearInterval(slideInterval);
+        slideInterval = setInterval(nextSlide, intervalTime);
+    }
+    
+    // Fungsi untuk stop auto slide
+    function stopAutoSlide() {
+        if (slideInterval) clearInterval(slideInterval);
+    }
+    
+    // Buat dots jika ada lebih dari 1 slide
+    if (slides.length > 1 && dotsContainer) {
+        dotsContainer.innerHTML = '';
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            if (index === 0) dot.classList.add('active');
+            dot.addEventListener('click', () => {
+                goToSlide(index);
+                stopAutoSlide();
+                startAutoSlide();
+            });
+            dotsContainer.appendChild(dot);
+        });
+    }
+    
+    // Event listeners untuk tombol
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            prevSlide();
+            stopAutoSlide();
+            startAutoSlide();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            nextSlide();
+            stopAutoSlide();
+            startAutoSlide();
+        });
+    }
+    
+    // Start auto slide jika ada lebih dari 1 slide
+    if (slides.length > 1) {
+        startAutoSlide();
+        
+        // Pause auto slide saat hover
+        const slider = document.querySelector('.hero-slider');
+        if (slider) {
+            slider.addEventListener('mouseenter', stopAutoSlide);
+            slider.addEventListener('mouseleave', startAutoSlide);
+        }
+    }
+    
+    console.log('✅ Hero Slider initialized with ' + slides.length + ' slides');
+}
+
+// ==============================================
+// AUTO INIT PRESTASI FILTER (RELIABLE)
+// ==============================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi filter prestasi jika ada elemennya
+    if (document.querySelector('.prestasi-grid') || document.querySelector('.filter-btn')) {
+        setTimeout(function() {
+            initPrestasiFilter();
+            console.log('🎯 Prestasi filter auto-initialized (reliable)');
+        }, 100);
+    }
+});

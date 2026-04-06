@@ -109,6 +109,10 @@ $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, juara 
                     $medali = '📋';
                     $juara_text = 'Peserta';
                 }
+                
+                // Tentukan icon peserta berdasarkan jenis
+                $peserta_icon = ($row['jenis_peserta'] == 'individu') ? '<i class="fas fa-user"></i>' : '<i class="fas fa-users"></i>';
+                $peserta_label = ($row['jenis_peserta'] == 'individu') ? 'Siswa' : 'Tim';
             ?>
             <div class="prestasi-card" data-tahun="<?= $row['tahun'] ?>">
                 <?php if (!empty($row['gambar'])): ?>
@@ -133,6 +137,13 @@ $query = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC, juara 
                 
                 <div class="prestasi-content">
                     <h3 class="prestasi-nama"><?= htmlspecialchars($row['nama_prestasi']) ?></h3>
+                    
+                    <!-- Informasi Peserta (Siswa/Tim) -->
+                    <div class="prestasi-peserta">
+                        <?= $peserta_icon ?>
+                        <span class="prestasi-peserta-label"><?= $peserta_label ?>:</span>
+                        <span class="prestasi-peserta-nama"><?= htmlspecialchars($row['nama_peserta'] ?? '-') ?></span>
+                    </div>
                     
                     <?php if (!empty($row['tingkat'])): ?>
                     <div class="prestasi-tingkat">

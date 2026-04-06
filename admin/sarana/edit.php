@@ -11,11 +11,13 @@ if (!$row) {
     exit;
 }
 
+$urutan_lama = $row['urutan'];
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_sarana = mysqli_real_escape_string($conn, $_POST['nama_sarana']);
     $ikon = mysqli_real_escape_string($conn, $_POST['ikon']);
     $keterangan = mysqli_real_escape_string($conn, $_POST['keterangan']);
-    $urutan = (int)$_POST['urutan'];
+    $urutan_baru = (int)$_POST['urutan'];
     
     // Validasi
     $errors = [];
@@ -23,7 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors[] = "Nama sarana harus diisi";
     }
     
-    $gambar = $row['gambar']; // default pakai gambar lama
+    if ($urutan_baru <= 0) {
+        $errors[] = "Urutan harus diisi dengan angka 1, 2, 3, dst!";
+    }
+    
+    $gambar = $row['gambar'];
     
     // Upload gambar baru jika ada
     if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] == 0) {
@@ -36,7 +42,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } elseif ($size > 2 * 1024 * 1024) {
             $errors[] = "Ukuran file maksimal 2MB";
         } else {
-            // Hapus gambar lama jika ada
             if (!empty($row['gambar']) && file_exists("../../uploads/sarana/" . $row['gambar'])) {
                 unlink("../../uploads/sarana/" . $row['gambar']);
             }
@@ -53,12 +58,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Jika tidak ada error, update database
     if (empty($errors)) {
+        // LOGIKA GESER URUTAN SAAT EDIT
+        if ($urutan_baru != $urutan_lama) {
+            if ($urutan_baru > $urutan_lama) {
+                // Pindah ke bawah: geser data di antara urutan_lama+1 sampai urutan_baru ke kiri
+                mysqli_query($conn, "UPDATE sarana SET urutan = urutan - 1 
+                                     WHERE urutan > $urutan_lama AND urutan <= $urutan_baru AND id != $id");
+            } else {
+                // Pindah ke atas: geser data di antara urutan_baru sampai urutan_lama-1 ke kanan
+                mysqli_query($conn, "UPDATE sarana SET urutan = urutan + 1 
+                                     WHERE urutan >= $urutan_baru AND urutan < $urutan_lama AND id != $id");
+            }
+        }
+        
         $query = "UPDATE sarana SET 
                   nama_sarana = '$nama_sarana',
                   ikon = " . ($ikon ? "'$ikon'" : "'fa-building'") . ",
                   keterangan = " . ($keterangan ? "'$keterangan'" : "NULL") . ",
                   gambar = " . ($gambar ? "'$gambar'" : "NULL") . ",
-                  urutan = $urutan
+                  urutan = $urutan_baru
                   WHERE id = $id";
         
         if (mysqli_query($conn, $query)) {
@@ -82,7 +100,6 @@ include "../includes/header.php";
         </a>
     </div>
 
-    <!-- Error Messages -->
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
             <i class="fas fa-exclamation-circle"></i>
@@ -108,11 +125,13 @@ include "../includes/header.php";
                     <input type="text" name="ikon" class="form-control" 
                            value="<?= htmlspecialchars($row['ikon'] ?? 'fa-building') ?>"
                            placeholder="Contoh: fa-building, fa-book, fa-flask">
+                    <small>Kosongkan untuk menggunakan ikon default (fa-building)</small>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-sort-numeric-up"></i> Urutan</label>
-                    <input type="number" name="urutan" class="form-control" 
-                           value="<?= $row['urutan'] ?? 0 ?>" min="0">
+                    <label><i class="fas fa-sort-numeric-up"></i> Urutan <span style="color: red;">*</span></label>
+                    <input type="number" name="urutan" class="form-control" required min="1"
+                           value="<?= $row['urutan'] ?? 0 ?>">
+                    <small>Ubah urutan sesuai keinginan. Data lain akan otomatis menyesuaikan.</small>
                 </div>
             </div>
 
@@ -124,7 +143,6 @@ include "../includes/header.php";
             <div class="form-group">
                 <label><i class="fas fa-image"></i> Gambar</label>
                 
-                <!-- Gambar Lama -->
                 <?php if (!empty($row['gambar'])): ?>
                 <div style="margin-bottom: 15px; padding: 10px; background: #f8fafc; border-radius: 8px;">
                     <img src="../../uploads/sarana/<?= $row['gambar'] ?>" alt="Current" style="max-width: 100px; max-height: 100px; border-radius: 5px;">
@@ -132,17 +150,8 @@ include "../includes/header.php";
                 </div>
                 <?php endif; ?>
                 
-                <div class="file-upload" onclick="document.getElementById('gambar').click()">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Klik untuk ganti gambar</p>
-                    <small>Format: JPG, PNG, GIF (Maks. 2MB)</small>
-                    <input type="file" name="gambar" id="gambar" accept="image/*" style="display: none;">
-                </div>
-                
-                <!-- Preview Image Baru -->
-                <div id="preview-container" class="preview-container" style="display: none; margin-top: 15px;">
-                    <img id="preview-image" src="#" alt="Preview" class="preview-image">
-                </div>
+                <input type="file" name="gambar" class="form-control" accept="image/*">
+                <small>Format: JPG, PNG, GIF (Maks. 2MB)</small>
             </div>
 
             <div class="form-actions">

@@ -38,12 +38,12 @@ $jml_prestasi  = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM prestasi"))
 // 5. AMBIL DATA UNTUK KONTEN
 // ==============================================
 $q_berita = mysqli_query($conn, "SELECT * FROM pengumuman WHERE status='publish' ORDER BY tanggal DESC LIMIT 3");
-$q_prestasi_terbaru = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC LIMIT 4");
+$q_prestasi_terbaru = mysqli_query($conn, "SELECT * FROM prestasi ORDER BY tahun DESC LIMIT 3");
 $q_pembiasaan = mysqli_query($conn, "SELECT * FROM pembiasaan ORDER BY urutan ASC");
-$q_ekstra = mysqli_query($conn, "SELECT * FROM ekstrakurikuler ORDER BY urutan ASC LIMIT 4");
-$q_agenda_terbaru = mysqli_query($conn, "SELECT * FROM agenda WHERE tanggal_mulai >= CURDATE() ORDER BY tanggal_mulai ASC LIMIT 4");
-$q_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC LIMIT 6");
-$q_sarana = mysqli_query($conn, "SELECT * FROM sarana ORDER BY urutan ASC LIMIT 4");
+$q_ekstra = mysqli_query($conn, "SELECT * FROM ekstrakurikuler ORDER BY urutan ASC LIMIT 3");
+$q_agenda_terbaru = mysqli_query($conn, "SELECT * FROM agenda WHERE tanggal_mulai >= CURDATE() ORDER BY tanggal_mulai ASC LIMIT 3");
+$q_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC LIMIT 3");
+$q_sarana = mysqli_query($conn, "SELECT * FROM sarana ORDER BY urutan ASC LIMIT 3");
 
 // ==============================================
 // 6. AMBIL DATA KONTAK

@@ -1,6 +1,11 @@
 <?php
 include "../includes/auth.php";
 
+// ========== FUNGSI GESER URUTAN ==========
+function shiftUrutanSarana($conn, $urutan_baru) {
+    mysqli_query($conn, "UPDATE sarana SET urutan = urutan + 1 WHERE urutan >= $urutan_baru");
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_sarana = mysqli_real_escape_string($conn, $_POST['nama_sarana']);
     $ikon = mysqli_real_escape_string($conn, $_POST['ikon']);
@@ -11,6 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $errors = [];
     if (empty($nama_sarana)) {
         $errors[] = "Nama sarana harus diisi";
+    }
+    
+    if ($urutan <= 0) {
+        $errors[] = "Urutan harus diisi dengan angka 1, 2, 3, dst!";
     }
     
     // Upload gambar
@@ -37,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // Jika tidak ada error, simpan ke database
     if (empty($errors)) {
+        // Geser urutan yang lebih besar atau sama
+        shiftUrutanSarana($conn, $urutan);
+        
         $query = "INSERT INTO sarana (nama_sarana, ikon, keterangan, gambar, urutan) 
                   VALUES ('$nama_sarana', " . ($ikon ? "'$ikon'" : "'fa-building'") . ", " . ($keterangan ? "'$keterangan'" : "NULL") . ", " . ($gambar ? "'$gambar'" : "NULL") . ", $urutan)";
         
@@ -61,7 +73,6 @@ include "../includes/header.php";
         </a>
     </div>
 
-    <!-- Error Messages -->
     <?php if (!empty($errors)): ?>
         <div class="alert alert-danger">
             <i class="fas fa-exclamation-circle"></i>
@@ -91,10 +102,11 @@ include "../includes/header.php";
                     <small style="color: #6c757d;">Kosongkan untuk menggunakan ikon default (fa-building)</small>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-sort-numeric-up"></i> Urutan</label>
-                    <input type="number" name="urutan" class="form-control" 
-                           value="<?= isset($_POST['urutan']) ? (int)$_POST['urutan'] : 0 ?>"
-                           min="0">
+                    <label><i class="fas fa-sort-numeric-up"></i> Urutan <span style="color: red;">*</span></label>
+                    <input type="number" name="urutan" class="form-control" required min="1"
+                           value="<?= isset($_POST['urutan']) ? (int)$_POST['urutan'] : '' ?>"
+                           placeholder="Contoh: 1, 2, 3">
+                    <small>Masukkan angka urutan. Data dengan urutan lebih besar atau sama akan bergeser ke bawah.</small>
                 </div>
             </div>
 
@@ -106,21 +118,12 @@ include "../includes/header.php";
 
             <div class="form-group">
                 <label><i class="fas fa-image"></i> Gambar</label>
-                <div class="file-upload" onclick="document.getElementById('gambar').click()">
-                    <i class="fas fa-cloud-upload-alt"></i>
-                    <p>Klik untuk upload gambar</p>
-                    <small>Format: JPG, PNG, GIF (Maks. 2MB)</small>
-                    <input type="file" name="gambar" id="gambar" accept="image/*" style="display: none;">
-                </div>
-                
-                <!-- Preview Image -->
-                <div id="preview-container" class="preview-container" style="display: none; margin-top: 15px;">
-                    <img id="preview-image" src="#" alt="Preview" class="preview-image">
-                </div>
+                <input type="file" name="gambar" class="form-control" accept="image/*">
+                <small>Format: JPG, PNG, GIF (Maks. 2MB)</small>
             </div>
 
             <div class="form-actions">
-                <button type="reset" class="btn-secondary" onclick="return confirm('Reset form?')">
+                <button type="reset" class="btn-secondary">
                     <i class="fas fa-undo"></i> Reset
                 </button>
                 <button type="submit" class="btn-primary">

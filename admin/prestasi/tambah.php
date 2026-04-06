@@ -3,20 +3,32 @@ include "../includes/auth.php";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_prestasi = mysqli_real_escape_string($conn, $_POST['nama_prestasi']);
+    $jenis_peserta = mysqli_real_escape_string($conn, $_POST['jenis_peserta']);
+    
+    // Ambil nama peserta berdasarkan jenis peserta
+    if ($jenis_peserta == 'individu') {
+        $nama_peserta = mysqli_real_escape_string($conn, $_POST['nama_peserta_individu']);
+    } else {
+        $nama_peserta = mysqli_real_escape_string($conn, $_POST['nama_peserta_regu']);
+    }
+    
     $tingkat = mysqli_real_escape_string($conn, $_POST['tingkat']);
     $penyelenggara = mysqli_real_escape_string($conn, $_POST['penyelenggara']);
     $tahun = (int)$_POST['tahun'];
     $juara = (int)$_POST['juara'];
     
-    $errors = [];
+    $errors = array();
     if (empty($nama_prestasi)) {
         $errors[] = "Nama prestasi harus diisi";
+    }
+    if (empty($nama_peserta)) {
+        $errors[] = "Nama peserta harus diisi";
     }
     
     // Upload gambar
     $gambar = null;
     if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] == 0) {
-        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $allowed = array('jpg', 'jpeg', 'png', 'webp', 'gif');
         $ext = strtolower(pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION));
         $size = $_FILES['gambar']['size'];
         
@@ -40,8 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     if (empty($errors)) {
-        $query = "INSERT INTO prestasi (nama_prestasi, tingkat, penyelenggara, tahun, juara, gambar) 
-                  VALUES ('$nama_prestasi', " . ($tingkat ? "'$tingkat'" : "NULL") . ", " . ($penyelenggara ? "'$penyelenggara'" : "NULL") . ", $tahun, $juara, " . ($gambar ? "'$gambar'" : "NULL") . ")";
+        $query = "INSERT INTO prestasi (nama_prestasi, jenis_peserta, nama_peserta, tingkat, penyelenggara, tahun, juara, gambar) 
+                  VALUES ('$nama_prestasi', '$jenis_peserta', '$nama_peserta', " . ($tingkat ? "'$tingkat'" : "NULL") . ", " . ($penyelenggara ? "'$penyelenggara'" : "NULL") . ", $tahun, $juara, " . ($gambar ? "'$gambar'" : "NULL") . ")";
         
         if (mysqli_query($conn, $query)) {
             $_SESSION['success'] = "Prestasi <strong>$nama_prestasi</strong> berhasil ditambahkan";
@@ -83,6 +95,27 @@ include "../includes/header.php";
                     <input type="text" name="nama_prestasi" class="form-control" required>
                 </div>
 
+                <div class="form-group">
+                    <label><i class="fas fa-users"></i> Jenis Peserta <span style="color: red;">*</span></label>
+                    <select name="jenis_peserta" class="form-control" required>
+                        <option value="individu">Individu (Perorangan)</option>
+                        <option value="regu">Regu (Tim/Beregu)</option>
+                    </select>
+                    <small class="form-text text-muted">Pilih apakah prestasi ini diraih oleh individu atau tim</small>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-user"></i> Nama Siswa <span style="color: red;">*</span></label>
+                    <input type="text" name="nama_peserta_individu" class="form-control" placeholder="Contoh: Ahmad Fauzi">
+                    <small class="form-text text-muted">Untuk jenis individu: masukkan nama siswa yang meraih prestasi</small>
+                </div>
+                
+                <div class="form-group">
+                    <label><i class="fas fa-users"></i> Nama Tim / Anggota</label>
+                    <input type="text" name="nama_peserta_regu" class="form-control" placeholder="Contoh: Tim Olimpiade Sains">
+                    <small class="form-text text-muted">Untuk jenis regu: bisa diisi nama tim atau daftar nama anggota (pisahkan dengan koma)</small>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label><i class="fas fa-chart-bar"></i> Tingkat</label>
@@ -119,9 +152,9 @@ include "../includes/header.php";
                         <label><i class="fas fa-medal"></i> Juara / Peringkat</label>
                         <select name="juara" class="form-control">
                             <option value="0">- Peserta / Tidak Berperingkat -</option>
-                            <option value="1">🥇 Juara 1 (Emas)</option>
-                            <option value="2">🥈 Juara 2 (Perak)</option>
-                            <option value="3">🥉 Juara 3 (Perunggu)</option>
+                            <option value="1">Juara 1 (Emas)</option>
+                            <option value="2">Juara 2 (Perak)</option>
+                            <option value="3">Juara 3 (Perunggu)</option>
                             <?php for($i = 4; $i <= 10; $i++): ?>
                                 <option value="<?= $i ?>">Juara <?= $i ?></option>
                             <?php endfor; ?>
@@ -131,19 +164,8 @@ include "../includes/header.php";
 
                 <div class="form-group">
                     <label><i class="fas fa-image"></i> Gambar</label>
-                    <div class="file-upload" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Klik atau drag & drop untuk upload gambar</p>
-                        <small>Format: JPG, PNG, WEBP, GIF (Maks. 5MB)</small>
-                        <input type="file" name="gambar" id="gambarInput" accept="image/*" style="display: none;">
-                    </div>
-                    
-                    <div id="previewContainer" style="display: none; margin-top: 15px;">
-                        <img id="previewImage" src="#" alt="Preview" style="max-width: 200px; border-radius: 8px;">
-                        <button type="button" class="btn-remove" id="removePreviewBtn" style="margin-left: 10px;">
-                            <i class="fas fa-times"></i> Hapus
-                        </button>
-                    </div>
+                    <input type="file" name="gambar" class="form-control" accept="image/*">
+                    <small>Format: JPG, PNG, WEBP, GIF (Maks. 5MB)</small>
                 </div>
 
                 <div class="form-actions" style="margin-top: 20px; display: flex; gap: 10px;">

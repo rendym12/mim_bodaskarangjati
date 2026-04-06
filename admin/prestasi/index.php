@@ -100,18 +100,27 @@ include "../includes/header.php";
                     <thead>
                         <tr>
                             <th width="5%">No</th>
-                            <th width="20%">Nama Prestasi</th>
-                            <th width="12%">Tingkat</th>
-                            <th width="15%">Penyelenggara</th>
+                            <th width="18%">Nama Prestasi</th>
+                            <th width="15%">Peserta</th>
+                            <th width="10%">Tingkat</th>
+                            <th width="12%">Penyelenggara</th>
                             <th width="8%">Tahun</th>
                             <th width="10%">Juara</th>
-                            <th width="10%">Gambar</th>
+                            <th width="8%">Gambar</th>
                             <th width="10%">Aksi</th>
                         </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
                             $no = 1;
                             while ($row = mysqli_fetch_assoc($query)): 
+                                // Format peserta
+                                $peserta_text = '';
+                                if ($row['jenis_peserta'] == 'individu') {
+                                    $peserta_text = '<span class="badge-info"><i class="fas fa-user"></i> ' . htmlspecialchars($row['nama_peserta'] ?? '-') . '</span>';
+                                } else {
+                                    $peserta_text = '<span class="badge-warning"><i class="fas fa-users"></i> ' . htmlspecialchars($row['nama_peserta'] ?? '-') . '</span>';
+                                }
+                                
                                 // Format juara
                                 $juara_text = '';
                                 if ($row['juara'] == 1) {
@@ -129,6 +138,7 @@ include "../includes/header.php";
                         <tr>
                             <td><?= $no++ ?></td>
                             <td><strong><?= htmlspecialchars($row['nama_prestasi']) ?></strong></td>
+                            <td><?= $peserta_text ?></td>
                             <td><?= htmlspecialchars($row['tingkat'] ?? '-') ?></td>
                             <td><?= htmlspecialchars($row['penyelenggara'] ?? '-') ?></td>
                             <td><?= $row['tahun'] ?? '-' ?></td>
@@ -156,7 +166,7 @@ include "../includes/header.php";
                         </tr>
                         <?php endwhile; else: ?>
                         <tr>
-                            <td colspan="8" class="empty-state">
+                            <td colspan="9" class="empty-state">
                                 <i class="fas fa-trophy"></i>
                                 <p>Belum ada data prestasi</p>
                                 <a href="tambah.php" class="btn-primary">Tambah Prestasi</a>

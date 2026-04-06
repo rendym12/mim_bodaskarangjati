@@ -36,52 +36,72 @@ include "../includes/header.php";
             </div>
             <?php endif; ?>
             
-            <div class="detail-info">
-                <div class="detail-row">
-                    <div class="detail-label">
-                        <i class="fas fa-chart-bar"></i> Tingkat
-                    </div>
-                    <div class="detail-value">
-                        <?= htmlspecialchars($row['tingkat'] ?? '-') ?>
-                    </div>
-                </div>
-                
-                <div class="detail-row">
-                    <div class="detail-label">
-                        <i class="fas fa-building"></i> Penyelenggara
-                    </div>
-                    <div class="detail-value">
-                        <?= htmlspecialchars($row['penyelenggara'] ?? '-') ?>
+            <div class="detail-info-grid">
+                <div class="detail-info-card">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <span class="info-label">Jenis Peserta</span>
+                        <span class="info-value">
+                            <?php if ($row['jenis_peserta'] == 'individu'): ?>
+                                <i class="fas fa-user"></i> Individu
+                            <?php else: ?>
+                                <i class="fas fa-users"></i> Regu / Tim
+                            <?php endif; ?>
+                        </span>
                     </div>
                 </div>
                 
-                <div class="detail-row">
-                    <div class="detail-label">
-                        <i class="fas fa-calendar"></i> Tahun
-                    </div>
-                    <div class="detail-value">
-                        <?= $row['tahun'] ?? '-' ?>
+                <div class="detail-info-card">
+                    <i class="fas <?= $row['jenis_peserta'] == 'individu' ? 'fa-user' : 'fa-users' ?>"></i>
+                    <div>
+                        <span class="info-label"><?= $row['jenis_peserta'] == 'individu' ? 'Nama Siswa' : 'Nama Tim / Anggota' ?></span>
+                        <span class="info-value"><?= htmlspecialchars($row['nama_peserta'] ?? '-') ?></span>
                     </div>
                 </div>
                 
-                <div class="detail-row">
-                    <div class="detail-label">
-                        <i class="fas fa-medal"></i> Juara / Peringkat
+                <div class="detail-info-card">
+                    <i class="fas fa-chart-bar"></i>
+                    <div>
+                        <span class="info-label">Tingkat</span>
+                        <span class="info-value"><?= htmlspecialchars($row['tingkat'] ?? '-') ?></span>
                     </div>
-                    <div class="detail-value">
-                        <?php 
-                        if ($row['juara'] == 1) {
-                            echo '<span class="badge-gold"><i class="fas fa-medal"></i> Juara 1 (Emas)</span>';
-                        } elseif ($row['juara'] == 2) {
-                            echo '<span class="badge-silver"><i class="fas fa-medal"></i> Juara 2 (Perak)</span>';
-                        } elseif ($row['juara'] == 3) {
-                            echo '<span class="badge-bronze"><i class="fas fa-medal"></i> Juara 3 (Perunggu)</span>';
-                        } elseif ($row['juara'] > 0) {
-                            echo '<span class="badge-juara"><i class="fas fa-star"></i> Juara ' . $row['juara'] . '</span>';
-                        } else {
-                            echo '<span class="badge-peserta"><i class="fas fa-user"></i> Peserta / Tidak Berperingkat</span>';
-                        }
-                        ?>
+                </div>
+                
+                <div class="detail-info-card">
+                    <i class="fas fa-building"></i>
+                    <div>
+                        <span class="info-label">Penyelenggara</span>
+                        <span class="info-value"><?= htmlspecialchars($row['penyelenggara'] ?? '-') ?></span>
+                    </div>
+                </div>
+                
+                <div class="detail-info-card">
+                    <i class="fas fa-calendar"></i>
+                    <div>
+                        <span class="info-label">Tahun</span>
+                        <span class="info-value"><?= $row['tahun'] ?? '-' ?></span>
+                    </div>
+                </div>
+                
+                <div class="detail-info-card">
+                    <i class="fas fa-medal"></i>
+                    <div>
+                        <span class="info-label">Juara / Peringkat</span>
+                        <span class="info-value">
+                            <?php 
+                            if ($row['juara'] == 1) {
+                                echo '<span class="badge-gold"><i class="fas fa-medal"></i> Juara 1 (Emas)</span>';
+                            } elseif ($row['juara'] == 2) {
+                                echo '<span class="badge-silver"><i class="fas fa-medal"></i> Juara 2 (Perak)</span>';
+                            } elseif ($row['juara'] == 3) {
+                                echo '<span class="badge-bronze"><i class="fas fa-medal"></i> Juara 3 (Perunggu)</span>';
+                            } elseif ($row['juara'] > 0) {
+                                echo '<span class="badge-juara"><i class="fas fa-star"></i> Juara ' . $row['juara'] . '</span>';
+                            } else {
+                                echo '<span class="badge-peserta"><i class="fas fa-user"></i> Peserta / Tidak Berperingkat</span>';
+                            }
+                            ?>
+                        </span>
                     </div>
                 </div>
             </div>

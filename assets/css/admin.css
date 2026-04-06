@@ -3800,6 +3800,42 @@ body.login-page .forgot-password a:hover { color: var(--secondary); }
     }
 }
 
+/* ========== BADGE UNTUK PESERTA (INDIVIDU & REGU) ========== */
+.prestasi-page .badge-info {
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    color: #0369a1;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.prestasi-page .badge-warning {
+    background: linear-gradient(135deg, #fed7aa, #ffedd5);
+    color: #9a3412;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* FORM TEXT MUTED */
+.prestasi-page .form-text {
+    font-size: 0.7rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
 /* ==============================================
    SARANA PAGE - DISAMAKAN DENGAN AGENDA/EKSTRA
 =============================================== */

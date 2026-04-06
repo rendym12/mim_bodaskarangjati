@@ -1396,11 +1396,13 @@ function initSambutanPage() {
 }
 
 // ==============================================
-// PRESTASI PAGE
+// PRESTASI PAGE - FULL VERSION
 // ==============================================
+
 function initPrestasiPage() {
     console.log('🏆 Prestasi page initialized');
     
+    // File upload handler
     const uploadArea = document.getElementById('uploadArea');
     const gambarInput = document.getElementById('gambarInput');
     const previewContainer = document.getElementById('previewContainer');
@@ -1444,6 +1446,77 @@ function initPrestasiPage() {
                 if (uploadArea) uploadArea.style.display = 'block';
             });
         }
+    }
+    
+    // ========== MODAL DELETE HANDLER ==========
+    let deleteId = null;
+    let hasGambar = false;
+    const deleteModal = document.getElementById('deleteModal');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const closeModalBtns = document.querySelectorAll('.modal-close, #btnCloseModal');
+    const fileWarningContainer = document.getElementById('fileWarningContainer');
+    
+    // Delete button di tabel
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteId = this.dataset.id;
+            hasGambar = this.dataset.hasGambar === 'true';
+            
+            const itemName = this.dataset.name;
+            document.getElementById('deleteItemName').innerHTML = `<i class="fas fa-trophy"></i> ${itemName}`;
+            
+            if (fileWarningContainer) {
+                fileWarningContainer.style.display = hasGambar ? 'block' : 'none';
+            }
+            
+            if (deleteModal) deleteModal.style.display = 'flex';
+        });
+    });
+    
+    // Delete button di detail page
+    document.querySelectorAll('.btn-delete-detail').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteId = this.dataset.id;
+            hasGambar = this.dataset.hasGambar === 'true';
+            
+            const itemName = this.dataset.name;
+            document.getElementById('deleteItemName').innerHTML = `<i class="fas fa-trophy"></i> ${itemName}`;
+            
+            if (fileWarningContainer) {
+                fileWarningContainer.style.display = hasGambar ? 'block' : 'none';
+            }
+            
+            if (deleteModal) deleteModal.style.display = 'flex';
+        });
+    });
+    
+    // Confirm delete
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', function(e) {
+            if (deleteId) {
+                window.location.href = `index.php?delete=${deleteId}`;
+            }
+        });
+    }
+    
+    // Close modal
+    closeModalBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (deleteModal) deleteModal.style.display = 'none';
+            deleteId = null;
+        });
+    });
+    
+    // Close modal when clicking outside
+    if (deleteModal) {
+        window.addEventListener('click', function(e) {
+            if (e.target === deleteModal) {
+                deleteModal.style.display = 'none';
+                deleteId = null;
+            }
+        });
     }
 }
 

@@ -13,20 +13,32 @@ if (!$row) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_prestasi = mysqli_real_escape_string($conn, $_POST['nama_prestasi']);
+    $jenis_peserta = mysqli_real_escape_string($conn, $_POST['jenis_peserta']);
+    
+    // Ambil nama peserta berdasarkan jenis peserta
+    if ($jenis_peserta == 'individu') {
+        $nama_peserta = mysqli_real_escape_string($conn, $_POST['nama_peserta_individu']);
+    } else {
+        $nama_peserta = mysqli_real_escape_string($conn, $_POST['nama_peserta_regu']);
+    }
+    
     $tingkat = mysqli_real_escape_string($conn, $_POST['tingkat']);
     $penyelenggara = mysqli_real_escape_string($conn, $_POST['penyelenggara']);
     $tahun = (int)$_POST['tahun'];
     $juara = (int)$_POST['juara'];
     
-    $errors = [];
+    $errors = array();
     if (empty($nama_prestasi)) {
         $errors[] = "Nama prestasi harus diisi";
+    }
+    if (empty($nama_peserta)) {
+        $errors[] = "Nama peserta harus diisi";
     }
     
     // Upload gambar
     $gambar = $row['gambar'];
     if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] == 0) {
-        $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+        $allowed = array('jpg', 'jpeg', 'png', 'webp', 'gif');
         $ext = strtolower(pathinfo($_FILES['gambar']['name'], PATHINFO_EXTENSION));
         $size = $_FILES['gambar']['size'];
         
@@ -50,8 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     
     if (empty($errors)) {
-        $query = "UPDATE prestasi SET 
+        $query_update = "UPDATE prestasi SET 
                   nama_prestasi = '$nama_prestasi', 
+                  jenis_peserta = '$jenis_peserta',
+                  nama_peserta = '$nama_peserta',
                   tingkat = " . ($tingkat ? "'$tingkat'" : "NULL") . ", 
                   penyelenggara = " . ($penyelenggara ? "'$penyelenggara'" : "NULL") . ", 
                   tahun = $tahun, 
@@ -59,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                   gambar = " . ($gambar ? "'$gambar'" : "NULL") . " 
                   WHERE id = $id";
         
-        if (mysqli_query($conn, $query)) {
+        if (mysqli_query($conn, $query_update)) {
             $_SESSION['success'] = "Prestasi <strong>$nama_prestasi</strong> berhasil diupdate";
             header("Location: index.php");
             exit;
@@ -100,6 +114,28 @@ include "../includes/header.php";
                            value="<?= htmlspecialchars($row['nama_prestasi']) ?>">
                 </div>
 
+                <div class="form-group">
+                    <label><i class="fas fa-users"></i> Jenis Peserta <span style="color: red;">*</span></label>
+                    <select name="jenis_peserta" id="jenis_peserta" class="form-control" required>
+                        <option value="individu" <?= $row['jenis_peserta'] == 'individu' ? 'selected' : '' ?>>Individu (Perorangan)</option>
+                        <option value="regu" <?= $row['jenis_peserta'] == 'regu' ? 'selected' : '' ?>>Regu (Tim/Beregu)</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="nama_individu_group" style="<?= $row['jenis_peserta'] == 'individu' ? 'display:block' : 'display:none' ?>">
+                    <label><i class="fas fa-user"></i> Nama Siswa <span style="color: red;">*</span></label>
+                    <input type="text" name="nama_peserta_individu" class="form-control" 
+                           value="<?= $row['jenis_peserta'] == 'individu' ? htmlspecialchars($row['nama_peserta'] ?? '') : '' ?>"
+                           placeholder="Contoh: Ahmad Fauzi">
+                </div>
+                
+                <div class="form-group" id="nama_regu_group" style="<?= $row['jenis_peserta'] == 'regu' ? 'display:block' : 'display:none' ?>">
+                    <label><i class="fas fa-users"></i> Nama Tim / Anggota <span style="color: red;">*</span></label>
+                    <input type="text" name="nama_peserta_regu" class="form-control" 
+                           value="<?= $row['jenis_peserta'] == 'regu' ? htmlspecialchars($row['nama_peserta'] ?? '') : '' ?>"
+                           placeholder="Contoh: Tim Olimpiade Sains">
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label><i class="fas fa-chart-bar"></i> Tingkat</label>
@@ -116,7 +152,7 @@ include "../includes/header.php";
                     <div class="form-group">
                         <label><i class="fas fa-building"></i> Penyelenggara</label>
                         <input type="text" name="penyelenggara" class="form-control" 
-                               value="<?= htmlspecialchars($row['penyelenggara']) ?>">
+                               value="<?= htmlspecialchars($row['penyelenggara'] ?? '') ?>">
                     </div>
                 </div>
 
@@ -129,7 +165,7 @@ include "../includes/header.php";
                             $current_year = date('Y');
                             for ($year = $current_year; $year >= 2000; $year--): 
                             ?>
-                                <option value="<?= $year ?>" <?= $row['tahun'] == $year ? 'selected' : '' ?>><?= $year ?></option>
+                                <option value="<?= $year ?>" <?= ($row['tahun'] == $year) ? 'selected' : '' ?>><?= $year ?></option>
                             <?php endfor; ?>
                         </select>
                     </div>
@@ -137,9 +173,9 @@ include "../includes/header.php";
                         <label><i class="fas fa-medal"></i> Juara / Peringkat</label>
                         <select name="juara" class="form-control">
                             <option value="0" <?= $row['juara'] == 0 ? 'selected' : '' ?>>- Peserta / Tidak Berperingkat -</option>
-                            <option value="1" <?= $row['juara'] == 1 ? 'selected' : '' ?>>🥇 Juara 1 (Emas)</option>
-                            <option value="2" <?= $row['juara'] == 2 ? 'selected' : '' ?>>🥈 Juara 2 (Perak)</option>
-                            <option value="3" <?= $row['juara'] == 3 ? 'selected' : '' ?>>🥉 Juara 3 (Perunggu)</option>
+                            <option value="1" <?= $row['juara'] == 1 ? 'selected' : '' ?>>Juara 1 (Emas)</option>
+                            <option value="2" <?= $row['juara'] == 2 ? 'selected' : '' ?>>Juara 2 (Perak)</option>
+                            <option value="3" <?= $row['juara'] == 3 ? 'selected' : '' ?>>Juara 3 (Perunggu)</option>
                             <?php for($i = 4; $i <= 10; $i++): ?>
                                 <option value="<?= $i ?>" <?= $row['juara'] == $i ? 'selected' : '' ?>>Juara <?= $i ?></option>
                             <?php endfor; ?>
@@ -165,19 +201,8 @@ include "../includes/header.php";
 
                 <div class="form-group">
                     <label><i class="fas fa-upload"></i> Ganti Gambar</label>
-                    <div class="file-upload" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Klik atau drag & drop untuk upload gambar baru</p>
-                        <small>Format: JPG, PNG, WEBP, GIF (Maks. 5MB)</small>
-                        <input type="file" name="gambar" id="gambarInput" accept="image/*" style="display: none;">
-                    </div>
-                    
-                    <div id="previewContainer" style="display: none; margin-top: 15px;">
-                        <img id="previewImage" src="#" alt="Preview" style="max-width: 200px; border-radius: 8px;">
-                        <button type="button" class="btn-remove" id="removePreviewBtn" style="margin-left: 10px;">
-                            <i class="fas fa-times"></i> Hapus
-                        </button>
-                    </div>
+                    <input type="file" name="gambar" class="form-control" accept="image/*">
+                    <small>Format: JPG, PNG, WEBP, GIF (Maks. 5MB)</small>
                 </div>
 
                 <div class="form-actions" style="margin-top: 20px; display: flex; gap: 10px;">
