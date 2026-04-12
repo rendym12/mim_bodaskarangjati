@@ -10080,3 +10080,77 @@ body.sidebar-open {
     display: none !important;
 }
 
+/* ==============================================
+   PERBAIKAN UKURAN LOGO HEADER (SAMA DENGAN FOOTER)
+   ============================================= */
+
+/* --- STYLE UNTUK LOGO DI HEADER --- */
+header .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* MEMBUAT KONTAINER LOGO DI HEADER SAMA PERSIS DENGAN FOOTER */
+header .logo .logo-img {
+    width: 50px;      /* Sama dengan .footer-logo (50px) */
+    height: 50px;     /* Sama dengan .footer-logo (50px) */
+    background: white;
+    border-radius: 10px; /* Sama dengan border-radius di footer */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;     /* Sama dengan padding di footer */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2); /* Sama dengan shadow di footer */
+    transition: all 0.3s ease;
+}
+
+/* Efek hover agar lebih hidup (opsional) */
+header .logo .logo-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Mengatur gambar di dalam kontainer agar pas */
+header .logo .logo-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* 'contain' lebih aman agar logo tidak terpotong */
+    display: block;
+}
+
+/* Teks logo tetap seperti semula */
+header .logo .logo-text h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+    line-height: 1.3;
+}
+
+header .logo .logo-text h1 span {
+    color: #FFD700;
+}
+
+/* --- PENYESUAIAN UNTUK MODAL / RESPONSIVE (OPSIONAL) --- */
+@media (max-width: 768px) {
+    header .logo .logo-img {
+        width: 42px;
+        height: 42px;
+    }
+    
+    header .logo .logo-text h1 {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    header .logo .logo-img {
+        width: 38px;
+        height: 38px;
+    }
+    
+    header .logo .logo-text h1 {
+        font-size: 0.85rem;
+    }
+}

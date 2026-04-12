@@ -1,11 +1,15 @@
 <?php
 include "../includes/auth.php";
 
-// ========== PROSES HAPUS ==========
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Cek apakah data ada
+    if ($id != $_SESSION['admin_id']) {
+        $_SESSION['error'] = "Anda tidak bisa menghapus akun orang lain!";
+        header("Location: index.php");
+        exit;
+    }
+    
     $check = mysqli_query($conn, "SELECT * FROM admin_users WHERE id = $id");
     
     if (mysqli_num_rows($check) > 0) {
@@ -13,7 +17,6 @@ if (isset($_GET['delete'])) {
         $data = mysqli_fetch_assoc($q);
         $nama = $data['nama_lengkap'];
         
-        // Hapus foto jika bukan default
         $hasFoto = false;
         if ($data && !empty($data['foto']) && $data['foto'] != 'default-avatar.jpg' && file_exists("../../uploads/" . $data['foto'])) {
             if (unlink("../../uploads/" . $data['foto'])) {
@@ -22,15 +25,21 @@ if (isset($_GET['delete'])) {
         }
         
         if (mysqli_query($conn, "DELETE FROM admin_users WHERE id = $id")) {
+            if ($id == $_SESSION['admin_id']) {
+                session_destroy();
+                header("Location: ../login.php");
+                exit;
+            }
+            
             if ($hasFoto) {
                 $_SESSION['success'] = [
-                    'message' => "Admin <strong>\"$nama\"</strong> berhasil dihapus",
+                    'message' => "Akun <strong>\"$nama\"</strong> berhasil dihapus",
                     'file_deleted' => true,
                     'type' => 'admin'
                 ];
             } else {
                 $_SESSION['success'] = [
-                    'message' => "Admin <strong>\"$nama\"</strong> berhasil dihapus",
+                    'message' => "Akun <strong>\"$nama\"</strong> berhasil dihapus",
                     'type' => 'admin'
                 ];
             }
@@ -45,7 +54,6 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-// ========== AMBIL DATA ==========
 $query = mysqli_query($conn, "SELECT * FROM admin_users ORDER BY id DESC");
 
 include "../includes/header.php";
@@ -59,23 +67,12 @@ include "../includes/header.php";
         </a>
     </div>
 
-    <!-- NOTIFICATION CONTAINER -->
     <div class="notification-container">
         <?php if (isset($_SESSION['success'])): ?>
             <?php if (is_array($_SESSION['success'])): ?>
-                <div class="alert alert-success alert-dismissible <?= isset($_SESSION['success']['file_deleted']) ? 'file-deleted' : '' ?>">
+                <div class="alert alert-success alert-dismissible">
                     <i class="fas fa-check-circle"></i>
                     <?= $_SESSION['success']['message'] ?>
-                    
-                    <?php if (isset($_SESSION['success']['file_deleted'])): ?>
-                        <div class="file-list" style="margin-top: 10px;">
-                            <span class="file-badge"><i class="fas fa-camera"></i> Foto profil</span>
-                            <small style="display: block; margin-top: 8px; color: #0b5e2e;">
-                                <i class="fas fa-info-circle"></i> File foto ikut terhapus
-                            </small>
-                        </div>
-                    <?php endif; ?>
-                    
                     <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
                 </div>
             <?php else: ?>
@@ -107,10 +104,10 @@ include "../includes/header.php";
                         <tr>
                             <th width="5%">No</th>
                             <th width="10%">Foto</th>
-                            <th width="25%">Nama Lengkap</th>
-                            <th width="20%">Username</th>
+                            <th width="20%">Nama Lengkap</th>
+                            <th width="15%">Username</th>
                             <th width="25%">Email</th>
-                            <th width="15%">Aksi</th>
+                            <th width="25%">Aksi</th>
                         </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
@@ -128,22 +125,46 @@ include "../includes/header.php";
                             </td>
                             <td><strong><?= htmlspecialchars($row['nama_lengkap']) ?></strong></td>
                             <td><?= htmlspecialchars($row['username']) ?></td>
-                            <td><?= htmlspecialchars($row['email'] ?? '-') ?></td>
+                            <td>
+                                <?php 
+                                if ($row['id'] == $_SESSION['admin_id']) {
+                                    echo htmlspecialchars($row['email'] ?? '-');
+                                } else {
+                                    $email = $row['email'] ?? '';
+                                    if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                                        $email_parts = explode('@', $email);
+                                        $username_part = $email_parts[0];
+                                        $domain_part = $email_parts[1] ?? '';
+                                        
+                                        // Buat bintang sepanjang username asli
+                                        $hidden_username = str_repeat('*', strlen($username_part));
+                                        
+                                        echo $hidden_username . '@' . $domain_part;
+                                    } else {
+                                        echo '-';
+                                    }
+                                }
+                                ?>
+                            </td>
                             <td class="text-center">
                                 <div class="action-buttons">
-                                    <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <?php if ($row['id'] != $_SESSION['admin_id']): ?>
-                                    <button type="button" 
-                                            class="btn-delete" 
-                                            data-id="<?= $row['id'] ?>" 
-                                            data-name="<?= htmlspecialchars($row['nama_lengkap']) ?>"
-                                            data-module="admin"
-                                            data-has-foto="<?= (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg' ? 'true' : 'false') ?>"
-                                            title="Hapus">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
+                                    <?php if ($row['id'] == $_SESSION['admin_id']): ?>
+                                        <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn-delete" 
+                                                data-id="<?= $row['id'] ?>" 
+                                                data-name="<?= htmlspecialchars($row['nama_lengkap']) ?>"
+                                                data-module="admin"
+                                                data-has-foto="<?= (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg' ? 'true' : 'false') ?>"
+                                                title="Hapus">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    <?php else: ?>
+                                        <span class="btn-disabled" title="Tidak bisa mengedit akun orang lain">
+                                            <i class="fas fa-lock"></i>
+                                        </span>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -165,24 +186,20 @@ include "../includes/header.php";
 </div>
 
 <!-- Modal Konfirmasi Hapus -->
-<div id="deleteModal" class="modal" style="display:none;">
+<div id="deleteModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3><i class="fas fa-exclamation-triangle" style="color: #FFD700;"></i> Konfirmasi Hapus</h3>
+            <h3><i class="fas fa-exclamation-triangle"></i> Konfirmasi Hapus</h3>
             <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus <span id="itemType"></span> berikut?</p>
-            <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
-            
-            <div id="fileWarningContainer" style="display: none;">
-                <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span id="fileWarningText"></span>
-                </div>
+            <p>Apakah Anda yakin ingin menghapus akun Anda sendiri?</p>
+            <p class="delete-item-name" id="deleteItemName"></p>
+            <div id="fileWarningContainer">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="fileWarningText"></span>
             </div>
-            
-            <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
+            <div class="warning-box">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!
             </div>

@@ -39,10 +39,6 @@ $total_guru = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total F
 $total_ekstra = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM ekstrakurikuler"))['total'] ?? 0;
 $total_prestasi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM prestasi"))['total'] ?? 0;
 $total_sarana = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM sarana"))['total'] ?? 0;
-$total_pembiasaan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM pembiasaan"))['total'] ?? 0;
-$total_sambutan = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM sambutan"))['total'] ?? 0;
-$total_visi_misi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM visi_misi"))['total'] ?? 0;
-$total_sejarah = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM sejarah"))['total'] ?? 0;
 $total_slider = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM hero_slider WHERE status='aktif'"))['total'] ?? 0;
 $total_slider_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM hero_slider"))['total'] ?? 0;
 
@@ -75,25 +71,30 @@ $bulan_ini = date('Y-m');
 $pengumuman_bulan_ini = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM pengumuman WHERE DATE_FORMAT(tanggal, '%Y-%m') = '$bulan_ini'"))['total'] ?? 0;
 
 // ==============================================
-// DATA UNTUK GRAFIK KONTEN (6 BULAN TERAKHIR)
+// DATA UNTUK GRAFIK 3 BULAN TERAKHIR
 // ==============================================
 $bulan_labels = [];
 $konten_data = [];
 
-for ($i = 5; $i >= 0; $i--) {
+for ($i = 2; $i >= 0; $i--) {
     $bulan = date('Y-m', strtotime("-$i months"));
     $bulan_labels[] = date('M Y', strtotime("-$i months"));
     
     $pengumuman = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM pengumuman WHERE DATE_FORMAT(tanggal, '%Y-%m') = '$bulan'"))['total'] ?? 0;
     $agenda = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM agenda WHERE DATE_FORMAT(tanggal_mulai, '%Y-%m') = '$bulan'"))['total'] ?? 0;
-    $tahun = substr($bulan, 0, 4);
-    $prestasi = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM prestasi WHERE tahun = '$tahun'"))['total'] ?? 0;
     
-    $konten_data[] = $pengumuman + $agenda + $prestasi;
+    // Prestasi berdasarkan tahun (dibagi per bulan secara proporsional)
+    $tahun = substr($bulan, 0, 4);
+    $prestasi_tahun = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM prestasi WHERE tahun = '$tahun'"))['total'] ?? 0;
+    // Asumsikan prestasi tersebar merata per tahun (12 bulan)
+    $prestasi = round($prestasi_tahun / 12, 1);
+    
+    $total = $pengumuman + $agenda + $prestasi;
+    $konten_data[] = $total;
 }
 
-$total_konten_6_bulan = array_sum($konten_data);
-$rata_rata_bulan = $total_konten_6_bulan > 0 ? round($total_konten_6_bulan / 6, 1) : 0;
+$total_konten_3_bulan = array_sum($konten_data);
+$rata_rata_bulan = $total_konten_3_bulan > 0 ? round($total_konten_3_bulan / 3, 1) : 0;
 $bulan_terbanyak_index = array_keys($konten_data, max($konten_data))[0] ?? 0;
 $bulan_terbanyak = $bulan_labels[$bulan_terbanyak_index] ?? date('M Y');
 $nilai_terbanyak = max($konten_data);
@@ -139,7 +140,7 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
 <!-- CONTENT WRAPPER -->
 <div class="content-wrapper">
     
-    <!-- DASHBOARD HEADER dengan GREETING PERSONAL -->
+    <!-- DASHBOARD HEADER -->
     <div class="dashboard-header">
         <div class="header-left">
             <div class="greeting-badge">
@@ -161,9 +162,9 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                 <i class="fas fa-chevron-down"></i>
             </div>
             <div class="profile-dropdown" id="profileDropdownMenu">
-                <a href="users/index.php" class="dropdown-item">
-                    <i class="fas fa-users-cog"></i>
-                    <span>Kelola Admin</span>
+                <a href="users/edit.php?id=<?= $admin_id ?>" class="dropdown-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profil Saya</span>
                 </a>
                 <div class="dropdown-divider"></div>
                 <a href="logout.php" class="dropdown-item text-danger">
@@ -174,65 +175,48 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
         </div>
     </div>
 
-    <!-- STATISTIK UTAMA - 6 KOLOM PENTING -->
+    <!-- STATISTIK UTAMA - 6 KOLOM -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon bg-primary">
-                <i class="fas fa-bullhorn"></i>
-            </div>
+            <div class="stat-icon bg-primary"><i class="fas fa-bullhorn"></i></div>
             <div class="stat-content">
                 <h3><?= $total_pengumuman ?></h3>
                 <p>Pengumuman</p>
                 <small class="stat-sub"><?= $pengumuman_bulan_ini ?> bulan ini</small>
             </div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon bg-success">
-                <i class="fas fa-calendar-alt"></i>
-            </div>
+            <div class="stat-icon bg-success"><i class="fas fa-calendar-alt"></i></div>
             <div class="stat-content">
                 <h3><?= $total_agenda ?></h3>
                 <p>Agenda</p>
                 <small class="stat-sub"><?= $agenda_hari_ini ?> hari ini</small>
             </div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon bg-warning">
-                <i class="fas fa-chalkboard-teacher"></i>
-            </div>
+            <div class="stat-icon bg-warning"><i class="fas fa-chalkboard-teacher"></i></div>
             <div class="stat-content">
                 <h3><?= $total_guru ?></h3>
                 <p>Guru & Staff</p>
             </div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon bg-info">
-                <i class="fas fa-trophy"></i>
-            </div>
+            <div class="stat-icon bg-info"><i class="fas fa-trophy"></i></div>
             <div class="stat-content">
                 <h3><?= $total_prestasi ?></h3>
                 <p>Prestasi</p>
             </div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon bg-danger">
-                <i class="fas fa-images"></i>
-            </div>
+            <div class="stat-icon bg-danger"><i class="fas fa-images"></i></div>
             <div class="stat-content">
                 <h3><?= $total_foto + $total_video ?></h3>
                 <p>Galeri</p>
                 <small class="stat-sub"><?= $total_foto ?> foto • <?= $total_video ?> video</small>
             </div>
         </div>
-        
         <div class="stat-card">
-            <div class="stat-icon bg-purple">
-                <i class="fas fa-users-cog"></i>
-            </div>
+            <div class="stat-icon bg-purple"><i class="fas fa-users-cog"></i></div>
             <div class="stat-content">
                 <h3><?= $total_users ?></h3>
                 <p>Admin</p>
@@ -240,29 +224,41 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
         </div>
     </div>
 
-    <!-- DUA KOLOM: GRAFIK & AKTIVITAS TERBARU -->
+    <!-- DUA KOLOM: GRAFIK & AKTIVITAS -->
     <div class="dashboard-two-col">
         
-        <!-- KOLOM KIRI: GRAFIK TREN KONTEN -->
+        <!-- KOLOM KIRI: GRAFIK 3 BULAN TERAKHIR -->
         <div class="left-col">
             <div class="card">
                 <div class="card-header">
-                    <h3><i class="fas fa-chart-line"></i> Tren Konten 6 Bulan Terakhir</h3>
-                    <span class="badge"><?= $total_konten_6_bulan ?> total konten</span>
+                    <h3><i class="fas fa-chart-line"></i> Tren Konten 3 Bulan Terakhir</h3>
+                    <span class="badge"><?= $total_konten_3_bulan ?> total konten</span>
                 </div>
                 <div class="card-body">
-                    <canvas id="contentTrendChart" height="250"></canvas>
-                    
-                    <div class="chart-stats">
-                        <div class="chart-stat-item">
-                            <span class="stat-label">Rata-rata per bulan</span>
-                            <span class="stat-value"><?= $rata_rata_bulan ?> konten</span>
+                    <?php if ($total_konten_3_bulan > 0): ?>
+                        <canvas id="contentTrendChart" height="250"></canvas>
+                        <div class="chart-stats">
+                            <div class="chart-stat-item">
+                                <span class="stat-label">Rata-rata per bulan</span>
+                                <span class="stat-value"><?= $rata_rata_bulan ?> konten</span>
+                            </div>
+                            <div class="chart-stat-item">
+                                <span class="stat-label">Bulan tertinggi</span>
+                                <span class="stat-value"><?= $bulan_terbanyak ?> (<?= $nilai_terbanyak ?> konten)</span>
+                            </div>
                         </div>
-                        <div class="chart-stat-item">
-                            <span class="stat-label">Bulan tertinggi</span>
-                            <span class="stat-value"><?= $bulan_terbanyak ?> (<?= $nilai_terbanyak ?> konten)</span>
+                    <?php else: ?>
+                        <div class="empty-state" style="padding: 60px 20px;">
+                            <i class="fas fa-chart-line" style="font-size: 48px; color: #cbd5e0; margin-bottom: 15px;"></i>
+                            <p>Belum ada data konten untuk 3 bulan terakhir</p>
+                            <p style="font-size: 12px; color: #94a3b8;">Mulai tambahkan pengumuman, agenda, atau prestasi</p>
+                            <div style="margin-top: 15px;">
+                                <a href="pengumuman/tambah.php" class="btn-sm">Tambah Pengumuman</a>
+                                <a href="agenda/tambah.php" class="btn-sm">Tambah Agenda</a>
+                                <a href="prestasi/tambah.php" class="btn-sm">Tambah Prestasi</a>
+                            </div>
                         </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -274,19 +270,14 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                     <h3><i class="fas fa-clock"></i> Aktivitas Terbaru</h3>
                 </div>
                 <div class="card-body">
-                    <div class="activity-timeline" id="activityTimeline">
+                    <div class="activity-timeline">
                         <?php if (count($activities) > 0): ?>
                             <?php foreach($activities as $act): 
                                 $date_diff = floor((strtotime(date('Y-m-d')) - strtotime($act['date'])) / (60 * 60 * 24));
-                                if ($date_diff == 0) {
-                                    $time_ago = "Hari ini";
-                                } elseif ($date_diff == 1) {
-                                    $time_ago = "Kemarin";
-                                } elseif ($date_diff <= 7) {
-                                    $time_ago = $date_diff . " hari lalu";
-                                } else {
-                                    $time_ago = date('d M Y', strtotime($act['date']));
-                                }
+                                if ($date_diff == 0) $time_ago = "Hari ini";
+                                elseif ($date_diff == 1) $time_ago = "Kemarin";
+                                elseif ($date_diff <= 7) $time_ago = $date_diff . " hari lalu";
+                                else $time_ago = date('d M Y', strtotime($act['date']));
                                 
                                 $type_class = '';
                                 if ($act['type'] == 'pengumuman') $type_class = 'pengumuman';
@@ -320,33 +311,23 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
         </div>
     </div>
 
-    <!-- INFO PANELS - STATUS PENTING -->
+    <!-- INFO PANELS -->
     <div class="info-panels-grid">
-        <div class="info-panel <?= $ppdb_status ?>">
-            <div class="info-panel-icon bg-primary">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
+        <div class="info-panel">
+            <div class="info-panel-icon bg-primary"><i class="fas fa-graduation-cap"></i></div>
             <div class="info-panel-content">
                 <h3>PPDB <?= $ppdb_tahun ?></h3>
                 <div class="status-indicator">
                     <span class="status-dot <?= $ppdb_status ?>"></span>
                     <span class="status-text"><?= strtoupper($ppdb_status) ?></span>
                 </div>
-                <?php if ($ppdb_status == 'aktif' && $ppdb): ?>
-                <p class="info-deadline">Pendaftaran: <?= date('d/m', strtotime($ppdb['tanggal_mulai'])) ?> - <?= date('d/m/Y', strtotime($ppdb['tanggal_selesai'])) ?></p>
-                <?php endif; ?>
             </div>
             <div class="info-panel-badge">
-                <a href="ppdb/index.php" class="badge-user">
-                    <i class="fas fa-cog"></i> Kelola
-                </a>
+                <a href="ppdb/index.php" class="badge-user"><i class="fas fa-cog"></i> Kelola</a>
             </div>
         </div>
-
         <div class="info-panel">
-            <div class="info-panel-icon bg-primary">
-                <i class="fas fa-images"></i>
-            </div>
+            <div class="info-panel-icon bg-primary"><i class="fas fa-images"></i></div>
             <div class="info-panel-content">
                 <h3>Hero Slider</h3>
                 <p><?= $total_slider ?> dari <?= $total_slider_all ?> slide aktif</p>
@@ -355,31 +336,23 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                 </div>
             </div>
             <div class="info-panel-badge">
-                <a href="hero_slider/index.php" class="badge-user">
-                    <i class="fas fa-edit"></i> Kelola
-                </a>
+                <a href="hero_slider/index.php" class="badge-user"><i class="fas fa-edit"></i> Kelola</a>
             </div>
         </div>
-
         <div class="info-panel">
-            <div class="info-panel-icon bg-success">
-                <i class="fas fa-address-book"></i>
-            </div>
+            <div class="info-panel-icon bg-success"><i class="fas fa-address-book"></i></div>
             <div class="info-panel-content">
                 <h3>Informasi Kontak</h3>
                 <p><?= $kontak_data ? '✓ Data kontak tersedia' : '✗ Data kontak belum diisi' ?></p>
             </div>
             <div class="info-panel-badge">
-                <a href="kontak/index.php" class="badge-user">
-                    <i class="fas fa-edit"></i> Edit
-                </a>
+                <a href="kontak/index.php" class="badge-user"><i class="fas fa-edit"></i> Edit</a>
             </div>
         </div>
     </div>
 
-    <!-- DASHBOARD GRID - 2 KOLOM UTAMA -->
+    <!-- DASHBOARD GRID -->
     <div class="dashboard-grid">
-        
         <div class="grid-col main-col">
             <div class="card">
                 <div class="card-header">
@@ -392,32 +365,20 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                             <?php while($row = mysqli_fetch_assoc($recent_pengumuman)): ?>
                             <li>
                                 <a href="pengumuman/edit.php?id=<?= $row['id'] ?>">
-                                    <div class="item-icon">
-                                        <i class="fas fa-bullhorn"></i>
-                                    </div>
+                                    <div class="item-icon"><i class="fas fa-bullhorn"></i></div>
                                     <div class="item-content">
                                         <span class="item-title"><?= htmlspecialchars($row['judul']) ?></span>
-                                        <span class="item-meta">
-                                            <i class="fas fa-calendar"></i> <?= date('d M Y', strtotime($row['tanggal'])) ?>
-                                            <?php if(isset($row['status']) && $row['status'] == 'draft'): ?>
-                                                <span class="badge-draft">Draft</span>
-                                            <?php endif; ?>
-                                        </span>
+                                        <span class="item-meta"><i class="fas fa-calendar"></i> <?= date('d M Y', strtotime($row['tanggal'])) ?></span>
                                     </div>
                                 </a>
                             </li>
                             <?php endwhile; ?>
                         </ul>
                     <?php else: ?>
-                        <div class="empty-state">
-                            <i class="fas fa-newspaper"></i>
-                            <p>Belum ada pengumuman</p>
-                            <a href="pengumuman/tambah.php" class="btn-sm">Buat Pengumuman</a>
-                        </div>
+                        <div class="empty-state"><i class="fas fa-newspaper"></i><p>Belum ada pengumuman</p><a href="pengumuman/tambah.php" class="btn-sm">Buat Pengumuman</a></div>
                     <?php endif; ?>
                 </div>
             </div>
-            
             <div class="card">
                 <div class="card-header">
                     <h3><i class="fas fa-trophy"></i> Prestasi Terbaru</h3>
@@ -429,26 +390,17 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                             <?php while($row = mysqli_fetch_assoc($recent_prestasi)): ?>
                             <li>
                                 <a href="prestasi/edit.php?id=<?= $row['id'] ?>">
-                                    <div class="item-icon">
-                                        <i class="fas fa-medal"></i>
-                                    </div>
+                                    <div class="item-icon"><i class="fas fa-medal"></i></div>
                                     <div class="item-content">
                                         <span class="item-title"><?= htmlspecialchars($row['nama_prestasi']) ?></span>
-                                        <span class="item-meta">
-                                            <span class="badge-year"><?= $row['tahun'] ?></span>
-                                            <span class="badge-level"><?= htmlspecialchars($row['tingkat'] ?? '') ?></span>
-                                        </span>
+                                        <span class="item-meta"><span class="badge-year"><?= $row['tahun'] ?></span></span>
                                     </div>
                                 </a>
                             </li>
                             <?php endwhile; ?>
                         </ul>
                     <?php else: ?>
-                        <div class="empty-state">
-                            <i class="fas fa-trophy"></i>
-                            <p>Belum ada prestasi</p>
-                            <a href="prestasi/tambah.php" class="btn-sm">Tambah Prestasi</a>
-                        </div>
+                        <div class="empty-state"><i class="fas fa-trophy"></i><p>Belum ada prestasi</p><a href="prestasi/tambah.php" class="btn-sm">Tambah Prestasi</a></div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -468,20 +420,13 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                             ?>
                             <li>
                                 <a href="agenda/edit.php?id=<?= $row['id'] ?>">
-                                    <div class="item-icon agenda">
-                                        <i class="fas fa-clock"></i>
-                                    </div>
+                                    <div class="item-icon agenda"><i class="fas fa-clock"></i></div>
                                     <div class="item-content">
                                         <span class="item-title"><?= htmlspecialchars($row['nama_agenda']) ?></span>
                                         <span class="item-meta">
-                                            <i class="fas fa-calendar-day"></i> 
-                                            <?php if($selisih == 0): ?>
-                                                <span class="badge-today">Hari Ini</span>
-                                            <?php elseif($selisih == 1): ?>
-                                                <span class="badge-tomorrow">Besok</span>
-                                            <?php else: ?>
-                                                <?= date('d M', strtotime($row['tanggal_mulai'])) ?>
-                                            <?php endif; ?>
+                                            <?php if($selisih == 0): ?><span class="badge-today">Hari Ini</span>
+                                            <?php elseif($selisih == 1): ?><span class="badge-tomorrow">Besok</span>
+                                            <?php else: ?><?= date('d M', strtotime($row['tanggal_mulai'])) ?><?php endif; ?>
                                         </span>
                                     </div>
                                 </a>
@@ -489,11 +434,7 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                             <?php endwhile; ?>
                         </ul>
                     <?php else: ?>
-                        <div class="empty-state">
-                            <i class="fas fa-calendar"></i>
-                            <p>Tidak ada agenda mendatang</p>
-                            <a href="agenda/tambah.php" class="btn-sm">Buat Agenda</a>
-                        </div>
+                        <div class="empty-state"><i class="fas fa-calendar"></i><p>Tidak ada agenda mendatang</p><a href="agenda/tambah.php" class="btn-sm">Buat Agenda</a></div>
                     <?php endif; ?>
                 </div>
             </div>
@@ -508,23 +449,14 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                         <div class="gallery-preview">
                             <?php while($row = mysqli_fetch_assoc($recent_galeri)): ?>
                             <a href="galeri_foto/detail.php?id=<?= $row['id'] ?>" class="gallery-thumb">
-                                <img src="../uploads/galeri_foto/<?= $row['file_foto'] ?>" alt="<?= $row['judul'] ?? 'Foto' ?>">
-                                <span class="gallery-overlay">
-                                    <i class="fas fa-search-plus"></i>
-                                </span>
+                                <img src="../uploads/galeri_foto/<?= $row['file_foto'] ?>" alt="Foto">
+                                <span class="gallery-overlay"><i class="fas fa-search-plus"></i></span>
                             </a>
                             <?php endwhile; ?>
                         </div>
                     <?php else: ?>
-                        <div class="empty-state small">
-                            <i class="fas fa-images"></i>
-                            <p>Belum ada foto</p>
-                            <a href="galeri_foto/tambah.php" class="btn-sm">Upload Foto</a>
-                        </div>
+                        <div class="empty-state small"><i class="fas fa-images"></i><p>Belum ada foto</p><a href="galeri_foto/tambah.php" class="btn-sm">Upload Foto</a></div>
                     <?php endif; ?>
-                </div>
-                <div class="card-footer">
-                    <a href="galeri_foto/index.php">Kelola Galeri Foto <i class="fas fa-arrow-right"></i></a>
                 </div>
             </div>
             
@@ -544,98 +476,78 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                                 <?php if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg'): ?>
                                     <img src="../uploads/<?= $row['foto'] ?>" alt="User">
                                 <?php else: ?>
-                                    <div class="avatar-placeholder">
-                                        <?= strtoupper(substr($row['nama_lengkap'], 0, 1)) ?>
-                                    </div>
+                                    <div class="avatar-placeholder"><?= strtoupper(substr($row['nama_lengkap'], 0, 1)) ?></div>
                                 <?php endif; ?>
                             </div>
                             <?php endwhile; ?>
                             <?php if($total_users > 4): ?>
-                            <div class="admin-avatar-item more">
-                                +<?= $total_users - 4 ?>
-                            </div>
+                            <div class="admin-avatar-item more">+<?= $total_users - 4 ?></div>
                             <?php endif; ?>
                         </div>
                         <p class="admin-count">Total <?= $total_users ?> administrator</p>
                     <?php else: ?>
-                        <div class="empty-state small">
-                            <i class="fas fa-users-cog"></i>
-                            <p>Belum ada admin</p>
-                        </div>
+                        <div class="empty-state small"><i class="fas fa-users-cog"></i><p>Belum ada admin</p></div>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- QUICK ACTIONS - AKSI CEPAT -->
+    <!-- QUICK ACTIONS -->
     <div class="quick-actions">
         <h3><i class="fas fa-bolt"></i> Aksi Cepat</h3>
         <div class="actions-grid">
-            <a href="pengumuman/tambah.php" class="action-item">
-                <i class="fas fa-bullhorn"></i>
-                <span>Pengumuman</span>
-                <small>Tambah baru</small>
-            </a>
-            <a href="agenda/tambah.php" class="action-item">
-                <i class="fas fa-calendar-plus"></i>
-                <span>Agenda</span>
-                <small>Buat agenda</small>
-            </a>
-            <a href="prestasi/tambah.php" class="action-item">
-                <i class="fas fa-trophy"></i>
-                <span>Prestasi</span>
-                <small>Tambah prestasi</small>
-            </a>
-            <a href="galeri_foto/tambah.php" class="action-item">
-                <i class="fas fa-camera"></i>
-                <span>Upload Foto</span>
-                <small>Tambah ke galeri</small>
-            </a>
-            <a href="hero_slider/tambah.php" class="action-item">
-                <i class="fas fa-sliders-h"></i>
-                <span>Hero Slider</span>
-                <small>Tambah slide</small>
-            </a>
-            <a href="guru_staff/tambah.php" class="action-item">
-                <i class="fas fa-chalkboard-teacher"></i>
-                <span>Guru/Staff</span>
-                <small>Tambah data</small>
-            </a>
-            <a href="ekstrakurikuler/tambah.php" class="action-item">
-                <i class="fas fa-futbol"></i>
-                <span>Ekstra</span>
-                <small>Tambah kegiatan</small>
-            </a>
-            <a href="users/tambah.php" class="action-item">
-                <i class="fas fa-user-plus"></i>
-                <span>Admin</span>
-                <small>Tambah admin</small>
-            </a>
+            <a href="pengumuman/tambah.php" class="action-item"><i class="fas fa-bullhorn"></i><span>Pengumuman</span><small>Tambah baru</small></a>
+            <a href="agenda/tambah.php" class="action-item"><i class="fas fa-calendar-plus"></i><span>Agenda</span><small>Buat agenda</small></a>
+            <a href="prestasi/tambah.php" class="action-item"><i class="fas fa-trophy"></i><span>Prestasi</span><small>Tambah prestasi</small></a>
+            <a href="galeri_foto/tambah.php" class="action-item"><i class="fas fa-camera"></i><span>Upload Foto</span><small>Tambah ke galeri</small></a>
+            <a href="hero_slider/tambah.php" class="action-item"><i class="fas fa-sliders-h"></i><span>Hero Slider</span><small>Tambah slide</small></a>
+            <a href="guru_staff/tambah.php" class="action-item"><i class="fas fa-chalkboard-teacher"></i><span>Guru/Staff</span><small>Tambah data</small></a>
+            <a href="ekstrakurikuler/tambah.php" class="action-item"><i class="fas fa-futbol"></i><span>Ekstra</span><small>Tambah kegiatan</small></a>
+            <a href="users/tambah.php" class="action-item"><i class="fas fa-user-plus"></i><span>Admin</span><small>Tambah admin</small></a>
         </div>
     </div>
-
-    <!-- TIPS & TRICKS / INFORMASI TAMBAHAN -->
-    <div class="tips-section">
-        <div class="tip-card">
-            <i class="fas fa-lightbulb"></i>
-            <div class="tip-content">
-                <h4>Tips Cepat</h4>
-                <p>Gunakan menu <strong>Quick Actions</strong> untuk menambah konten dengan cepat tanpa harus membuka menu lengkap.</p>
-            </div>
-        </div>
-        <div class="tip-card">
-            <i class="fas fa-info-circle"></i>
-            <div class="tip-content">
-                <h4>Informasi</h4>
-                <p>Pastikan data kontak dan PPDB selalu diperbarui menjelang tahun ajaran baru.</p>
-            </div>
-        </div>
-    </div>
-
 </div>
 
-<!-- Chart.js untuk Grafik -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<?php if ($total_konten_3_bulan > 0): ?>
+<script>
+// Inisialisasi Chart - 3 bulan terakhir
+const ctx = document.getElementById('contentTrendChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?= json_encode($bulan_labels) ?>,
+        datasets: [{
+            label: 'Jumlah Konten',
+            data: <?= json_encode($konten_data) ?>,
+            backgroundColor: 'rgba(11, 61, 145, 0.1)',
+            borderColor: '#0B3D91',
+            borderWidth: 3,
+            pointBackgroundColor: '#FFD700',
+            pointBorderColor: '#0B3D91',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { position: 'top', labels: { font: { size: 12 } } },
+            tooltip: { callbacks: { label: function(context) { return 'Konten: ' + context.raw; } } }
+        },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 }, title: { display: true, text: 'Jumlah Konten' } },
+            x: { title: { display: true, text: 'Bulan' } }
+        }
+    }
+});
+</script>
+<?php endif; ?>
 
 <?php include "includes/footer.php"; ?>

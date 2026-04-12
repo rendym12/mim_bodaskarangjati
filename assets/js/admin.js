@@ -1176,6 +1176,7 @@ function initSaranaPage() {
 function initUsersPage() {
     console.log('👥 Users page initialized');
     
+    // ========== FILE UPLOAD PREVIEW ==========
     const fotoInput = document.getElementById('foto');
     const previewImage = document.getElementById('previewImage');
     const previewContainer = document.getElementById('previewContainer');
@@ -1188,12 +1189,16 @@ function initUsersPage() {
             const file = e.target.files[0];
             if (file && previewImage && previewContainer) {
                 const reader = new FileReader();
-                reader.onload = e => { previewImage.src = e.target.result; previewContainer.style.display = 'block'; };
+                reader.onload = e => { 
+                    previewImage.src = e.target.result; 
+                    previewContainer.style.display = 'block'; 
+                };
                 reader.readAsDataURL(file);
             }
         });
     }
     
+    // ========== FORM SUBMIT HANDLER ==========
     const form = document.getElementById('userForm');
     const submitBtn = document.getElementById('btnSubmit');
     if (form && submitBtn) {
@@ -1203,6 +1208,66 @@ function initUsersPage() {
             submitBtn.disabled = true;
         });
     }
+    
+    // ========== EDIT BUTTON - biarkan link biasa bekerja ==========
+    const editButtons = document.querySelectorAll('.users-page .btn-edit');
+    console.log('🔍 Found ' + editButtons.length + ' edit buttons');
+    // Tombol Edit sudah berupa <a href> biasa, tidak perlu event handler tambahan
+    
+    // ========== DELETE BUTTON HANDLER ==========
+    const deleteButtons = document.querySelectorAll('.users-page .btn-delete');
+    const deleteModal = document.getElementById('deleteModal');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const closeModalBtn = document.getElementById('btnCloseModal');
+    const modalCloseSpan = document.querySelector('#deleteModal .modal-close');
+    const deleteItemName = document.getElementById('deleteItemName');
+    const fileWarningContainer = document.getElementById('fileWarningContainer');
+    const fileWarningText = document.getElementById('fileWarningText');
+    
+    if (!deleteModal) return;
+    
+    function showDeleteModal(id, name, hasFoto) {
+        if (deleteItemName) deleteItemName.innerHTML = '<strong>' + name + '</strong>';
+        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
+        if (fileWarningContainer && fileWarningText) {
+            if (hasFoto === 'true') {
+                fileWarningText.innerHTML = '<i class="fas fa-camera"></i> Akun ini memiliki FOTO PROFIL yang akan ikut terhapus!';
+                fileWarningContainer.style.display = 'block';
+            } else {
+                fileWarningContainer.style.display = 'none';
+            }
+        }
+        deleteModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeDeleteModal() {
+        deleteModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            const hasFoto = this.getAttribute('data-has-foto') || 'false';
+            if (id && name) showDeleteModal(id, name, hasFoto);
+        });
+    });
+    
+    if (modalCloseSpan) modalCloseSpan.addEventListener('click', closeDeleteModal);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeDeleteModal);
+    
+    deleteModal.addEventListener('click', function(e) {
+        if (e.target === deleteModal) closeDeleteModal();
+    });
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && deleteModal.style.display === 'flex') closeDeleteModal();
+    });
+    
+    console.log('✅ Users page initialized');
 }
 
 // ==============================================

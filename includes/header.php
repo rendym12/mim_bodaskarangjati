@@ -23,6 +23,7 @@ require_once __DIR__ . '/config.php';
     
     <!-- JavaScript Global -->
     <script src="<?= BASE_URL ?>/assets/js/public.js"></script>
+    
 </head>
 <body>
 <header>
@@ -33,9 +34,11 @@ require_once __DIR__ . '/config.php';
         <span></span>
     </button>
     
-    <!-- LOGO -->
+    <!-- LOGO - UKURAN LEBIH KECIL & MENARIK -->
     <div class="logo">
-        <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="Logo">
+        <div class="logo-img">
+            <img src="<?= BASE_URL ?>/assets/img/logo.png" alt="Logo MI Muhammadiyah">
+        </div>
         <div class="logo-text">
             <h1>MI Muhammadiyah <span>Bodaskarangjati</span></h1>
         </div>
@@ -84,4 +87,4 @@ require_once __DIR__ . '/config.php';
         </ul>
     </nav>
 </header>
-<main></main>
+<main>

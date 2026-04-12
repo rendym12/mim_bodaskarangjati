@@ -13480,6 +13480,225 @@ html {
 .fa-tiktok, .tiktok { color: #000000; }
 .fa-facebook, .facebook { color: #3b5998; }
 
+
+/* Tombol Edit di Index - Button Aksi */
+.users-page .action-buttons .btn-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #0B3D91, #1e4ca0);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(11,61,145,0.2);
+}
+
+.users-page .action-buttons .btn-edit:hover {
+    background: linear-gradient(135deg, #FFD700, #f0b700);
+    color: #0B3D91;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255,215,0,0.3);
+}
+
+.users-page .action-buttons .btn-edit i {
+    font-size: 0.85rem;
+    transition: transform 0.3s ease;
+}
+
+.users-page .action-buttons .btn-edit:hover i {
+    transform: rotate(15deg);
+}
+
+/* Tombol Hapus di Index - Button Aksi */
+.users-page .action-buttons .btn-delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(220,53,69,0.2);
+}
+
+.users-page .action-buttons .btn-delete:hover {
+    background: linear-gradient(135deg, #c82333, #a71d2a);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(220,53,69,0.3);
+}
+
+.users-page .action-buttons .btn-delete i {
+    font-size: 0.85rem;
+    transition: transform 0.3s ease;
+}
+
+.users-page .action-buttons .btn-delete:hover i {
+    transform: scale(1.1);
+}
+
+/* Tombol Disabled/Terkunci */
+.users-page .action-buttons .btn-disabled {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #e0e0e0;
+    color: #999;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: not-allowed;
+    border: 1px solid #d0d0d0;
+}
+
+/* ==============================================
+   KHUSUS USERS PAGE - BUTTON FORM DI TAMBAH & EDIT
+   ============================================== */
+
+/* Tombol Reset di Form Tambah/Edit */
+.users-page .form-actions .btn-secondary,
+.users-page .form-actions .btn-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: #f1f5f9;
+    color: #2c3e50;
+    padding: 12px 28px;
+    border-radius: 40px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1.5px solid #e2e8f0;
+    cursor: pointer;
+}
+
+.users-page .form-actions .btn-secondary:hover,
+.users-page .form-actions .btn-reset:hover {
+    background: #0B3D91;
+    color: white;
+    transform: translateY(-2px);
+    border-color: #0B3D91;
+    box-shadow: 0 5px 15px rgba(11,61,145,0.2);
+}
+
+.users-page .form-actions .btn-secondary i,
+.users-page .form-actions .btn-reset i {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.users-page .form-actions .btn-secondary:hover i,
+.users-page .form-actions .btn-reset:hover i {
+    transform: rotate(-180deg);
+}
+
+/* Tombol Simpan di Form Tambah/Edit */
+.users-page .form-actions .btn-primary,
+.users-page .form-actions .btn-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #0B3D91, #1e4ca0);
+    color: white;
+    padding: 12px 32px;
+    border-radius: 40px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(11,61,145,0.2);
+}
+
+.users-page .form-actions .btn-primary:hover,
+.users-page .form-actions .btn-save:hover {
+    background: linear-gradient(135deg, #FFD700, #f0b700);
+    color: #0B3D91;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(255,215,0,0.3);
+}
+
+.users-page .form-actions .btn-primary i,
+.users-page .form-actions .btn-save i {
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.users-page .form-actions .btn-primary:hover i,
+.users-page .form-actions .btn-save:hover i {
+    transform: scale(1.2);
+}
+
+/* Loading State untuk Tombol Simpan */
+.users-page .form-actions .btn-primary.loading,
+.users-page .form-actions .btn-save.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.users-page .form-actions .btn-primary.loading i,
+.users-page .form-actions .btn-save.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ==============================================
+   RESPONSIVE BUTTONS MOBILE
+   ============================================== */
+
+@media (max-width: 768px) {
+    .users-page .action-buttons {
+        flex-direction: column !important;
+        gap: 6px !important;
+    }
+    
+    .users-page .action-buttons .btn-edit,
+    .users-page .action-buttons .btn-delete,
+    .users-page .action-buttons .btn-disabled {
+        width: 100%;
+        justify-content: center;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+    }
+    
+    .users-page .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .users-page .form-actions .btn-primary,
+    .users-page .form-actions .btn-secondary,
+    .users-page .form-actions .btn-save,
+    .users-page .form-actions .btn-reset {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 20px;
+    }
+}
+
 /* ==============================================
    END OF FILE
 =============================================== */

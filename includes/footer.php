@@ -134,6 +134,7 @@ $wa = 'https://wa.me/6281133208870';
                 
                 <div class="credit">
                     All rights reserved
+                    <span class="developer-credit"> <span class="developer-credit"> | Developed by: Rendi Mulyadi (UM Purwokerto)</span></span>
                 </div>
             </div>
         </div>
