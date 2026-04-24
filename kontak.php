@@ -6,12 +6,18 @@ include('includes/db.php');
 $query = mysqli_query($conn, "SELECT * FROM kontak LIMIT 1");
 $kontak = mysqli_fetch_assoc($query);
 
+// Ambil data testimoni yang sudah disetujui
+$query_testimoni = mysqli_query($conn, "SELECT * FROM testimoni WHERE status = 'approved' ORDER BY created_at DESC LIMIT 6");
+$testimonis = [];
+while ($row = mysqli_fetch_assoc($query_testimoni)) {
+    $testimonis[] = $row;
+}
+
 // Tentukan BASE URL
 $base_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . '/mim_bodaskarangjati';
 ?>
 <link rel="stylesheet" href="<?= $base_url ?>/assets/css/style.css?v=<?= time() ?>">
 
-<!-- TAMBAHKAN CLASS PADA BODY UNTUK TARGET KHUSUS -->
 <script>
 document.body.classList.add('kontak-page');
 </script>
@@ -33,7 +39,6 @@ document.body.classList.add('kontak-page');
                     <h2 class="section-title">Denah Lokasi</h2>
                     <h3 class="sub-title">MI Muhammadiyah Bodaskarangjati</h3>
                     
-                    <!-- Maps -->
                     <?php if (!empty($kontak['maps_embed'])): ?>
                     <div class="maps-container">
                         <?= $kontak['maps_embed'] ?>
@@ -52,11 +57,10 @@ document.body.classList.add('kontak-page');
                     <?php endif; ?>
                 </div>
                 
-                <!-- RIGHT SIDE - KONTAK INFO DENGAN ICON -->
+                <!-- RIGHT SIDE - KONTAK INFO -->
                 <div class="kontak-info-section">
                     <h2 class="section-title">Kontak</h2>
                     
-                    <!-- EMAIL DENGAN ICON -->
                     <div class="kontak-item">
                         <div class="kontak-icon email-icon">
                             <i class="fas fa-envelope"></i>
@@ -67,7 +71,6 @@ document.body.classList.add('kontak-page');
                         </div>
                     </div>
                     
-                    <!-- ADDRESS DENGAN ICON -->
                     <div class="kontak-item">
                         <div class="kontak-icon address-icon">
                             <i class="fas fa-map-marker-alt"></i>
@@ -78,7 +81,6 @@ document.body.classList.add('kontak-page');
                         </div>
                     </div>
                     
-                    <!-- PHONE DENGAN ICON -->
                     <div class="kontak-item">
                         <div class="kontak-icon phone-icon">
                             <i class="fas fa-phone-alt"></i>
@@ -89,7 +91,6 @@ document.body.classList.add('kontak-page');
                         </div>
                     </div>
                     
-                    <!-- JAM OPERASIONAL DENGAN ICON -->
                     <div class="kontak-item">
                         <div class="kontak-icon hours-icon">
                             <i class="fas fa-clock"></i>
@@ -100,49 +101,36 @@ document.body.classList.add('kontak-page');
                         </div>
                     </div>
                     
-                    <!-- SOCIAL MEDIA SECTION - VERTIKAL -->
                     <div class="social-media-section">
                         <h3 class="social-title">Media Sosial</h3>
                         
                         <div class="social-list">
-                            <!-- Instagram -->
                             <a href="<?= htmlspecialchars($kontak['instagram'] ?? 'https://instagram.com/mim_bodaskarangjati') ?>" target="_blank" class="social-item instagram">
-                                <div class="social-item-icon">
-                                    <i class="fab fa-instagram"></i>
-                                </div>
+                                <div class="social-item-icon"><i class="fab fa-instagram"></i></div>
                                 <div class="social-item-info">
                                     <span class="social-item-name">Instagram</span>
                                     <span class="social-item-username">@mim_bodaskarangjati</span>
                                 </div>
                             </a>
                             
-                            <!-- YouTube -->
                             <a href="<?= htmlspecialchars($kontak['youtube'] ?? 'https://youtube.com/@mim_bodaskarangjati') ?>" target="_blank" class="social-item youtube">
-                                <div class="social-item-icon">
-                                    <i class="fab fa-youtube"></i>
-                                </div>
+                                <div class="social-item-icon"><i class="fab fa-youtube"></i></div>
                                 <div class="social-item-info">
                                     <span class="social-item-name">YouTube</span>
                                     <span class="social-item-username">MI Muhammadiyah</span>
                                 </div>
                             </a>
                             
-                            <!-- TikTok -->
                             <a href="<?= htmlspecialchars($kontak['tiktok'] ?? 'https://tiktok.com/@mim_bodaskarangjati') ?>" target="_blank" class="social-item tiktok">
-                                <div class="social-item-icon">
-                                    <i class="fab fa-tiktok"></i>
-                                </div>
+                                <div class="social-item-icon"><i class="fab fa-tiktok"></i></div>
                                 <div class="social-item-info">
                                     <span class="social-item-name">TikTok</span>
                                     <span class="social-item-username">@mim_bodaskarangjati</span>
                                 </div>
                             </a>
                             
-                            <!-- Facebook -->
                             <a href="<?= htmlspecialchars($kontak['facebook'] ?? 'https://facebook.com/mim.bodaskarangjati') ?>" target="_blank" class="social-item facebook">
-                                <div class="social-item-icon">
-                                    <i class="fab fa-facebook-f"></i>
-                                </div>
+                                <div class="social-item-icon"><i class="fab fa-facebook-f"></i></div>
                                 <div class="social-item-info">
                                     <span class="social-item-name">Facebook</span>
                                     <span class="social-item-username">MI Muhammadiyah</span>
@@ -154,6 +142,115 @@ document.body.classList.add('kontak-page');
             </div>
         </div>
     </div>
+
+ <!-- FORM KRITIK & SARAN + TESTIMONI - LAYOUT 2 KOLOM -->
+<div class="kontak-testimoni-wrapper">
+    
+    <!-- KOLOM KIRI: FORM KRITIK & SARAN -->
+    <div class="form-testimoni-section">
+        <div class="section-header">
+            <span class="section-tag">BERIKAN ULASAN</span>
+            <h2 class="section-title">Kritik & Saran</h2>
+            <p class="section-subtitle">Kami senang mendengar pendapat Anda</p>
+        </div>
+
+        <?php if(isset($_GET['success'])): ?>
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i> Terima kasih! Ulasan Anda akan kami proses.
+            </div>
+            <script>window.history.replaceState({}, document.title, window.location.pathname);</script>
+        <?php endif; ?>
+
+        <?php if(isset($_GET['error'])): ?>
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle"></i> Gagal mengirim ulasan. Silakan coba lagi.
+            </div>
+            <script>window.history.replaceState({}, document.title, window.location.pathname);</script>
+        <?php endif; ?>
+
+        <div class="testimoni-form-wrapper">
+            <form method="POST" action="proses_testimoni.php">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nama Lengkap <span style="color: red;">*</span></label>
+                        <input type="text" name="nama" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span style="color: #6c757d;">(Opsional)</span></label>
+                        <input type="email" name="email" class="form-control">
+                        <small>Email tidak akan ditampilkan di publik</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Rating <span style="color: red;">*</span></label>
+                    <select name="rating" class="form-control" required>
+                        <option value="5">⭐⭐⭐⭐⭐ (5) - Sangat Baik</option>
+                        <option value="4">⭐⭐⭐⭐ (4) - Baik</option>
+                        <option value="3">⭐⭐⭐ (3) - Cukup</option>
+                        <option value="2">⭐⭐ (2) - Kurang</option>
+                        <option value="1">⭐ (1) - Buruk</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Ulasan / Kritik & Saran <span style="color: red;">*</span></label>
+                    <textarea name="ulasan" class="form-control" rows="4" required placeholder="Tulis ulasan, kritik, atau saran Anda di sini..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-paper-plane"></i> Kirim Ulasan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- KOLOM KANAN: TESTIMONI -->
+    <div class="testimoni-section">
+        <div class="section-header">
+            <span class="section-tag">TESTIMONI</span>
+            <h2 class="section-title">Apa Kata Mereka?</h2>
+            <p class="section-subtitle">Ulasan dari orang tua siswa dan masyarakat</p>
+        </div>
+
+        <div class="testimoni-grid">
+            <?php if (count($testimonis) > 0): ?>
+                <?php foreach ($testimonis as $testi): ?>
+                <div class="testimoni-card">
+                    <div class="testimoni-header">
+                        <div class="testimoni-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="testimoni-info">
+                            <h4><?= htmlspecialchars($testi['nama']) ?></h4>
+                            <div class="testimoni-rating">
+                                <?php for($i=1; $i<=5; $i++): ?>
+                                    <?php if($i <= $testi['rating']): ?>
+                                        <i class="fas fa-star"></i>
+                                    <?php else: ?>
+                                        <i class="far fa-star"></i>
+                                    <?php endif; ?>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimoni-body">
+                        <i class="fas fa-quote-left"></i>
+                        <p><?= htmlspecialchars($testi['ulasan']) ?></p>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="testimoni-empty">
+                    <i class="fas fa-star"></i>
+                    <p>Belum ada testimoni. Jadilah yang pertama!</p>
+                </div>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
 </main>
 
 <?php include('includes/footer.php'); ?>

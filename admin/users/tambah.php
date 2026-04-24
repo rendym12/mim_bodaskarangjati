@@ -1,11 +1,21 @@
 <?php
 include "../includes/auth.php";
 
+// ========== CEK JUMLAH ADMIN MAKSIMAL 3 ==========
+$query_jumlah = mysqli_query($conn, "SELECT COUNT(*) as total FROM admin_users");
+$jumlah_admin = mysqli_fetch_assoc($query_jumlah)['total'];
+
+if ($jumlah_admin >= 3) {
+    $_SESSION['error'] = "Maaf, jumlah admin sudah mencapai batas maksimal (3 akun). Tidak dapat menambah admin baru!";
+    header("Location: index.php");
+    exit;
+}
+// ================================================
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_lengkap = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $unique_code = mysqli_real_escape_string($conn, $_POST['unique_code']);
     $password = $_POST['password'];
     $konfirmasi_password = $_POST['konfirmasi_password'];
     
@@ -22,11 +32,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors[] = "Email harus diisi";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errors[] = "Format email tidak valid";
-    }
-    if (empty($unique_code)) {
-        $errors[] = "Kode unik harus diisi";
-    } elseif (strlen($unique_code) < 6) {
-        $errors[] = "Kode unik minimal 6 karakter";
     }
     if (empty($password)) {
         $errors[] = "Password harus diisi";
@@ -69,8 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($errors)) {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
-        $query = "INSERT INTO admin_users (nama_lengkap, username, email, unique_code, password, foto) 
-                  VALUES ('$nama_lengkap', '$username', '$email', '$unique_code', '$hashed_password', '$foto')";
+        $query = "INSERT INTO admin_users (nama_lengkap, username, email, password, foto) 
+                  VALUES ('$nama_lengkap', '$username', '$email', '$hashed_password', '$foto')";
         
         if (mysqli_query($conn, $query)) {
             $_SESSION['success'] = "Admin <strong>$nama_lengkap</strong> berhasil ditambahkan";
@@ -85,6 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 include "../includes/header.php";
 ?>
 
+<!-- Sisanya tetap sama seperti kode Anda yang asli -->
 <div class="content-wrapper users-page">
     <div class="content-header">
         <h1><i class="fas fa-plus-circle"></i> Tambah Admin</h1>
@@ -105,7 +111,7 @@ include "../includes/header.php";
     <?php endif; ?>
 
     <div class="form-container">
-        <form method="POST" enctype="multipart/form-data" id="userForm">
+        <form method="POST" enctype="multipart/form-data">
             <div class="form-group">
                 <label><i class="fas fa-user"></i> Nama Lengkap <span style="color: red;">*</span></label>
                 <input type="text" name="nama_lengkap" class="form-control" required value="<?= isset($_POST['nama_lengkap']) ? htmlspecialchars($_POST['nama_lengkap']) : '' ?>">
@@ -122,30 +128,15 @@ include "../includes/header.php";
                 </div>
             </div>
 
-            <!-- TAMBAHAN: Kode Unik Verifikasi -->
-            <div class="form-group">
-                <label><i class="fas fa-qrcode"></i> Kode Unik Verifikasi <span style="color: red;">*</span></label>
-                <div class="input-group" style="display: flex; gap: 10px;">
-                    <input type="text" name="unique_code" id="unique_code" class="form-control" required value="<?= isset($_POST['unique_code']) ? htmlspecialchars($_POST['unique_code']) : '' ?>" placeholder="Minimal 6 karakter (huruf/angka)" minlength="6" style="flex: 1;">
-                    <button type="button" id="generateCodeBtn" class="btn-secondary" style="padding: 0 15px; white-space: nowrap;">
-                        <i class="fas fa-sync-alt"></i> Generate
-                    </button>
-                </div>
-                <small style="color: #6c757d;">
-                    <i class="fas fa-info-circle"></i> 
-                    <strong>Simpan baik-baik kode unik ini!</strong> Kode ini akan digunakan untuk verifikasi jika lupa password.
-                </small>
-            </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Password <span style="color: red;">*</span></label>
-                    <input type="password" name="password" id="password" class="form-control" required minlength="6">
+                    <input type="password" name="password" class="form-control" required minlength="6">
                     <small style="color: #6c757d;">Minimal 6 karakter</small>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Konfirmasi Password <span style="color: red;">*</span></label>
-                    <input type="password" name="konfirmasi_password" id="konfirmasi_password" class="form-control" required>
+                    <input type="password" name="konfirmasi_password" class="form-control" required>
                 </div>
             </div>
 
@@ -163,8 +154,8 @@ include "../includes/header.php";
             </div>
 
             <div class="form-actions">
-                <button type="reset" class="btn-secondary" id="btnReset">Reset</button>
-                <button type="submit" class="btn-primary" id="btnSubmit"><i class="fas fa-save"></i> Simpan</button>
+                <button type="reset" class="btn-secondary">Reset</button>
+                <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Simpan</button>
             </div>
         </form>
     </div>

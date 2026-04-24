@@ -24,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nama_lengkap = mysqli_real_escape_string($conn, $_POST['nama_lengkap']);
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $unique_code = mysqli_real_escape_string($conn, $_POST['unique_code']);
     $password = $_POST['password'];
     $konfirmasi_password = $_POST['konfirmasi_password'];
     
@@ -34,9 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (empty($username)) $errors[] = "Username harus diisi";
     if (empty($email)) $errors[] = "Email harus diisi";
     elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) $errors[] = "Format email tidak valid";
-    
-    if (empty($unique_code)) $errors[] = "Kode unik harus diisi";
-    elseif (strlen($unique_code) < 6) $errors[] = "Kode unik minimal 6 karakter";
     
     // Cek username sudah ada
     $check_username = mysqli_query($conn, "SELECT id FROM admin_users WHERE username = '$username' AND id != $id");
@@ -69,12 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             // Buat nama file baru
             $foto = 'user_' . time() . '_' . uniqid() . '.' . $ext;
-            $target_path = "../../uploads/" . $foto;
-            if (move_uploaded_file($_FILES['foto']['tmp_name'], $target_path)) {
-                // Upload berhasil
-            } else {
-                $errors[] = "Gagal mengupload foto";
-            }
+            move_uploaded_file($_FILES['foto']['tmp_name'], "../../uploads/" . $foto);
         }
     }
     
@@ -85,7 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                       nama_lengkap = '$nama_lengkap',
                       username = '$username',
                       email = '$email',
-                      unique_code = '$unique_code',
                       password = '$hashed_password',
                       foto = '$foto'
                       WHERE id = $id";
@@ -94,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                       nama_lengkap = '$nama_lengkap',
                       username = '$username',
                       email = '$email',
-                      unique_code = '$unique_code',
                       foto = '$foto'
                       WHERE id = $id";
         }
@@ -151,25 +140,18 @@ include "../includes/header.php";
                 </div>
             </div>
 
-            <div class="form-group">
-                <label><i class="fas fa-qrcode"></i> Kode Unik Verifikasi <span style="color: red;">*</span></label>
-                <input type="text" name="unique_code" class="form-control" required value="<?= htmlspecialchars($admin['unique_code'] ?? '') ?>" placeholder="Minimal 6 karakter" minlength="6">
-                <small>Simpan baik-baik kode unik ini!</small>
-            </div>
-
             <div class="form-row">
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Password Baru</label>
-                    <input type="password" name="password" id="password" class="form-control" minlength="6">
+                    <input type="password" name="password" class="form-control" minlength="6">
                     <small>Kosongkan jika tidak ingin mengubah password</small>
                 </div>
                 <div class="form-group">
                     <label><i class="fas fa-lock"></i> Konfirmasi Password</label>
-                    <input type="password" name="konfirmasi_password" id="konfirmasi_password" class="form-control">
+                    <input type="password" name="konfirmasi_password" class="form-control">
                 </div>
             </div>
 
-            <!-- INPUT FILE FOTO -->
             <div class="form-group">
                 <label><i class="fas fa-camera"></i> Foto Profil</label>
                 <div class="file-upload" id="fileUploadArea">

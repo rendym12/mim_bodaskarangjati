@@ -11,16 +11,32 @@ if (empty($token)) {
     exit;
 }
 
-// Cek token valid
-$query = "SELECT * FROM admin_users WHERE reset_token = '$token' AND reset_expiry > NOW()";
+// ==============================================
+// CEK TOKEN DI DATABASE (TANPA CEK EXPIRED DULU)
+// ==============================================
+$query = "SELECT * FROM admin_users WHERE reset_token = '$token'";
 $result = mysqli_query($conn, $query);
 $user = mysqli_fetch_assoc($result);
 
 if (!$user) {
-    $error = "❌ Link reset password tidak valid atau sudah kadaluarsa! Silakan minta reset ulang.";
+    $error = "❌ Link reset password tidak valid! Token tidak ditemukan.";
+} else {
+    // Cek apakah token sudah expired
+    $now = date('Y-m-d H:i:s');
+    $expiry = $user['reset_expiry'];
+    
+    if (strtotime($expiry) < strtotime($now)) {
+        $error = "❌ Link reset password sudah kadaluarsa!<br>
+                  <small>Token dibuat: " . date('d/m/Y H:i:s', strtotime($user['created_at'])) . "<br>
+                  Kadaluarsa: " . date('d/m/Y H:i:s', strtotime($expiry)) . "<br>
+                  Waktu sekarang: " . date('d/m/Y H:i:s', strtotime($now)) . "</small>";
+    } else {
+        // Token valid
+        $valid_token = true;
+    }
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user) {
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($valid_token) && $valid_token) {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
     
@@ -38,7 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user) {
                    WHERE id = " . $user['id'];
         
         if (mysqli_query($conn, $update)) {
-            $success = "✅ Password berhasil direset! Silakan login dengan password baru Anda.";
+            $success = true;
+            $user_name = $user['nama_lengkap'];
         } else {
             $error = "Gagal mereset password: " . mysqli_error($conn);
         }
@@ -71,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user) {
         
         <?php if ($error): ?>
             <div class="error"><i class="fas fa-exclamation-circle"></i> <?= $error ?></div>
-            <?php if (strpos($error, 'kadaluarsa') !== false): ?>
+            <?php if (strpos($error, 'kadaluarsa') !== false || strpos($error, 'tidak valid') !== false): ?>
                 <div style="text-align: center; margin-top: 15px;">
                     <a href="lupa-password.php" class="btn-login" style="text-decoration: none; display: inline-block; background: #2196F3;">
                         <i class="fas fa-key"></i> Minta Reset Ulang
@@ -80,14 +97,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user) {
             <?php endif; ?>
         <?php endif; ?>
         
-        <?php if ($success): ?>
-            <div class="success-message"><i class="fas fa-check-circle"></i> <?= $success ?></div>
+        <?php if (isset($success) && $success === true): ?>
+            <div class="success-message">
+                <i class="fas fa-check-circle" style="font-size: 48px; color: #2ecc71; margin-bottom: 15px; display: block;"></i>
+                <h3>Password Berhasil Direset!</h3>
+                <p>Akun: <strong><?= htmlspecialchars($user_name) ?></strong></p>
+                <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 5px; margin-top: 15px;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Silakan login dengan password baru Anda!</strong>
+                </div>
+            </div>
             <div style="text-align: center; margin-top: 20px;">
                 <a href="login.php" class="btn-login" style="text-decoration: none; display: inline-block;">
                     <i class="fas fa-sign-in-alt"></i> Login Sekarang
                 </a>
             </div>
-        <?php elseif ($user && !$success): ?>
+            
+        <?php elseif (isset($valid_token) && $valid_token): ?>
         <form method="POST" action="">
             <div class="form-group">
                 <label><i class="fas fa-lock"></i> Password Baru</label>
@@ -106,6 +132,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && $user) {
             <button type="submit" class="btn-login">
                 <i class="fas fa-save"></i> Simpan Password Baru
             </button>
+            <div style="margin-top: 15px; text-align: center;">
+                <a href="login.php">← Kembali ke Login</a>
+            </div>
         </form>
         <?php endif; ?>
     </div>

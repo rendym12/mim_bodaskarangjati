@@ -6,73 +6,69 @@ $error = '';
 $success = '';
 $step = 1;
 
-if (!isset($_SESSION['reset_email'])) {
-    $_SESSION['reset_email'] = null;
-    $_SESSION['reset_user_id'] = null;
-    $_SESSION['reset_user_name'] = null;
+// ==============================================
+// DETEKSI BASE URL OTOMATIS (SIAP HOSTING)
+// ==============================================
+$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'];
+$base_url = $protocol . '://' . $host . '/mim_bodaskarangjati';
+
+// ==============================================
+// GENERATE CAPTCHA (CASE INSENSITIVE)
+// ==============================================
+$alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ123456789';
+if (!isset($_SESSION['captcha_text']) || empty($_SESSION['captcha_text'])) {
+    $_SESSION['captcha_text'] = strtoupper(substr(str_shuffle($alphabet), 0, 6));
 }
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['email'])) {
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    $query = "SELECT id, nama_lengkap, unique_code FROM admin_users WHERE email = '$email'";
-    $result = mysqli_query($conn, $query);
-    $user = mysqli_fetch_assoc($result);
-    
-    if ($user) {
-        if (empty($user['unique_code'])) {
-            $error = "Akun ini belum mengatur kode unik. Silakan login dan atur kode unik di menu profil.";
+    if (isset($_POST['email'])) {
+        $email = mysqli_real_escape_string($conn, $_POST['email']);
+        $captcha_input = strtoupper(trim($_POST['captcha'] ?? ''));
+        
+        if ($captcha_input !== $_SESSION['captcha_text']) {
+            $error = "❌ Kode keamanan (CAPTCHA) salah!";
+            $_SESSION['captcha_text'] = strtoupper(substr(str_shuffle($alphabet), 0, 6));
         } else {
-            $_SESSION['reset_email'] = $email;
-            $_SESSION['reset_user_id'] = $user['id'];
-            $_SESSION['reset_user_name'] = $user['nama_lengkap'];
-            $step = 2;
-        }
-    } else {
-        $error = "Email tidak ditemukan dalam database!";
-    }
-}
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['verify'])) {
-    $unique_code = mysqli_real_escape_string($conn, $_POST['unique_code']);
-    
-    $user_id = $_SESSION['reset_user_id'];
-    $query = "SELECT * FROM admin_users WHERE id = '$user_id'";
-    $result = mysqli_query($conn, $query);
-    $user = mysqli_fetch_assoc($result);
-    
-    if ($user) {
-        if ($unique_code === $user['unique_code']) {
-            $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            $new_password = substr(str_shuffle($alphabet), 0, 8);
-            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            $query = "SELECT id, nama_lengkap, email FROM admin_users WHERE email = '$email'";
+            $result = mysqli_query($conn, $query);
+            $user = mysqli_fetch_assoc($result);
             
-            $update = "UPDATE admin_users SET password = '$hashed_password' WHERE id = " . $user['id'];
-            
-            if (mysqli_query($conn, $update)) {
-                $success = true;
-                $user_name = $user['nama_lengkap'];
-                $new_pass = $new_password;
+            if ($user) {
+                $token = bin2hex(random_bytes(32));
+                $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
                 
-                $_SESSION['reset_email'] = null;
-                $_SESSION['reset_user_id'] = null;
-                $_SESSION['reset_user_name'] = null;
+                $update = "UPDATE admin_users SET reset_token = '$token', reset_expiry = '$expiry' WHERE id = " . $user['id'];
+                mysqli_query($conn, $update);
+                
+                $reset_link = $base_url . "/admin/reset-password.php?token=" . $token;
+                
+                $_SESSION['reset_link_display'] = $reset_link;
+                $_SESSION['reset_email_sent'] = true;
+                $_SESSION['reset_user_name'] = $user['nama_lengkap'];
+                $_SESSION['reset_user_email'] = $user['email'];
+                $step = 2;
+                
+                $_SESSION['captcha_text'] = strtoupper(substr(str_shuffle($alphabet), 0, 6));
+                
             } else {
-                $error = "Gagal mereset password.";
+                $error = "❌ Email tidak ditemukan dalam database!";
             }
-        } else {
-            $error = "Kode unik salah!";
         }
-    } else {
-        $error = "Data tidak ditemukan.";
+    }
+    
+    if (isset($_POST['resend'])) {
         $step = 1;
+        unset($_SESSION['reset_email_sent']);
+        unset($_SESSION['reset_link_display']);
+        unset($_SESSION['reset_user_name']);
+        unset($_SESSION['reset_user_email']);
     }
 }
 
-if (isset($_GET['reset'])) {
-    $_SESSION['reset_email'] = null;
-    $_SESSION['reset_user_id'] = null;
-    $_SESSION['reset_user_name'] = null;
+if (isset($_GET['refresh_captcha'])) {
+    $_SESSION['captcha_text'] = strtoupper(substr(str_shuffle($alphabet), 0, 6));
     header("Location: lupa-password.php");
     exit;
 }
@@ -96,59 +92,71 @@ if (isset($_GET['reset'])) {
         <div class="logo">
             <img src="/mim_bodaskarangjati/assets/img/logo.png" onerror="this.src='https://via.placeholder.com/90x90?text=MI'">
             <h2>Lupa Password</h2>
-            <p>Verifikasi dengan kode unik untuk mereset password</p>
+            <p>Masukkan email Anda untuk mendapatkan link reset password</p>
         </div>
         
         <?php if ($error): ?>
             <div class="error"><i class="fas fa-exclamation-circle"></i> <?= $error ?></div>
         <?php endif; ?>
         
-        <?php if (isset($success) && $success === true): ?>
+        <?php if ($step == 2 && isset($_SESSION['reset_email_sent'])): ?>
             <div class="success-message">
-                <i class="fas fa-check-circle" style="font-size: 48px; color: #2ecc71; margin-bottom: 15px; display: block;"></i>
-                <h3>Password Berhasil Direset!</h3>
-                <p>Akun: <strong><?= htmlspecialchars($user_name) ?></strong></p>
-                <div style="background: #f0f0f0; padding: 20px; text-align: center; font-size: 28px; font-family: monospace; border-radius: 10px; margin: 15px 0;">
-                    <?= $new_pass ?>
+                <i class="fas fa-check-circle"></i>
+                <h3>Link Reset Password</h3>
+                <p>Halo <strong><?= htmlspecialchars($_SESSION['reset_user_name']) ?></strong></p>
+                <p>Email: <strong><?= htmlspecialchars($_SESSION['reset_user_email']) ?></strong></p>
+                
+                <div class="link-box">
+                    <i class="fas fa-link"></i>
+                    <strong>Klik link di bawah untuk mereset password:</strong><br><br>
+                    <a href="<?= $_SESSION['reset_link_display'] ?>" target="_blank">
+                        <?= $_SESSION['reset_link_display'] ?>
+                    </a>
+                    <br><br>
+                    <small><i class="fas fa-info-circle"></i> Link reset akan kadaluarsa dalam 1 jam.</small>
                 </div>
-                <div style="background: #fff3cd; border: 1px solid #ffc107; padding: 12px; border-radius: 5px; margin-top: 15px;">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <strong>Segera login dan ganti password Anda!</strong>
+                
+                <div class="action-buttons-reset">
+                    <a href="login.php" class="btn-login btn-success">Kembali ke Login</a>
+                    <form method="POST" style="display: inline-block;">
+                        <button type="submit" name="resend" class="btn-login btn-secondary">Kirim Ulang</button>
+                    </form>
                 </div>
             </div>
-            <a href="login.php" class="btn-login" style="display: block; text-align: center; margin-top: 15px;">Login Sekarang</a>
             
-        <?php elseif ($step == 2): ?>
-            <form method="POST">
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
-                    <i class="fas fa-qrcode" style="font-size: 40px; color: #4CAF50; margin-bottom: 10px; display: block;"></i>
-                    <strong>Masukkan Kode Unik Anda</strong>
-                    <p style="font-size: 12px; color: #666; margin-top: 5px;">Kode unik sudah Anda buat saat mengatur profil</p>
-                </div>
-                <div class="form-group">
-                    <label><i class="fas fa-key"></i> Kode Unik</label>
-                    <input type="text" name="unique_code" class="form-control" required autofocus placeholder="Masukkan kode unik Anda">
-                </div>
-                <button type="submit" name="verify" class="btn-login">Verifikasi & Reset Password</button>
-                <div style="margin-top: 15px; text-align: center;">
-                    <a href="?reset=1">← Gunakan email lain</a>
-                    &nbsp;|&nbsp;
-                    <a href="login.php">Kembali ke Login</a>
-                </div>
-            </form>
-            
-        <?php else: ?>
+        <?php elseif ($step == 1): ?>
             <form method="POST">
                 <div class="form-group">
                     <label><i class="fas fa-envelope"></i> Email Terdaftar</label>
                     <input type="email" name="email" class="form-control" required autofocus placeholder="Masukkan email Anda">
                 </div>
-                <button type="submit" class="btn-login">Verifikasi Email</button>
-                <div style="margin-top: 15px; text-align: center;">
+                
+                <div class="form-group">
+                    <label><i class="fas fa-shield-alt"></i> Kode Keamanan (CAPTCHA)</label>
+                    <div class="captcha-container">
+                        <div class="captcha-code"><?= $_SESSION['captcha_text'] ?></div>
+                        <button type="button" class="refresh-captcha" onclick="refreshCaptcha()">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <input type="text" name="captcha" class="form-control" required placeholder="Masukkan kode di atas (HURUF BESAR)" autocomplete="off">
+                </div>
+                
+                <button type="submit" class="btn-login btn-primary" style="width: 100%;">
+                    <i class="fas fa-paper-plane"></i> Kirim Link Reset
+                </button>
+                
+                <div class="text-center">
                     <a href="login.php">← Kembali ke Login</a>
                 </div>
             </form>
         <?php endif; ?>
     </div>
+    
+    <script>
+    function refreshCaptcha() {
+        window.location.href = '?refresh_captcha=1';
+    }
+    </script>
 </body>
 </html>

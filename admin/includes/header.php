@@ -66,6 +66,9 @@ if ($is_public_page) {
         'sarana/tambah.php' => 'Tambah Sarana',
         'sarana/edit.php' => 'Edit Sarana',
         'sarana/detail.php' => 'Detail Sarana',
+        'data_siswa/index.php' => 'Data Siswa',
+        'data_siswa/tambah.php' => 'Tambah Data Siswa',
+        'data_siswa/edit.php' => 'Edit Data Siswa',
         'hero_slider/index.php' => 'Hero Slider',
         'hero_slider/tambah.php' => 'Tambah Slide',
         'hero_slider/edit.php' => 'Edit Slide',
@@ -77,6 +80,8 @@ if ($is_public_page) {
         'pembiasaan/edit.php' => 'Edit Pembiasaan',
         'pembiasaan/detail.php' => 'Detail Pembiasaan',
         'kontak/index.php' => 'Kontak',
+        'testimoni/index.php' => 'Testimoni',
+        'testimoni/detail.php' => 'Detail Testimoni',
         'ppdb/index.php' => 'PPDB',
         'galeri_foto/index.php' => 'Galeri Foto',
         'galeri_foto/tambah.php' => 'Tambah Foto',
@@ -243,6 +248,14 @@ if ($is_public_page) {
                             <span>Sarana Prasarana</span>
                         </a>
                     </div>
+
+                    <!-- MENU DATA SISWA -->
+                    <div class="menu-item <?= ($active_folder == 'data_siswa') ? 'active' : '' ?>">
+                        <a href="<?= $base_url ?>/admin/data_siswa/index.php">
+                            <i class="fas fa-users"></i>
+                            <span>Data Siswa</span>
+                        </a>
+                    </div>
                 </div>
                 
                 <!-- Slider -->
@@ -297,6 +310,14 @@ if ($is_public_page) {
                         <a href="<?= $base_url ?>/admin/kontak/index.php">
                             <i class="fas fa-address-book"></i>
                             <span>Kontak</span>
+                        </a>
+                    </div>
+                    
+                    <!-- MENU TESTIMONI -->
+                    <div class="menu-item <?= ($active_folder == 'testimoni') ? 'active' : '' ?>">
+                        <a href="<?= $base_url ?>/admin/testimoni/index.php">
+                            <i class="fas fa-star"></i>
+                            <span>Testimoni</span>
                         </a>
                     </div>
                 </div>
@@ -367,4 +388,3 @@ if ($is_public_page) {
         <!-- MAIN CONTENT AREA -->
         <main class="admin-main">
             <!-- KONTEN DINAMIS AKAN DITAMPILKAN DI SINI OLEH FILE PHP LAINNYA -->
-            <!-- TIDAK ADA KONTEN LANGSUNG DI HEADER -->

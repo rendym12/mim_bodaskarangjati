@@ -51,6 +51,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.querySelector('.agenda-page')) initAgendaPage();
     if (document.querySelector('.sarana-page')) initSaranaPage();
     if (document.querySelector('.users-page')) initUsersPage();
+    
+    // 👇 TAMBAHKAN INI 👇
+    if (document.querySelector('.data-table')) {
+        initDataSiswaPage();
+        initDataSiswaDelete();
+    }
 });
 
 // ==============================================
@@ -1884,4 +1890,149 @@ if (!document.querySelector('#loading-style')) {
     style.id = 'loading-style';
     style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
     document.head.appendChild(style);
+}
+// ==============================================
+// DATA SISWA PAGE - FULL WORKING VERSION
+// ==============================================
+
+function initDataSiswaPage() {
+    console.log('📊 Data Siswa page initialized');
+    
+    // Cek apakah kita di halaman data siswa
+    if (!document.querySelector('.data-table')) return;
+    
+    // Fungsi untuk format number dengan pemisah ribuan
+    function formatNumber(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+    
+    // Fungsi untuk menghitung ulang semua total
+    window.recalculateTotals = function() {
+        let totalLaki = 0;
+        let totalPerempuan = 0;
+        
+        for (let i = 1; i <= 6; i++) {
+            let lakiInput = document.getElementById('laki_' + i);
+            let perempuanInput = document.getElementById('perempuan_' + i);
+            let totalCell = document.getElementById('total_' + i);
+            
+            if (lakiInput && perempuanInput && totalCell) {
+                let laki = parseInt(lakiInput.value) || 0;
+                let perempuan = parseInt(perempuanInput.value) || 0;
+                let total = laki + perempuan;
+                
+                totalCell.innerHTML = '<strong>' + formatNumber(total) + '</strong>';
+                
+                totalLaki += laki;
+                totalPerempuan += perempuan;
+            }
+        }
+        
+        let totalSemua = totalLaki + totalPerempuan;
+        
+        // Update footer tabel
+        let totalLakiElem = document.getElementById('total_laki_semua');
+        let totalPerempuanElem = document.getElementById('total_perempuan_semua');
+        let totalSemuaElem = document.getElementById('total_semua');
+        
+        if (totalLakiElem) totalLakiElem.innerHTML = formatNumber(totalLaki);
+        if (totalPerempuanElem) totalPerempuanElem.innerHTML = formatNumber(totalPerempuan);
+        if (totalSemuaElem) totalSemuaElem.innerHTML = formatNumber(totalSemua);
+        
+        // Update summary card
+        let summaryTotal = document.getElementById('summary_total');
+        let summaryLaki = document.getElementById('summary_laki');
+        let summaryPerempuan = document.getElementById('summary_perempuan');
+        
+        if (summaryTotal) summaryTotal.innerHTML = formatNumber(totalSemua) + ' Siswa';
+        if (summaryLaki) summaryLaki.innerHTML = formatNumber(totalLaki);
+        if (summaryPerempuan) summaryPerempuan.innerHTML = formatNumber(totalPerempuan);
+    };
+    
+    // Ambil semua input number di tabel data siswa
+    const inputs = document.querySelectorAll('#dataSiswaTable input[type="number"]');
+    console.log('Ditemukan ' + inputs.length + ' input number');
+    
+    // Pasang event listener ke setiap input
+    inputs.forEach(input => {
+        // Hapus event listener lama
+        input.removeEventListener('input', window.recalculateTotals);
+        input.removeEventListener('change', window.recalculateTotals);
+        
+        // Tambahkan event listener baru
+        input.addEventListener('input', window.recalculateTotals);
+        input.addEventListener('change', window.recalculateTotals);
+        
+        console.log('Event terpasang untuk:', input.id);
+    });
+    
+    // Panggil sekali untuk inisialisasi
+    window.recalculateTotals();
+    
+    console.log('✅ Data Siswa auto-calculate siap!');
+}
+
+// ==============================================
+// DATA SISWA DELETE CONFIRMATION
+// ==============================================
+
+function initDataSiswaDelete() {
+    const deleteButtons = document.querySelectorAll('.data-table .btn-delete');
+    const deleteModal = document.getElementById('deleteModal');
+    
+    if (!deleteModal || deleteButtons.length === 0) return;
+    
+    function showDeleteModal(id, kelas, tahun) {
+        const deleteItemName = document.getElementById('deleteItemName');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const itemType = document.getElementById('itemType');
+        const fileWarningContainer = document.getElementById('fileWarningContainer');
+        
+        if (deleteItemName) deleteItemName.innerText = '"Kelas ' + kelas + ' - ' + tahun + '"';
+        if (itemType) itemType.innerText = 'Data Siswa';
+        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
+        if (fileWarningContainer) fileWarningContainer.style.display = 'none';
+        
+        deleteModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function handleDataSiswaDelete(e) {
+        e.preventDefault();
+        const id = this.getAttribute('data-id');
+        const kelas = this.getAttribute('data-kelas');
+        const tahun = this.getAttribute('data-tahun');
+        
+        if (id && kelas) {
+            showDeleteModal(id, kelas, tahun);
+        } else {
+            if (confirm('Yakin ingin menghapus data ini?')) {
+                window.location.href = this.href;
+            }
+        }
+    }
+    
+    deleteButtons.forEach(button => {
+        button.removeEventListener('click', handleDataSiswaDelete);
+        button.addEventListener('click', handleDataSiswaDelete);
+    });
+}
+
+// ==============================================
+// INISIALISASI SAAT HALAMAN SIAP
+// ==============================================
+
+// Jalankan saat halaman selesai dimuat
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('.data-table')) {
+            initDataSiswaPage();
+            initDataSiswaDelete();
+        }
+    });
+} else {
+    if (document.querySelector('.data-table')) {
+        initDataSiswaPage();
+        initDataSiswaDelete();
+    }
 }

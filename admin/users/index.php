@@ -1,6 +1,11 @@
 <?php
 include "../includes/auth.php";
 
+// CEK JUMLAH ADMIN SAAT INI
+$query_jumlah = mysqli_query($conn, "SELECT COUNT(*) as total FROM admin_users");
+$jumlah_admin = mysqli_fetch_assoc($query_jumlah)['total'];
+$max_admin = 3;
+
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
@@ -60,19 +65,27 @@ include "../includes/header.php";
 ?>
 
 <div class="content-wrapper users-page">
+    
+    <!-- HEADER -->
     <div class="content-header">
         <h1><i class="fas fa-users-cog"></i> Kelola Admin</h1>
-        <a href="tambah.php" class="btn-primary">
-            <i class="fas fa-plus"></i> Tambah Admin
-        </a>
+        <?php if ($jumlah_admin < $max_admin): ?>
+            <a href="tambah.php" class="btn-primary">
+                <i class="fas fa-plus"></i> Tambah Admin
+            </a>
+        <?php else: ?>
+            <button class="btn-secondary" disabled style="cursor: not-allowed;">
+                <i class="fas fa-ban"></i> Kuota Penuh
+            </button>
+        <?php endif; ?>
     </div>
 
+    <!-- NOTIFICATION -->
     <div class="notification-container">
         <?php if (isset($_SESSION['success'])): ?>
             <?php if (is_array($_SESSION['success'])): ?>
                 <div class="alert alert-success alert-dismissible">
-                    <i class="fas fa-check-circle"></i>
-                    <?= $_SESSION['success']['message'] ?>
+                    <i class="fas fa-check-circle"></i> <?= $_SESSION['success']['message'] ?>
                     <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
                 </div>
             <?php else: ?>
@@ -93,62 +106,64 @@ include "../includes/header.php";
         <?php endif; ?>
     </div>
 
+    <!-- TABEL -->
     <div class="card">
         <div class="card-header">
-            <h3><i class="fas fa-list"></i> Daftar Admin</h3>
+            <h3><i class="fas fa-list"></i> Daftar Administrator</h3>
         </div>
         <div class="card-body">
             <div class="table-container">
                 <table class="table">
                     <thead>
                         <tr>
-                            <th width="5%">No</th>
+                            <th width="5%">#</th>
                             <th width="10%">Foto</th>
-                            <th width="20%">Nama Lengkap</th>
+                            <th width="25%">Nama</th>
                             <th width="15%">Username</th>
                             <th width="25%">Email</th>
-                            <th width="25%">Aksi</th>
-                        </thead>
+                            <th width="20%">Aksi</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
                             $no = 1;
                             while ($row = mysqli_fetch_assoc($query)): 
+                                $is_me = ($row['id'] == $_SESSION['admin_id']);
                         ?>
                         <tr>
                             <td class="text-center"><?= $no++ ?></td>
                             <td class="text-center">
                                 <?php if (!empty($row['foto']) && $row['foto'] != 'default-avatar.jpg'): ?>
-                                    <img src="../../uploads/<?= $row['foto'] ?>" alt="Foto" class="user-avatar">
+                                    <img src="../../uploads/<?= $row['foto'] ?>" style="width: 35px; height: 35px; border-radius: 50%; object-fit: cover;">
                                 <?php else: ?>
-                                    <i class="fas fa-user-circle default-avatar-icon"></i>
+                                    <i class="fas fa-user-circle" style="font-size: 28px; color: #cbd5e1;"></i>
                                 <?php endif; ?>
                             </td>
-                            <td><strong><?= htmlspecialchars($row['nama_lengkap']) ?></strong></td>
+                            <td>
+                                <?= htmlspecialchars($row['nama_lengkap']) ?>
+                                <?php if ($is_me): ?>
+                                    <span style="background: #FFD700; color: #0B3D91; font-size: 9px; padding: 2px 6px; border-radius: 20px; margin-left: 5px;">Anda</span>
+                                <?php endif; ?>
+                            </td>
                             <td><?= htmlspecialchars($row['username']) ?></td>
                             <td>
-                                <?php 
-                                if ($row['id'] == $_SESSION['admin_id']) {
-                                    echo htmlspecialchars($row['email'] ?? '-');
-                                } else {
+                                <?php if ($is_me): ?>
+                                    <?= htmlspecialchars($row['email'] ?? '-') ?>
+                                <?php else: ?>
+                                    <?php 
                                     $email = $row['email'] ?? '';
-                                    if (!empty($email) && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                                        $email_parts = explode('@', $email);
-                                        $username_part = $email_parts[0];
-                                        $domain_part = $email_parts[1] ?? '';
-                                        
-                                        // Buat bintang sepanjang username asli
-                                        $hidden_username = str_repeat('*', strlen($username_part));
-                                        
-                                        echo $hidden_username . '@' . $domain_part;
+                                    if (!empty($email)) {
+                                        $parts = explode('@', $email);
+                                        echo str_repeat('•', strlen($parts[0])) . '@' . ($parts[1] ?? '');
                                     } else {
                                         echo '-';
                                     }
-                                }
-                                ?>
+                                    ?>
+                                <?php endif; ?>
                             </td>
                             <td class="text-center">
-                                <div class="action-buttons">
-                                    <?php if ($row['id'] == $_SESSION['admin_id']): ?>
+                                <?php if ($is_me): ?>
+                                    <div style="display: flex; gap: 6px; justify-content: center;">
                                         <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
@@ -161,19 +176,19 @@ include "../includes/header.php";
                                                 title="Hapus">
                                             <i class="fas fa-trash"></i>
                                         </button>
-                                    <?php else: ?>
-                                        <span class="btn-disabled" title="Tidak bisa mengedit akun orang lain">
-                                            <i class="fas fa-lock"></i>
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
+                                    </div>
+                                <?php else: ?>
+                                    <span style="color: #94a3b8; font-size: 12px;">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endwhile; else: ?>
                         <tr>
                             <td colspan="6" class="empty-state">
                                 <i class="fas fa-users-cog"></i>
-                                <p>Belum ada data admin</p>
+                                <p>Belum ada administrator</p>
                                 <a href="tambah.php" class="btn-primary">Tambah Admin</a>
                             </td>
                         </tr>
@@ -183,9 +198,31 @@ include "../includes/header.php";
             </div>
         </div>
     </div>
+
+    <!-- INFO PENTING (DI BAWAH TABEL) - MINIMALIS -->
+    <div style="margin-top: 15px; padding: 10px 0; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 12px; color: #64748b;">
+        <span>
+            <i class="fas fa-users"></i> Admin: <?= $jumlah_admin ?>/<?= $max_admin ?>
+        </span>
+        <span>
+            <i class="fas fa-chart-line"></i> Terisi: <?= round(($jumlah_admin / $max_admin) * 100) ?>%
+        </span>
+        <?php if ($jumlah_admin < $max_admin): ?>
+            <span style="color: #28a745;">
+                <i class="fas fa-plus-circle"></i> Sisa: <?= $max_admin - $jumlah_admin ?> slot
+            </span>
+        <?php else: ?>
+            <span style="color: #dc3545;">
+                <i class="fas fa-ban"></i> Kuota penuh
+            </span>
+        <?php endif; ?>
+        <span style="margin-left: auto;">
+            <i class="fas fa-lock"></i> Hanya bisa edit akun sendiri
+        </span>
+    </div>
 </div>
 
-<!-- Modal Konfirmasi Hapus -->
+<!-- MODAL HAPUS -->
 <div id="deleteModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -193,19 +230,17 @@ include "../includes/header.php";
             <span class="modal-close">&times;</span>
         </div>
         <div class="modal-body">
-            <p>Apakah Anda yakin ingin menghapus akun Anda sendiri?</p>
-            <p class="delete-item-name" id="deleteItemName"></p>
-            <div id="fileWarningContainer">
+            <p>Hapus akun <strong id="deleteItemName"></strong>?</p>
+            <div id="fileWarningContainer" style="display: none;">
                 <i class="fas fa-exclamation-circle"></i>
                 <span id="fileWarningText"></span>
             </div>
-            <div class="warning-box">
-                <i class="fas fa-exclamation-circle"></i>
-                Data yang sudah dihapus tidak dapat dikembalikan!
+            <div style="background: #fee2e2; padding: 8px; border-radius: 6px; font-size: 12px;">
+                <i class="fas fa-exclamation-triangle"></i> Data tidak dapat dikembalikan!
             </div>
         </div>
         <div class="modal-footer">
-            <a href="#" id="confirmDeleteBtn" class="btn-danger">Ya, Hapus</a>
+            <a href="#" id="confirmDeleteBtn" class="btn-danger">Hapus</a>
             <button type="button" id="btnCloseModal" class="btn-secondary">Batal</button>
         </div>
     </div>

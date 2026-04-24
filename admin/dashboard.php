@@ -42,6 +42,45 @@ $total_sarana = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total
 $total_slider = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM hero_slider WHERE status='aktif'"))['total'] ?? 0;
 $total_slider_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM hero_slider"))['total'] ?? 0;
 
+// ==============================================
+// DATA SISWA - TAHUN AJARAN OTOMATIS
+// ==============================================
+
+// Tentukan tahun ajaran aktif berdasarkan bulan
+$bulan_sekarang = (int) date('n');
+$tahun_sekarang = (int) date('Y');
+
+if ($bulan_sekarang >= 7) {
+    // Bulan Juli - Desember: Tahun Ajaran = Tahun Sekarang / Tahun Depan
+    $tahun_ajaran_aktif = $tahun_sekarang . '/' . ($tahun_sekarang + 1);
+} else {
+    // Bulan Januari - Juni: Tahun Ajaran = Tahun Lalu / Tahun Sekarang
+    $tahun_ajaran_aktif = ($tahun_sekarang - 1) . '/' . $tahun_sekarang;
+}
+
+// Cek apakah ada parameter tahun dari URL (override manual)
+if (isset($_GET['tahun']) && !empty($_GET['tahun'])) {
+    $tahun_ajaran_aktif = mysqli_real_escape_string($conn, $_GET['tahun']);
+}
+
+// Total siswa tahun ajaran aktif
+$query_total = mysqli_query($conn, "SELECT SUM(total) as total_siswa FROM data_siswa WHERE tahun_ajaran = '$tahun_ajaran_aktif'");
+$total_siswa = mysqli_fetch_assoc($query_total)['total_siswa'] ?? 0;
+
+// Kelas terisi tahun ajaran aktif
+$query_kelas = mysqli_query($conn, "SELECT COUNT(DISTINCT kelas) as total_kelas FROM data_siswa WHERE tahun_ajaran = '$tahun_ajaran_aktif' AND (laki_laki > 0 OR perempuan > 0)");
+$total_kelas_terisi = mysqli_fetch_assoc($query_kelas)['total_kelas'] ?? 0;
+
+// Total semua siswa (semua tahun) untuk perbandingan
+$total_siswa_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT SUM(total) as total_siswa FROM data_siswa"))['total_siswa'] ?? 0;
+
+// ==============================================
+// DATA TESTIMONI
+// ==============================================
+$total_testimoni_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'pending'"))['total'] ?? 0;
+$total_testimoni_approved = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'approved'"))['total'] ?? 0;
+$total_testimoni_all = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni"))['total'] ?? 0;
+
 // Galeri
 $total_foto = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM galeri_foto"))['total'] ?? 0;
 $total_video = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM galeri_video"))['total'] ?? 0;
@@ -200,6 +239,17 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                 <p>Guru & Staff</p>
             </div>
         </div>
+        
+        <!-- CARD DATA SISWA -->
+        <div class="stat-card">
+            <div class="stat-icon bg-purple"><i class="fas fa-users"></i></div>
+            <div class="stat-content">
+                <h3><?= number_format($total_siswa) ?></h3>
+                <p>Total Siswa</p>
+                <small class="stat-sub">Tahun <?= $tahun_ajaran_aktif ?> • <?= $total_kelas_terisi ?> Kelas</small>
+            </div>
+        </div>
+        
         <div class="stat-card">
             <div class="stat-icon bg-info"><i class="fas fa-trophy"></i></div>
             <div class="stat-content">
@@ -213,13 +263,6 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                 <h3><?= $total_foto + $total_video ?></h3>
                 <p>Galeri</p>
                 <small class="stat-sub"><?= $total_foto ?> foto • <?= $total_video ?> video</small>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-purple"><i class="fas fa-users-cog"></i></div>
-            <div class="stat-content">
-                <h3><?= $total_users ?></h3>
-                <p>Admin</p>
             </div>
         </div>
     </div>
@@ -326,6 +369,39 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                 <a href="ppdb/index.php" class="badge-user"><i class="fas fa-cog"></i> Kelola</a>
             </div>
         </div>
+        
+        <!-- INFO PANEL DATA SISWA -->
+        <div class="info-panel">
+            <div class="info-panel-icon bg-purple"><i class="fas fa-users"></i></div>
+            <div class="info-panel-content">
+                <h3>Data Siswa</h3>
+                <p><?= number_format($total_siswa) ?> total siswa (TA <?= $tahun_ajaran_aktif ?>)</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: <?= $total_kelas_terisi > 0 ? ($total_kelas_terisi/6)*100 : 0 ?>%"></div>
+                </div>
+                <small><?= $total_kelas_terisi ?> dari 6 kelas terisi</small>
+            </div>
+            <div class="info-panel-badge">
+                <a href="data_siswa/index.php" class="badge-user"><i class="fas fa-edit"></i> Kelola</a>
+            </div>
+        </div>
+        
+        <!-- INFO PANEL TESTIMONI -->
+        <div class="info-panel">
+            <div class="info-panel-icon bg-warning"><i class="fas fa-star"></i></div>
+            <div class="info-panel-content">
+                <h3>Testimoni</h3>
+                <p><?= $total_testimoni_all ?> total ulasan</p>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: <?= $total_testimoni_all > 0 ? ($total_testimoni_approved/$total_testimoni_all)*100 : 0 ?>%"></div>
+                </div>
+                <small><?= $total_testimoni_approved ?> disetujui • <?= $total_testimoni_pending ?> pending</small>
+            </div>
+            <div class="info-panel-badge">
+                <a href="testimoni/index.php" class="badge-user"><i class="fas fa-edit"></i> Kelola</a>
+            </div>
+        </div>
+        
         <div class="info-panel">
             <div class="info-panel-icon bg-primary"><i class="fas fa-images"></i></div>
             <div class="info-panel-content">
@@ -339,6 +415,7 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
                 <a href="hero_slider/index.php" class="badge-user"><i class="fas fa-edit"></i> Kelola</a>
             </div>
         </div>
+        
         <div class="info-panel">
             <div class="info-panel-icon bg-success"><i class="fas fa-address-book"></i></div>
             <div class="info-panel-content">
@@ -505,6 +582,7 @@ $recent_galeri = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY id DESC
             <a href="guru_staff/tambah.php" class="action-item"><i class="fas fa-chalkboard-teacher"></i><span>Guru/Staff</span><small>Tambah data</small></a>
             <a href="ekstrakurikuler/tambah.php" class="action-item"><i class="fas fa-futbol"></i><span>Ekstra</span><small>Tambah kegiatan</small></a>
             <a href="users/tambah.php" class="action-item"><i class="fas fa-user-plus"></i><span>Admin</span><small>Tambah admin</small></a>
+            <a href="data_siswa/index.php" class="action-item"><i class="fas fa-users"></i><span>Data Siswa</span><small>Input data siswa</small></a>
         </div>
     </div>
 </div>

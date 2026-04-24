@@ -13700,5 +13700,892 @@ html {
 }
 
 /* ==============================================
+   DATA SISWA PAGE - STYLES
+   ============================================== */
+
+/* Table Data Siswa */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.data-table th,
+.data-table td {
+    padding: 14px 12px;
+    text-align: center;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.data-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: #0B3D91;
+    font-size: 0.9rem;
+}
+
+.data-table tr:hover {
+    background: #f5f7fb;
+}
+
+.data-table .kelas-label {
+    font-weight: 700;
+    background: #e6f0ff;
+}
+
+.data-table input[type="number"] {
+    width: 90px;
+    padding: 8px 10px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.data-table input[type="number"]:focus {
+    outline: none;
+    border-color: #0B3D91;
+    box-shadow: 0 0 0 2px rgba(11, 61, 145, 0.1);
+}
+
+/* Filter Tahun Ajaran */
+.tahun-filter {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.tahun-filter input,
+.tahun-filter .tahun-select {
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 30px;
+    font-family: inherit;
+    width: 150px;
+    background: white;
+}
+
+.btn-filter {
+    background: #0B3D91;
+    color: white;
+    padding: 10px 24px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-filter:hover {
+    background: #FFD700;
+    color: #0B3D91;
+}
+
+/* Tombol Simpan */
+.btn-simpan {
+    background: #0B3D91;
+    color: white;
+    padding: 12px 32px;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.9rem;
+}
+
+.btn-simpan:hover {
+    background: #FFD700;
+    color: #0B3D91;
+    transform: translateY(-2px);
+}
+
+/* Summary Card */
+.summary-card {
+    background: linear-gradient(135deg, #0B3D91, #082e6b);
+    color: white;
+    border-radius: 20px;
+    padding: 25px;
+    margin-top: 30px;
+    text-align: center;
+}
+
+.summary-card h3 {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.summary-card .total {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #FFD700;
+}
+
+/* Alert Notifications */
+.alert-success {
+    background: #d4edda;
+    color: #155724;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid #28a745;
+}
+
+.alert-error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 4px solid #dc3545;
+}
+
+.alert-dismissible {
+    position: relative;
+    padding-right: 40px;
+}
+
+.alert-dismissible .close {
+    position: absolute;
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.6;
+}
+
+.alert-dismissible .close:hover {
+    opacity: 1;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.form-group label i {
+    color: #FFD700;
+    margin-right: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    max-width: 300px;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-family: inherit;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #0B3D91;
+    box-shadow: 0 0 0 3px rgba(11, 61, 145, 0.1);
+}
+
+.form-group small {
+    color: #666;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+    overflow-x: auto;
+    margin: 20px 0;
+}
+
+/* Text Right */
+.text-right {
+    text-align: right;
+    margin-top: 25px;
+}
+
+/* Tahun Tersedia */
+.tahun-tersedia {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.tahun-tersedia i {
+    margin-right: 5px;
+    color: #0B3D91;
+}
+
+/* Content Header */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.content-header h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #0B3D91;
+    margin: 0;
+}
+
+.content-header h1 i {
+    color: #FFD700;
+    margin-right: 10px;
+}
+
+/* Notification Container */
+.notification-container {
+    margin-bottom: 20px;
+}
+
+/* Responsive untuk Data Siswa */
+@media (max-width: 768px) {
+    .data-table th,
+    .data-table td {
+        padding: 10px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .data-table input[type="number"] {
+        width: 70px;
+        padding: 6px 8px;
+        font-size: 0.8rem;
+    }
+    
+    .summary-card .total {
+        font-size: 1.8rem;
+    }
+    
+    .summary-card h3 {
+        font-size: 0.85rem;
+    }
+    
+    .content-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .btn-simpan {
+        padding: 10px 24px;
+        font-size: 0.85rem;
+    }
+    
+    .tahun-filter input,
+    .tahun-filter .tahun-select {
+        width: 120px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .data-table th,
+    .data-table td {
+        padding: 8px 5px;
+        font-size: 0.7rem;
+    }
+    
+    .data-table input[type="number"] {
+        width: 55px;
+        padding: 4px 6px;
+        font-size: 0.7rem;
+    }
+    
+    .summary-card {
+        padding: 15px;
+    }
+    
+    .summary-card .total {
+        font-size: 1.5rem;
+    }
+    
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+
+/* ==============================================
    END OF FILE
 =============================================== */
+
+/* ==============================================
+   CAPTCHA STYLES - LUPA PASSWORD
+   ============================================= */
+
+/* Container CAPTCHA */
+.captcha-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+/* Kode CAPTCHA */
+.captcha-code {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    padding: 12px 20px;
+    border-radius: 10px;
+    letter-spacing: 8px;
+    text-align: center;
+    flex: 1;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Tombol Refresh CAPTCHA */
+.refresh-captcha {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.refresh-captcha:hover {
+    background: #5a6268;
+    transform: rotate(15deg);
+}
+
+.refresh-captcha:active {
+    transform: scale(0.95);
+}
+
+/* Info Box */
+.info-box {
+    background: #e8f4fd;
+    border-left: 4px solid #2196F3;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.info-box i {
+    color: #2196F3;
+    margin-right: 10px;
+}
+
+/* WhatsApp Box - Success Message */
+.wa-box {
+    background: #d4edda;
+    border-left: 4px solid #25D366;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    word-break: break-all;
+    text-align: center;
+}
+
+.wa-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: #25D366;
+    color: white;
+    padding: 12px 25px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.wa-button:hover {
+    background: #128C7E;
+    transform: scale(1.02);
+    color: white;
+}
+
+.wa-button i {
+    font-size: 1.2rem;
+}
+
+/* Success Message */
+.success-message {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.success-message h3 {
+    color: #28a745;
+    margin-bottom: 15px;
+}
+
+/* Error Message */
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #dc3545;
+}
+
+.error i {
+    margin-right: 8px;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.form-group label i {
+    color: #FFD700;
+    margin-right: 5px;
+}
+
+.form-group small {
+    display: block;
+    font-size: 0.7rem;
+    color: #6c757d;
+    margin-top: 5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #FFD700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+    background: white;
+}
+
+/* Button Login */
+.btn-login {
+    display: inline-block;
+    background: linear-gradient(135deg, #0B3D91, #1e4ca0);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+}
+
+.btn-login:hover {
+    background: linear-gradient(135deg, #FFD700, #f0b700);
+    color: #0B3D91;
+    transform: translateY(-2px);
+}
+
+.btn-login i {
+    margin-right: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .captcha-code {
+        font-size: 18px;
+        letter-spacing: 5px;
+        padding: 10px 15px;
+    }
+    
+    .refresh-captcha {
+        padding: 8px 12px;
+    }
+    
+    .wa-button {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .wa-box {
+        padding: 15px;
+    }
+    
+    .success-message h3 {
+        font-size: 1.2rem;
+    }
+}
+
+/* ==============================================
+   LUPA PASSWORD PAGE - UKURAN SAMA SEPERTI LOGIN
+   ============================================= */
+
+/* Body halaman login */
+body.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0B3D91, #082e6b);
+    position: relative;
+    overflow: hidden;
+    padding: 20px;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Container utama login - SAMA SEPERTI HALAMAN LOGIN */
+.login-container {
+    max-width: 400px;
+    width: 100%;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    padding: 40px 35px;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+    position: relative;
+    z-index: 10;
+    animation: fadeInUp 0.8s ease;
+    box-sizing: border-box;
+}
+
+/* Logo */
+.login-container .logo {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.login-container .logo img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: 3px solid #FFD700;
+    margin-bottom: 15px;
+}
+
+.login-container .logo h2 {
+    color: #0B3D91;
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.login-container .logo p {
+    color: #64748b;
+    font-size: 13px;
+}
+
+/* Success Message - Setelah submit */
+.success-message {
+    text-align: center;
+    padding: 0;
+}
+
+.success-message i {
+    font-size: 48px;
+    color: #2ecc71;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.success-message h3 {
+    color: #28a745;
+    margin-bottom: 10px;
+    font-size: 1.3rem;
+}
+
+.success-message p {
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    word-break: break-word;
+}
+
+/* Link Box */
+.link-box {
+    background: #d4edda;
+    border-left: 4px solid #28a745;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    word-break: break-all;
+    text-align: center;
+}
+
+.link-box i {
+    font-size: 0.9rem;
+}
+
+.link-box a {
+    color: #0B3D91;
+    font-weight: bold;
+    word-break: break-all;
+    font-size: 11px;
+    display: inline-block;
+}
+
+.link-box small {
+    color: #155724;
+    display: block;
+    margin-top: 8px;
+    font-size: 10px;
+}
+
+/* Action Buttons Reset */
+.action-buttons-reset {
+    margin-top: 15px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.action-buttons-reset .btn-login {
+    padding: 8px 20px;
+    font-size: 13px;
+}
+
+/* CAPTCHA Container */
+.captcha-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+/* Kode CAPTCHA */
+.captcha-code {
+    background: linear-gradient(135deg, #2c3e50, #3498db);
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    padding: 10px 15px;
+    border-radius: 10px;
+    letter-spacing: 5px;
+    text-align: center;
+    flex: 1;
+    box-sizing: border-box;
+}
+
+/* Tombol Refresh */
+.refresh-captcha {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+}
+
+.refresh-captcha:hover {
+    background: #5a6268;
+    transform: rotate(15deg);
+}
+
+/* Error Message */
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 4px solid #dc3545;
+    font-size: 13px;
+}
+
+.error i {
+    margin-right: 8px;
+}
+
+/* Form Group */
+.form-group {
+    margin-bottom: 15px;
+    width: 100%;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 13px;
+}
+
+.form-group label i {
+    color: #FFD700;
+    margin-right: 5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #FFD700;
+    box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+    background: white;
+}
+
+/* Button Login */
+.btn-login {
+    display: inline-block;
+    background: linear-gradient(135deg, #0B3D91, #1e4ca0);
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.btn-login:hover {
+    background: linear-gradient(135deg, #FFD700, #f0b700);
+    color: #0B3D91;
+    transform: translateY(-2px);
+}
+
+.btn-login i {
+    margin-right: 8px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0B3D91, #1e4ca0);
+}
+
+.btn-success {
+    background: #28a745 !important;
+}
+
+.btn-success:hover {
+    background: #218838 !important;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #6c757d !important;
+}
+
+.btn-secondary:hover {
+    background: #5a6268 !important;
+    transform: translateY(-2px);
+}
+
+/* Text Center */
+.text-center {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.text-center a {
+    color: #0B3D91;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.text-center a:hover {
+    color: #FFD700;
+}
+
+/* Responsive untuk layar kecil */
+@media (max-width: 480px) {
+    body.login-page {
+        padding: 15px;
+    }
+    
+    .login-container {
+        max-width: 100%;
+        padding: 25px 20px;
+    }
+    
+    .login-container .logo img {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .login-container .logo h2 {
+        font-size: 20px;
+    }
+    
+    .success-message h3 {
+        font-size: 1.1rem;
+    }
+    
+    .link-box {
+        padding: 10px;
+    }
+    
+    .link-box a {
+        font-size: 10px;
+    }
+    
+    .action-buttons-reset {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .action-buttons-reset .btn-login {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .captcha-code {
+        font-size: 16px;
+        letter-spacing: 3px;
+        padding: 8px 12px;
+    }
+    
+    .refresh-captcha {
+        padding: 8px 12px;
+    }
+}

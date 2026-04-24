@@ -35,6 +35,30 @@ $jml_sarana    = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM sarana"));
 $jml_prestasi  = mysqli_num_rows(mysqli_query($conn, "SELECT id FROM prestasi"));
 
 // ==============================================
+// 4.5. DATA SISWA - TAHUN AJARAN OTOMATIS
+// ==============================================
+
+// Tentukan tahun ajaran aktif berdasarkan bulan
+$bulan_sekarang = (int) date('n');
+$tahun_sekarang = (int) date('Y');
+
+if ($bulan_sekarang >= 7) {
+    // Bulan Juli - Desember: Tahun Ajaran = Tahun Sekarang / Tahun Depan
+    $tahun_ajaran_aktif = $tahun_sekarang . '/' . ($tahun_sekarang + 1);
+} else {
+    // Bulan Januari - Juni: Tahun Ajaran = Tahun Lalu / Tahun Sekarang
+    $tahun_ajaran_aktif = ($tahun_sekarang - 1) . '/' . $tahun_sekarang;
+}
+
+// Ambil total siswa berdasarkan tahun ajaran aktif
+$query_total_siswa = mysqli_query($conn, "SELECT SUM(total) as total_siswa FROM data_siswa WHERE tahun_ajaran = '$tahun_ajaran_aktif'");
+$total_siswa = mysqli_fetch_assoc($query_total_siswa)['total_siswa'] ?? 0;
+
+// Ambil jumlah kelas yang terisi
+$query_kelas_terisi = mysqli_query($conn, "SELECT COUNT(DISTINCT kelas) as total_kelas FROM data_siswa WHERE tahun_ajaran = '$tahun_ajaran_aktif' AND (laki_laki > 0 OR perempuan > 0)");
+$total_kelas_terisi = mysqli_fetch_assoc($query_kelas_terisi)['total_kelas'] ?? 0;
+
+// ==============================================
 // 5. AMBIL DATA UNTUK KONTEN
 // ==============================================
 $q_berita = mysqli_query($conn, "SELECT * FROM pengumuman WHERE status='publish' ORDER BY tanggal DESC LIMIT 3");
@@ -232,7 +256,7 @@ $base_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP
     </div>
 </section>
 
-<!-- ========== 4. STATISTIK ========== -->
+<!-- ========== 4. STATISTIK (DENGAN DATA SISWA) ========== -->
 <section class="stats-section">
     <div class="container">
         <div class="section-header">
@@ -245,6 +269,12 @@ $base_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP
                 <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
                 <div class="stat-number"><?= $jml_guru ?></div>
                 <div class="stat-label">Guru & Staff</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-number"><?= number_format($total_siswa) ?></div>
+                <div class="stat-label">Total Siswa</div>
+                <small class="stat-sub">TA <?= $tahun_ajaran_aktif ?> • <?= $total_kelas_terisi ?> Kelas</small>
             </div>
             <div class="stat-item">
                 <div class="stat-icon"><i class="fas fa-futbol"></i></div>
@@ -516,7 +546,6 @@ $base_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP
                 while($sarana = mysqli_fetch_assoc($q_sarana)) {
             ?>
             <div class="sarana-item">
-                <!-- TAMPILKAN FOTO SEPERTI DI SARANA.PHP -->
                 <?php if (!empty($sarana['gambar']) && file_exists('uploads/sarana/' . $sarana['gambar'])): ?>
                 <div class="sarana-img">
                     <img src="uploads/sarana/<?= $sarana['gambar'] ?>" alt="<?= htmlspecialchars($sarana['nama_sarana']) ?>">
