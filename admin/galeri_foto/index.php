@@ -5,8 +5,8 @@ include "../includes/auth.php";
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Ambil data untuk dihapus
-    $q = mysqli_query($conn, "SELECT judul, file_foto FROM galeri_foto WHERE id = $id");
+    // Ambil data untuk dihapus DAN URUTAN
+    $q = mysqli_query($conn, "SELECT judul, file_foto, urutan FROM galeri_foto WHERE id = $id");  // + tambahkan ", urutan"
     $data = mysqli_fetch_assoc($q);
     
     $file_deleted = false;
@@ -16,6 +16,7 @@ if (isset($_GET['delete'])) {
     
     if (mysqli_num_rows($check) > 0) {
         $judul = $data['judul'];
+        $urutan_yang_dihapus = $data['urutan'];  // + tambahkan baris ini
         
         // Hapus file gambar jika ada
         if ($data && !empty($data['file_foto']) && file_exists("../../uploads/galeri_foto/" . $data['file_foto'])) {
@@ -25,6 +26,12 @@ if (isset($_GET['delete'])) {
         }
         
         if (mysqli_query($conn, "DELETE FROM galeri_foto WHERE id = $id")) {
+            
+            // ========== REORDER URUTAN ==========  // + tambahkan 3 baris ini
+            if ($urutan_yang_dihapus !== null && $urutan_yang_dihapus > 0) {
+                mysqli_query($conn, "UPDATE galeri_foto SET urutan = urutan - 1 WHERE urutan > $urutan_yang_dihapus");
+            }
+            
             if ($file_deleted) {
                 $_SESSION['success'] = [
                     'message' => "Foto <strong>\"$judul\"</strong> berhasil dihapus",
@@ -54,6 +61,7 @@ $query = mysqli_query($conn, "SELECT * FROM galeri_foto ORDER BY urutan ASC, id 
 include "../includes/header.php";
 ?>
 
+<!-- Sisanya tetap SAMA PERSIS seperti kode Anda yang asli -->
 <div class="content-wrapper galeri-foto-page">
     <div class="content-header">
         <h1><i class="fas fa-image"></i> Kelola Galeri Foto</h1>

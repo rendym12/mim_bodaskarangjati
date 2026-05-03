@@ -5,8 +5,8 @@ include "../includes/auth.php";
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Ambil data gambar untuk dihapus
-    $q = mysqli_query($conn, "SELECT nama_sarana, gambar FROM sarana WHERE id = $id");
+    // Ambil data gambar dan urutan untuk dihapus
+    $q = mysqli_query($conn, "SELECT nama_sarana, gambar, urutan FROM sarana WHERE id = $id");
     $data = mysqli_fetch_assoc($q);
     
     $file_deleted = false;
@@ -16,6 +16,7 @@ if (isset($_GET['delete'])) {
     
     if (mysqli_num_rows($check) > 0) {
         $nama = $data['nama_sarana'];
+        $urutan_yang_dihapus = $data['urutan'];
         
         // Hapus file gambar jika ada
         if ($data && !empty($data['gambar']) && file_exists("../../uploads/sarana/" . $data['gambar'])) {
@@ -24,7 +25,14 @@ if (isset($_GET['delete'])) {
             }
         }
         
+        // HAPUS DATA
         mysqli_query($conn, "DELETE FROM sarana WHERE id = $id");
+        
+        // ========== REORDER URUTAN ==========
+        // Update urutan data yang lebih besar dari urutan yang dihapus
+        if ($urutan_yang_dihapus !== null && $urutan_yang_dihapus > 0) {
+            mysqli_query($conn, "UPDATE sarana SET urutan = urutan - 1 WHERE urutan > $urutan_yang_dihapus");
+        }
         
         // Buat pesan notifikasi
         if ($file_deleted) {
@@ -131,7 +139,7 @@ include "../includes/header.php";
                                 <?php else: ?>
                                     <i class="fas <?= $row['ikon'] ?? 'fa-building' ?>" style="font-size: 2rem; color: var(--gray);"></i>
                                 <?php endif; ?>
-                            </td>
+                             </td>
                             <td><strong><?= htmlspecialchars($row['nama_sarana']) ?></strong></td>
                             <td><i class="fas <?= $row['ikon'] ?? 'fa-building' ?>"></i></td>
                             <td><?= $row['urutan'] ?? '0' ?></td>
@@ -144,7 +152,6 @@ include "../includes/header.php";
                                     <a href="edit.php?id=<?= $row['id'] ?>" class="btn-edit" title="Edit">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!-- Tombol hapus dengan data attribute -->
                                     <button type="button" 
                                             class="btn-delete" 
                                             data-id="<?= $row['id'] ?>" 
@@ -183,7 +190,6 @@ include "../includes/header.php";
             <p>Apakah Anda yakin ingin menghapus <span id="itemType">Sarana Prasarana</span> berikut?</p>
             <p style="font-weight: bold; font-size: 1.1rem; margin: 10px 0;" id="deleteItemName"></p>
             
-            <!-- Warning untuk file gambar -->
             <div id="fileWarningContainer" style="display: none;">
                 <div style="color: #ef4444; background: #fee2e2; padding: 12px; border-radius: 5px; margin-bottom: 10px;">
                     <i class="fas fa-exclamation-circle"></i>
@@ -194,7 +200,6 @@ include "../includes/header.php";
                 </div>
             </div>
             
-            <!-- Warning umum -->
             <div style="color: #ef4444; background: #fee2e2; padding: 8px; border-radius: 5px;">
                 <i class="fas fa-exclamation-circle"></i>
                 Data yang sudah dihapus tidak dapat dikembalikan!

@@ -5,8 +5,7 @@ include "../includes/auth.php";
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Ambil data testimoni sebelum dihapus untuk notifikasi
-    $query_data = mysqli_query($conn, "SELECT nama FROM testimoni WHERE id = $id");
+    $query_data = mysqli_query($conn, "SELECT nama, email FROM testimoni WHERE id = $id");
     $data = mysqli_fetch_assoc($query_data);
     $nama = $data['nama'] ?? 'Testimoni';
     
@@ -23,13 +22,12 @@ if (isset($_GET['delete'])) {
 if (isset($_GET['approve'])) {
     $id = (int)$_GET['approve'];
     
-    // Ambil data testimoni sebelum diupdate
     $query_data = mysqli_query($conn, "SELECT nama FROM testimoni WHERE id = $id");
     $data = mysqli_fetch_assoc($query_data);
     $nama = $data['nama'] ?? 'Testimoni';
     
     if (mysqli_query($conn, "UPDATE testimoni SET status = 'approved' WHERE id = $id")) {
-        $_SESSION['success'] = "✅ Testimoni dari <strong>\"" . htmlspecialchars($nama) . "\"</strong> berhasil disetujui dan akan tampil di halaman publik!";
+        $_SESSION['success'] = "✅ Testimoni dari <strong>\"" . htmlspecialchars($nama) . "\"</strong> berhasil disetujui!";
     } else {
         $_SESSION['error'] = "❌ Gagal menyetujui testimoni!";
     }
@@ -41,7 +39,6 @@ if (isset($_GET['approve'])) {
 if (isset($_GET['reject'])) {
     $id = (int)$_GET['reject'];
     
-    // Ambil data testimoni sebelum diupdate
     $query_data = mysqli_query($conn, "SELECT nama FROM testimoni WHERE id = $id");
     $data = mysqli_fetch_assoc($query_data);
     $nama = $data['nama'] ?? 'Testimoni';
@@ -55,131 +52,35 @@ if (isset($_GET['reject'])) {
     exit;
 }
 
-// ========== AMBIL DATA TESTIMONI ==========
+// ========== TAMPILKAN DATA ==========
 $query = mysqli_query($conn, "SELECT * FROM testimoni ORDER BY created_at DESC");
 $testimonis = [];
 while ($row = mysqli_fetch_assoc($query)) {
     $testimonis[] = $row;
 }
 
-// Hitung statistik untuk ditampilkan
-$total_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'pending'"))['total'] ?? 0;
-$total_approved = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'approved'"))['total'] ?? 0;
-$total_rejected = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'rejected'"))['total'] ?? 0;
-$total_all = $total_pending + $total_approved + $total_rejected;
+// Statistik
+$total_pending = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'pending' AND is_spam = 0"))['total'] ?? 0;
+$total_approved = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'approved' AND is_spam = 0"))['total'] ?? 0;
+$total_rejected = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE status = 'rejected' AND is_spam = 0"))['total'] ?? 0;
+$total_spam = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM testimoni WHERE is_spam = 1"))['total'] ?? 0;
+$total_all = $total_pending + $total_approved + $total_rejected + $total_spam;
 
 include "../includes/header.php";
 ?>
 
-<style>
-/* Tambahan style untuk notifikasi dan statistik */
-.stat-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px 16px;
-    border-radius: 30px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.stat-badge i {
-    font-size: 0.9rem;
-}
-
-.stat-badge.pending {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.stat-badge.approved {
-    background: #d4edda;
-    color: #155724;
-}
-
-.stat-badge.rejected {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.stat-badge.total {
-    background: #e6f0ff;
-    color: #0B3D91;
-}
-
-.info-stats {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.alert-success-custom {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
-    border-left: 5px solid #28a745;
-    padding: 15px 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    animation: slideInRight 0.3s ease;
-}
-
-.alert-error-custom {
-    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
-    border-left: 5px solid #dc3545;
-    padding: 15px 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    animation: slideInRight 0.3s ease;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-.alert-success-custom i,
-.alert-error-custom i {
-    font-size: 1.3rem;
-}
-
-.alert-success-custom strong,
-.alert-error-custom strong {
-    font-weight: 600;
-}
-
-.close-notif {
-    margin-left: auto;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    cursor: pointer;
-    opacity: 0.6;
-    transition: opacity 0.3s;
-}
-
-.close-notif:hover {
-    opacity: 1;
-}
-</style>
-
 <div class="content-wrapper">
     <div class="content-header">
         <h1><i class="fas fa-star"></i> Kelola Testimoni & Ulasan</h1>
+        <a href="spam_list.php" class="btn-spam-manage">
+            <i class="fas fa-trash-alt"></i> Kelola Spam
+            <?php if($total_spam > 0): ?>
+                <span class="badge-spam-count"><?= $total_spam ?></span>
+            <?php endif; ?>
+        </a>
     </div>
 
-    <!-- STATISTIK TESTIMONI -->
+    <!-- STATISTIK -->
     <div class="info-stats">
         <span class="stat-badge total">
             <i class="fas fa-database"></i> Total: <?= $total_all ?>
@@ -193,23 +94,23 @@ include "../includes/header.php";
         <span class="stat-badge rejected">
             <i class="fas fa-times-circle"></i> Ditolak: <?= $total_rejected ?>
         </span>
+        <span class="stat-badge spam">
+            <i class="fas fa-trash-alt"></i> Spam: <?= $total_spam ?>
+        </span>
     </div>
 
-    <!-- NOTIFICATION CONTAINER -->
+    <!-- NOTIFICATION -->
     <div class="notification-container">
         <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert-success-custom" id="notificationAlert">
-                <i class="fas fa-check-circle"></i>
-                <div><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
-                <button class="close-notif" onclick="this.parentElement.style.display='none'">&times;</button>
+            <div class="alert alert-success alert-dismissible">
+                <i class="fas fa-check-circle"></i> <?= $_SESSION['success']; unset($_SESSION['success']); ?>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
             </div>
         <?php endif; ?>
-        
         <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert-error-custom" id="notificationAlert">
-                <i class="fas fa-exclamation-triangle"></i>
-                <div><?= $_SESSION['error']; unset($_SESSION['error']); ?></div>
-                <button class="close-notif" onclick="this.parentElement.style.display='none'">&times;</button>
+            <div class="alert alert-danger alert-dismissible">
+                <i class="fas fa-exclamation-triangle"></i> <?= $_SESSION['error']; unset($_SESSION['error']); ?>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
             </div>
         <?php endif; ?>
     </div>
@@ -220,24 +121,26 @@ include "../includes/header.php";
         </div>
         <div class="card-body">
             <div class="table-container">
-                <table class="table">
+                <table class="table data-table">
                     <thead>
                         <tr>
                             <th width="5%">No</th>
-                            <th width="15%">Nama / Email</th>
-                            <th width="10%">Rating</th>
+                            <th width="20%">Nama / Email</th>
+                            <th width="8%">Rating</th>
                             <th width="35%">Ulasan</th>
-                            <th width="12%">Tanggal</th>
+                            <th width="10%">Tanggal</th>
                             <th width="10%">Status</th>
-                            <th width="13%">Aksi</th>
+                            <th width="12%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php if (count($testimonis) > 0): 
                             $no = 1;
                             foreach ($testimonis as $t): 
+                                $is_spam = $t['is_spam'] == 1;
+                                $row_class = $is_spam ? 'spam-row' : '';
                         ?>
-                        <tr>
+                        <tr class="<?= $row_class ?>">
                             <td><?= $no++ ?></td>
                             <td>
                                 <strong><?= htmlspecialchars($t['nama']) ?></strong><br>
@@ -252,12 +155,12 @@ include "../includes/header.php";
                                     <?php endif; ?>
                                 <?php endfor; ?>
                             </td>
-                            <td>
-                                <?= htmlspecialchars(substr($t['ulasan'], 0, 80)) ?>...
-                            </td>
+                            <td><?= htmlspecialchars(substr($t['ulasan'], 0, 60)) ?>...</td>
                             <td><?= date('d/m/Y', strtotime($t['created_at'])) ?></td>
                             <td>
-                                <?php if($t['status'] == 'approved'): ?>
+                                <?php if($is_spam): ?>
+                                    <span class="badge-spam"><i class="fas fa-trash-alt"></i> SPAM</span>
+                                <?php elseif($t['status'] == 'approved'): ?>
                                     <span class="badge badge-success"><i class="fas fa-check-circle"></i> Disetujui</span>
                                 <?php elseif($t['status'] == 'pending'): ?>
                                     <span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>
@@ -270,7 +173,7 @@ include "../includes/header.php";
                                     <a href="detail.php?id=<?= $t['id'] ?>" class="btn-view" title="Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <?php if($t['status'] == 'pending'): ?>
+                                    <?php if(!$is_spam && $t['status'] == 'pending'): ?>
                                         <a href="?approve=<?= $t['id'] ?>" class="btn-success" title="Setujui" onclick="return confirm('Setujui testimoni dari <?= htmlspecialchars($t['nama']) ?>?')">
                                             <i class="fas fa-check"></i>
                                         </a>
@@ -278,9 +181,15 @@ include "../includes/header.php";
                                             <i class="fas fa-times"></i>
                                         </a>
                                     <?php endif; ?>
-                                    <a href="?delete=<?= $t['id'] ?>" class="btn-delete" title="Hapus" onclick="return confirm('Hapus testimoni dari <?= htmlspecialchars($t['nama']) ?>?')">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    <?php if($is_spam): ?>
+                                        <a href="?delete=<?= $t['id'] ?>" class="btn-delete" title="Hapus Spam" onclick="return confirm('Hapus data spam ini?')">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="mark_spam.php?id=<?= $t['id'] ?>" class="btn-warning" title="Tandai Spam" onclick="return confirm('Tandai sebagai SPAM?')">
+                                            <i class="fas fa-ban"></i>
+                                        </a>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -289,7 +198,7 @@ include "../includes/header.php";
                             <td colspan="7" class="empty-state">
                                 <i class="fas fa-star"></i>
                                 <p>Belum ada testimoni</p>
-                                <small>Testimoni akan muncul di sini setelah ada yang mengirim dari halaman kontak</small>
+                                <small>Testimoni akan muncul di sini setelah ada yang mengirim</small>
                             </td>
                         </tr>
                         <?php endif; ?>
@@ -300,11 +209,9 @@ include "../includes/header.php";
     </div>
 </div>
 
-<!-- Script auto close notifikasi setelah 3 detik -->
 <script>
-// Auto close notification after 3 seconds
 setTimeout(function() {
-    var alert = document.getElementById('notificationAlert');
+    var alert = document.querySelector('.notification-container .alert');
     if (alert) {
         alert.style.transition = 'opacity 0.5s ease';
         alert.style.opacity = '0';

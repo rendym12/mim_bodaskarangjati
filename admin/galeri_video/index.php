@@ -5,8 +5,8 @@ include "../includes/auth.php";
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Ambil data untuk dihapus
-    $q = mysqli_query($conn, "SELECT judul, thumbnail FROM galeri_video WHERE id = $id");
+    // Ambil data untuk dihapus DAN URUTAN
+    $q = mysqli_query($conn, "SELECT judul, thumbnail, urutan FROM galeri_video WHERE id = $id");  // + tambahkan ", urutan"
     $data = mysqli_fetch_assoc($q);
     
     $file_deleted = false;
@@ -16,6 +16,7 @@ if (isset($_GET['delete'])) {
     
     if (mysqli_num_rows($check) > 0) {
         $judul = $data['judul'];
+        $urutan_yang_dihapus = $data['urutan'];  // + tambahkan baris ini
         
         // Hapus file thumbnail jika ada
         if ($data && !empty($data['thumbnail']) && file_exists("../../uploads/galeri_video/" . $data['thumbnail'])) {
@@ -25,6 +26,12 @@ if (isset($_GET['delete'])) {
         }
         
         if (mysqli_query($conn, "DELETE FROM galeri_video WHERE id = $id")) {
+            
+            // ========== REORDER URUTAN ==========  // + tambahkan 3 baris ini
+            if ($urutan_yang_dihapus !== null && $urutan_yang_dihapus > 0) {
+                mysqli_query($conn, "UPDATE galeri_video SET urutan = urutan - 1 WHERE urutan > $urutan_yang_dihapus");
+            }
+            
             if ($file_deleted) {
                 $_SESSION['success'] = [
                     'message' => "Video <strong>\"$judul\"</strong> berhasil dihapus",
@@ -54,6 +61,7 @@ $query = mysqli_query($conn, "SELECT * FROM galeri_video ORDER BY urutan ASC, id
 include "../includes/header.php";
 ?>
 
+<!-- Sisanya tetap SAMA PERSIS seperti kode Anda yang asli -->
 <div class="content-wrapper galeri-video-page">
     <div class="content-header">
         <h1><i class="fas fa-video"></i> Kelola Galeri Video</h1>
@@ -115,8 +123,7 @@ include "../includes/header.php";
                             <th width="8%">Urutan</th>
                             <th width="15%">Keterangan</th>
                             <th width="20%">Aksi</th>
-                        </tr>
-                    </thead>
+                         </thead>
                     <tbody>
                         <?php if (mysqli_num_rows($query) > 0): 
                             $no = 1;
@@ -134,6 +141,7 @@ include "../includes/header.php";
                                         <i class="fas fa-video" style="font-size: 1.5rem; color: #94a3b8;"></i>
                                     </div>
                                 <?php endif; ?>
+                             </div>
                             </td>
                             <td><strong><?= htmlspecialchars($row['judul']) ?></strong></td>
                             <td>
@@ -160,7 +168,7 @@ include "../includes/header.php";
                                 <span style="display: inline-block; padding: 4px 10px; background: #f1f5f9; border-radius: 20px; font-weight: 600; font-size: 0.8rem;">
                                     <?= $row['urutan'] ?? '0' ?>
                                 </span>
-                            </td>
+                             </div>
                             <td>
                                 <?php 
                                 $keterangan = htmlspecialchars($row['keterangan'] ?? '-');
@@ -170,7 +178,7 @@ include "../includes/header.php";
                                     echo $keterangan;
                                 }
                                 ?>
-                            </td>
+                             </div>
                             <td class="text-center">
                                 <div class="action-buttons">
                                     <a href="detail.php?id=<?= $row['id'] ?>" class="btn-view" title="Detail">
@@ -190,16 +198,16 @@ include "../includes/header.php";
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
-                            </td>
-                        </tr>
+                             </div>
+                         </tr>
                         <?php endwhile; else: ?>
-                        <tr>
+                         <tr>
                             <td colspan="7" class="empty-state">
                                 <i class="fas fa-video"></i>
                                 <p>Belum ada data video</p>
                                 <a href="tambah.php" class="btn-primary">Tambah Video</a>
-                            </td>
-                        </tr>
+                             </div>
+                         </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

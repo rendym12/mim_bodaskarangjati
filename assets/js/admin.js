@@ -493,10 +493,11 @@ function initFormValidation() {
 }
 
 // ==============================================
-// 6. NUMBER INPUTS
+// 6. NUMBER INPUTS WITH PLUS/MINUS (UPDATED)
 // ==============================================
 function initNumberInputs() {
     document.querySelectorAll('input[type="number"]').forEach(input => {
+        // Cek apakah sudah dibungkus atau tidak
         if (input.closest('.number-input-container')) return;
         
         const container = document.createElement('div');
@@ -522,16 +523,35 @@ function initNumberInputs() {
         
         input.style.cssText = 'border-radius:0;border-left:none;border-right:none;text-align:center;width:80px';
         
+        // 🔥 UPDATE: Panggil triggerTotalUpdate untuk update total
         minusBtn.addEventListener('click', () => {
             let val = parseInt(input.value) || 0;
             const min = input.min ? parseInt(input.min) : 0;
-            if (val > min) input.value = val - 1;
+            if (val > min) {
+                input.value = val - 1;
+                // Trigger update total (untuk data siswa)
+                if (typeof window.triggerTotalUpdate === 'function') {
+                    window.triggerTotalUpdate();
+                }
+                // Trigger event manual
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         });
         
         plusBtn.addEventListener('click', () => {
             let val = parseInt(input.value) || 0;
             const max = input.max ? parseInt(input.max) : Infinity;
-            if (val < max) input.value = val + 1;
+            if (val < max) {
+                input.value = val + 1;
+                // Trigger update total (untuk data siswa)
+                if (typeof window.triggerTotalUpdate === 'function') {
+                    window.triggerTotalUpdate();
+                }
+                // Trigger event manual
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         });
     });
 }
@@ -1891,23 +1911,32 @@ if (!document.querySelector('#loading-style')) {
     style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
     document.head.appendChild(style);
 }
+
 // ==============================================
-// DATA SISWA PAGE - FULL WORKING VERSION
+// DATA SISWA PAGE - FULL WORKING (DENGAN PLUS/MINUS)
 // ==============================================
 
-function initDataSiswaPage() {
-    console.log('📊 Data Siswa page initialized');
+(function() {
+    'use strict';
     
-    // Cek apakah kita di halaman data siswa
-    if (!document.querySelector('.data-table')) return;
-    
-    // Fungsi untuk format number dengan pemisah ribuan
+    // Format angka
     function formatNumber(num) {
         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
     
-    // Fungsi untuk menghitung ulang semua total
-    window.recalculateTotals = function() {
+    // Fungsi global untuk update semua total (dipanggil dari tombol plus/minus)
+    window.triggerTotalUpdate = function() {
+        // Trigger event input pada semua input number di data siswa
+        document.querySelectorAll('#dataSiswaTable input[type="number"]').forEach(function(input) {
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+        });
+    };
+    
+    // Hitung total dan update semua
+    function updateAllTotals() {
+        console.log('🔄 updateAllTotals dipanggil');
+        
         let totalLaki = 0;
         let totalPerempuan = 0;
         
@@ -1919,8 +1948,15 @@ function initDataSiswaPage() {
             if (lakiInput && perempuanInput && totalCell) {
                 let laki = parseInt(lakiInput.value) || 0;
                 let perempuan = parseInt(perempuanInput.value) || 0;
-                let total = laki + perempuan;
                 
+                // Pastikan tidak negatif
+                if (laki < 0) lakiInput.value = 0;
+                if (perempuan < 0) perempuanInput.value = 0;
+                
+                laki = parseInt(lakiInput.value) || 0;
+                perempuan = parseInt(perempuanInput.value) || 0;
+                
+                let total = laki + perempuan;
                 totalCell.innerHTML = '<strong>' + formatNumber(total) + '</strong>';
                 
                 totalLaki += laki;
@@ -1930,7 +1966,7 @@ function initDataSiswaPage() {
         
         let totalSemua = totalLaki + totalPerempuan;
         
-        // Update footer tabel
+        // Update footer
         let totalLakiElem = document.getElementById('total_laki_semua');
         let totalPerempuanElem = document.getElementById('total_perempuan_semua');
         let totalSemuaElem = document.getElementById('total_semua');
@@ -1947,92 +1983,302 @@ function initDataSiswaPage() {
         if (summaryTotal) summaryTotal.innerHTML = formatNumber(totalSemua) + ' Siswa';
         if (summaryLaki) summaryLaki.innerHTML = formatNumber(totalLaki);
         if (summaryPerempuan) summaryPerempuan.innerHTML = formatNumber(totalPerempuan);
-    };
-    
-    // Ambil semua input number di tabel data siswa
-    const inputs = document.querySelectorAll('#dataSiswaTable input[type="number"]');
-    console.log('Ditemukan ' + inputs.length + ' input number');
-    
-    // Pasang event listener ke setiap input
-    inputs.forEach(input => {
-        // Hapus event listener lama
-        input.removeEventListener('input', window.recalculateTotals);
-        input.removeEventListener('change', window.recalculateTotals);
         
-        // Tambahkan event listener baru
-        input.addEventListener('input', window.recalculateTotals);
-        input.addEventListener('change', window.recalculateTotals);
-        
-        console.log('Event terpasang untuk:', input.id);
-    });
-    
-    // Panggil sekali untuk inisialisasi
-    window.recalculateTotals();
-    
-    console.log('✅ Data Siswa auto-calculate siap!');
-}
-
-// ==============================================
-// DATA SISWA DELETE CONFIRMATION
-// ==============================================
-
-function initDataSiswaDelete() {
-    const deleteButtons = document.querySelectorAll('.data-table .btn-delete');
-    const deleteModal = document.getElementById('deleteModal');
-    
-    if (!deleteModal || deleteButtons.length === 0) return;
-    
-    function showDeleteModal(id, kelas, tahun) {
-        const deleteItemName = document.getElementById('deleteItemName');
-        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-        const itemType = document.getElementById('itemType');
-        const fileWarningContainer = document.getElementById('fileWarningContainer');
-        
-        if (deleteItemName) deleteItemName.innerText = '"Kelas ' + kelas + ' - ' + tahun + '"';
-        if (itemType) itemType.innerText = 'Data Siswa';
-        if (confirmDeleteBtn) confirmDeleteBtn.href = 'index.php?delete=' + id;
-        if (fileWarningContainer) fileWarningContainer.style.display = 'none';
-        
-        deleteModal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-    }
-    
-    function handleDataSiswaDelete(e) {
-        e.preventDefault();
-        const id = this.getAttribute('data-id');
-        const kelas = this.getAttribute('data-kelas');
-        const tahun = this.getAttribute('data-tahun');
-        
-        if (id && kelas) {
-            showDeleteModal(id, kelas, tahun);
-        } else {
-            if (confirm('Yakin ingin menghapus data ini?')) {
-                window.location.href = this.href;
+        // Highlight perubahan
+        if (window.dataAwal) {
+            for (let i = 1; i <= 6; i++) {
+                let lakiInput = document.getElementById('laki_' + i);
+                let perempuanInput = document.getElementById('perempuan_' + i);
+                
+                if (lakiInput) {
+                    let lakiLama = window.dataAwal[i]?.laki || 0;
+                    let lakiBaru = parseInt(lakiInput.value) || 0;
+                    lakiInput.style.backgroundColor = (lakiBaru !== lakiLama) ? '#fff3cd' : '';
+                    lakiInput.style.borderColor = (lakiBaru !== lakiLama) ? '#ffc107' : '';
+                }
+                
+                if (perempuanInput) {
+                    let perempuanLama = window.dataAwal[i]?.perempuan || 0;
+                    let perempuanBaru = parseInt(perempuanInput.value) || 0;
+                    perempuanInput.style.backgroundColor = (perempuanBaru !== perempuanLama) ? '#fff3cd' : '';
+                    perempuanInput.style.borderColor = (perempuanBaru !== perempuanLama) ? '#ffc107' : '';
+                }
             }
         }
     }
     
-    deleteButtons.forEach(button => {
-        button.removeEventListener('click', handleDataSiswaDelete);
-        button.addEventListener('click', handleDataSiswaDelete);
-    });
-}
-
-// ==============================================
-// INISIALISASI SAAT HALAMAN SIAP
-// ==============================================
-
-// Jalankan saat halaman selesai dimuat
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        if (document.querySelector('.data-table')) {
-            initDataSiswaPage();
-            initDataSiswaDelete();
+    // Hitung perubahan data (untuk preview dan confirm)
+    window.calculateChanges = function() {
+        let changes = [];
+        let totalPerubahanLaki = 0;
+        let totalPerubahanPerempuan = 0;
+        let adaPerubahan = false;
+        
+        for (let i = 1; i <= 6; i++) {
+            let lakiBaru = parseInt(document.getElementById('laki_' + i)?.value) || 0;
+            let perempuanBaru = parseInt(document.getElementById('perempuan_' + i)?.value) || 0;
+            let lakiLama = window.dataAwal[i]?.laki || 0;
+            let perempuanLama = window.dataAwal[i]?.perempuan || 0;
+            
+            if (lakiBaru !== lakiLama || perempuanBaru !== perempuanLama) {
+                adaPerubahan = true;
+                let perubahanLaki = lakiBaru - lakiLama;
+                let perubahanPerempuan = perempuanBaru - perempuanLama;
+                
+                totalPerubahanLaki += perubahanLaki;
+                totalPerubahanPerempuan += perubahanPerempuan;
+                
+                changes.push({
+                    kelas: i,
+                    lakiLama: lakiLama,
+                    lakiBaru: lakiBaru,
+                    perubahanLaki: perubahanLaki,
+                    perempuanLama: perempuanLama,
+                    perempuanBaru: perempuanBaru,
+                    perubahanPerempuan: perubahanPerempuan,
+                    totalLama: lakiLama + perempuanLama,
+                    totalBaru: lakiBaru + perempuanBaru
+                });
+            }
         }
-    });
-} else {
-    if (document.querySelector('.data-table')) {
-        initDataSiswaPage();
-        initDataSiswaDelete();
+        
+        return { changes, adaPerubahan, totalPerubahanLaki, totalPerubahanPerempuan };
+    };
+    
+    // Preview Modal
+    window.showPreviewModal = function() {
+        const changesData = window.calculateChanges();
+        
+        if (!changesData.adaPerubahan) {
+            alert('Tidak ada perubahan data untuk ditampilkan.');
+            return;
+        }
+        
+        const previewContent = document.getElementById('previewContent');
+        if (!previewContent) {
+            console.error('previewContent not found');
+            return;
+        }
+        
+        let html = `
+            <div style="margin-bottom: 20px; padding: 15px; background: #e6f0ff; border-radius: 10px;">
+                <strong><i class="fas fa-info-circle"></i> Ringkasan Perubahan:</strong><br>
+                <span>📊 Total perubahan Laki-laki: ${changesData.totalPerubahanLaki > 0 ? '+' : ''}${formatNumber(changesData.totalPerubahanLaki)}</span><br>
+                <span>📊 Total perubahan Perempuan: ${changesData.totalPerubahanPerempuan > 0 ? '+' : ''}${formatNumber(changesData.totalPerubahanPerempuan)}</span><br>
+                <strong>🎯 Total keseluruhan: ${(changesData.totalPerubahanLaki + changesData.totalPerubahanPerempuan) > 0 ? '+' : ''}${formatNumber(changesData.totalPerubahanLaki + changesData.totalPerubahanPerempuan)} siswa</strong>
+            </div>
+            <div class="confirm-summary">
+                <table class="confirm-table" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8fafc;">
+                            <th style="padding: 12px;">Kelas</th>
+                            <th style="padding: 12px;">Laki-laki</th>
+                            <th style="padding: 12px;">Perempuan</th>
+                            <th style="padding: 12px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        changesData.changes.forEach(change => {
+            html += `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px; text-align: center;"><strong>Kelas ${change.kelas}</strong></td>
+                    <td style="padding: 10px; text-align: center;">
+                        ${formatNumber(change.lakiLama)} → ${formatNumber(change.lakiBaru)}
+                        ${change.perubahanLaki !== 0 ? `<br><small style="color: ${change.perubahanLaki > 0 ? '#28a745' : '#dc3545'}">(${change.perubahanLaki > 0 ? '+' : ''}${formatNumber(change.perubahanLaki)})</small>` : ''}
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        ${formatNumber(change.perempuanLama)} → ${formatNumber(change.perempuanBaru)}
+                        ${change.perubahanPerempuan !== 0 ? `<br><small style="color: ${change.perubahanPerempuan > 0 ? '#28a745' : '#dc3545'}">(${change.perubahanPerempuan > 0 ? '+' : ''}${formatNumber(change.perubahanPerempuan)})</small>` : ''}
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        ${formatNumber(change.totalLama)} → ${formatNumber(change.totalBaru)}
+                    </td>
+                </tr>
+            `;
+        });
+        
+        // Hitung total akhir
+        let totalLakiAkhir = 0;
+        let totalPerempuanAkhir = 0;
+        for (let i = 1; i <= 6; i++) {
+            totalLakiAkhir += parseInt(document.getElementById('laki_' + i)?.value) || 0;
+            totalPerempuanAkhir += parseInt(document.getElementById('perempuan_' + i)?.value) || 0;
+        }
+        
+        html += `
+                    <tr style="background: #e6f0ff; font-weight: bold;">
+                        <td style="padding: 12px; text-align: center;"><strong>TOTAL AKHIR</strong></td>
+                        <td style="padding: 12px; text-align: center;"><strong>${formatNumber(totalLakiAkhir)}</strong></td>
+                        <td style="padding: 12px; text-align: center;"><strong>${formatNumber(totalPerempuanAkhir)}</strong></td>
+                        <td style="padding: 12px; text-align: center;"><strong>${formatNumber(totalLakiAkhir + totalPerempuanAkhir)}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            </div>
+            <div class="confirm-warning" style="margin-top: 20px; padding: 12px; background: #fef3c7; border-radius: 8px;">
+                <i class="fas fa-exclamation-triangle"></i> Ini adalah preview perubahan. Klik "Tutup Preview" untuk kembali.
+            </div>
+        `;
+        
+        previewContent.innerHTML = html;
+        document.getElementById('previewModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
+    
+    window.closePreviewModal = function() {
+        document.getElementById('previewModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+    
+    // Confirm Save Modal
+    window.showConfirmSaveModal = function() {
+        const changesData = window.calculateChanges();
+        
+        if (!changesData.adaPerubahan) {
+            alert('Tidak ada perubahan data yang akan disimpan.');
+            return;
+        }
+        
+        const confirmSaveContent = document.getElementById('confirmSaveContent');
+        if (!confirmSaveContent) {
+            console.error('confirmSaveContent not found');
+            return;
+        }
+        
+        let html = `
+            <div style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-radius: 10px;">
+                <strong><i class="fas fa-exclamation-triangle"></i> Perhatian!</strong><br>
+                Anda akan menyimpan perubahan data berikut:
+            </div>
+            <div style="margin-bottom: 20px; padding: 15px; background: #e6f0ff; border-radius: 10px;">
+                <strong>Ringkasan Perubahan:</strong><br>
+                📊 Laki-laki: ${changesData.totalPerubahanLaki > 0 ? '+' : ''}${formatNumber(changesData.totalPerubahanLaki)}<br>
+                📊 Perempuan: ${changesData.totalPerubahanPerempuan > 0 ? '+' : ''}${formatNumber(changesData.totalPerubahanPerempuan)}<br>
+                <strong>🎯 Total: ${(changesData.totalPerubahanLaki + changesData.totalPerubahanPerempuan) > 0 ? '+' : ''}${formatNumber(changesData.totalPerubahanLaki + changesData.totalPerubahanPerempuan)} siswa</strong>
+            </div>
+            <div class="confirm-summary">
+                <table class="confirm-table" style="width:100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8fafc;">
+                            <th style="padding: 12px;">Kelas</th>
+                            <th style="padding: 12px;">Laki-laki</th>
+                            <th style="padding: 12px;">Perempuan</th>
+                            <th style="padding: 12px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        changesData.changes.forEach(change => {
+            html += `
+                <tr style="border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 10px; text-align: center;"><strong>Kelas ${change.kelas}</strong></td>
+                    <td style="padding: 10px; text-align: center;">
+                        ${formatNumber(change.lakiLama)} → ${formatNumber(change.lakiBaru)}
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        ${formatNumber(change.perempuanLama)} → ${formatNumber(change.perempuanBaru)}
+                    </td>
+                    <td style="padding: 10px; text-align: center;">
+                        ${formatNumber(change.totalLama)} → ${formatNumber(change.totalBaru)}
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+            <div class="confirm-warning" style="margin-top: 20px; padding: 12px; background: #fef3c7; border-radius: 8px;">
+                <i class="fas fa-exclamation-triangle"></i> Data yang sudah disimpan tidak dapat dikembalikan!
+            </div>
+        `;
+        
+        confirmSaveContent.innerHTML = html;
+        document.getElementById('confirmSaveModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
+    
+    window.closeConfirmSaveModal = function() {
+        document.getElementById('confirmSaveModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    };
+    
+    window.submitForm = function() {
+        const form = document.getElementById('siswaForm');
+        if (!form) return;
+        
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = 'simpan';
+        hiddenInput.value = '1';
+        form.appendChild(hiddenInput);
+        form.submit();
+    };
+    
+    // INISIALISASI DATA SISWA
+    function initDataSiswa() {
+        console.log('📊 initDataSiswa dipanggil');
+        
+        // Cek apakah ada tabel data siswa
+        const table = document.querySelector('.data-table');
+        if (!table) {
+            console.log('❌ Tabel data siswa tidak ditemukan');
+            return;
+        }
+        
+        console.log('✅ Tabel data siswa ditemukan, memasang event listener...');
+        
+        // Cari semua input number
+        const inputs = document.querySelectorAll('#dataSiswaTable input[type="number"]');
+        console.log('🔍 Ditemukan ' + inputs.length + ' input');
+        
+        // Pasang event listener ke setiap input
+        inputs.forEach(function(input) {
+            // Hapus event listener lama jika ada
+            input.removeEventListener('input', updateAllTotals);
+            input.removeEventListener('change', updateAllTotals);
+            input.removeEventListener('keyup', updateAllTotals);
+            
+            // Pasang event listener baru
+            input.addEventListener('input', updateAllTotals);
+            input.addEventListener('change', updateAllTotals);
+            input.addEventListener('keyup', updateAllTotals);
+            console.log('✅ Event terpasang untuk:', input.id);
+        });
+        
+        // Panggil sekali untuk inisialisasi
+        updateAllTotals();
+        
+        // Pasang tombol preview dan simpan
+        const previewBtn = document.getElementById('previewBtn');
+        if (previewBtn) {
+            previewBtn.onclick = function(e) {
+                e.preventDefault();
+                window.showPreviewModal();
+            };
+            console.log('✅ Preview button ready');
+        }
+        
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) {
+            saveBtn.onclick = function(e) {
+                e.preventDefault();
+                window.showConfirmSaveModal();
+            };
+            console.log('✅ Save button ready');
+        }
+        
+        console.log('🎉 Data Siswa siap! Ketik angka atau klik +/- , total akan langsung berubah!');
     }
-}
+    
+    // Jalankan saat halaman siap
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDataSiswa);
+    } else {
+        initDataSiswa();
+    }
+})();

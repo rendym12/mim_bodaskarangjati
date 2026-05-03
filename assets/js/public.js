@@ -24,11 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
     initFilterButtons();
     initScrollReveal();
     initCountdown();
-    initLightbox();
+    initLightbox(); 
     initVideoModal();
     initGalleryFilter();
     initAgendaFilter();    
     initPrestasiFilter(); 
+    initGaleriFotoPage()
 
     
     // Inisialisasi halaman spesifik
@@ -1532,6 +1533,7 @@ function initPrestasiFilter() {
     });
 }
 
+
 // ==============================================
 // PPDB PAGE - PUBLIC JAVASCRIPT
 // ==============================================
@@ -1961,3 +1963,529 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 100);
     }
 });
+
+// ==============================================
+// LIGHTBOX FUNCTIONALITY
+// ==============================================
+function initLightbox() {
+    console.log('💡 Lightbox initialized');
+    
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    
+    if (!lightbox) return;
+    
+    // Inisialisasi array gambar untuk navigasi
+    window.lightboxImages = [];
+    window.currentLightboxIndex = 0;
+    
+    // Kumpulkan semua gambar di galeri
+    const galleryImages = document.querySelectorAll('.gallery-image img');
+    galleryImages.forEach((img, index) => {
+        window.lightboxImages.push(img);
+        img.setAttribute('data-index', index);
+    });
+    
+    console.log(`📸 Found ${window.lightboxImages.length} images for lightbox`);
+}
+
+// Fungsi global untuk membuka lightbox
+window.openLightbox = function(element) {
+    console.log('🔍 Opening lightbox');
+    
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    
+    if (!lightbox || !lightboxImg) {
+        console.error('❌ Lightbox elements not found');
+        return;
+    }
+    
+    // Dapatkan gambar yang diklik
+    let imgElement = element;
+    if (element.tagName !== 'IMG') {
+        imgElement = element.querySelector('img');
+        if (!imgElement) {
+            imgElement = element.closest('.gallery-image')?.querySelector('img');
+        }
+    }
+    
+    if (!imgElement) {
+        console.error('❌ Image element not found');
+        return;
+    }
+    
+    // Set gambar ke lightbox
+    lightboxImg.src = imgElement.src;
+    
+    // Set caption
+    const galleryCard = imgElement.closest('.gallery-card');
+    const title = galleryCard?.querySelector('.overlay-title')?.innerText || 
+                  galleryCard?.querySelector('.gallery-caption p')?.innerText || 
+                  'Galeri Foto';
+    
+    if (lightboxCaption) {
+        lightboxCaption.innerHTML = title;
+    }
+    
+    // Cari index gambar untuk navigasi
+    window.currentLightboxIndex = parseInt(imgElement.getAttribute('data-index')) || 0;
+    
+    // Tampilkan lightbox
+    lightbox.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    // Update tombol navigasi
+    updateLightboxButtons();
+};
+
+// Fungsi untuk update tombol navigasi
+function updateLightboxButtons() {
+    const prevBtn = document.querySelector('.lightbox-prev');
+    const nextBtn = document.querySelector('.lightbox-next');
+    
+    if (prevBtn && nextBtn) {
+        if (window.lightboxImages.length <= 1) {
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+        } else {
+            prevBtn.style.display = 'block';
+            nextBtn.style.display = 'block';
+        }
+    }
+}
+
+// Fungsi global untuk menutup lightbox
+window.closeLightbox = function() {
+    console.log('🔒 Closing lightbox');
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+        lightbox.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+};
+
+// Fungsi global untuk navigasi
+window.changeImage = function(direction) {
+    if (!window.lightboxImages || window.lightboxImages.length === 0) return;
+    
+    let newIndex = window.currentLightboxIndex + direction;
+    
+    // Loop index
+    if (newIndex < 0) newIndex = window.lightboxImages.length - 1;
+    if (newIndex >= window.lightboxImages.length) newIndex = 0;
+    
+    window.currentLightboxIndex = newIndex;
+    
+    const newImg = window.lightboxImages[newIndex];
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    
+    if (lightboxImg && newImg) {
+        lightboxImg.src = newImg.src;
+        
+        // Update caption
+        const galleryCard = newImg.closest('.gallery-card');
+        const title = galleryCard?.querySelector('.overlay-title')?.innerText || 
+                      galleryCard?.querySelector('.gallery-caption p')?.innerText || 
+                      'Galeri Foto';
+        
+        if (lightboxCaption) {
+            lightboxCaption.innerHTML = title;
+        }
+    }
+};
+
+// Event untuk menutup lightbox dengan tombol ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const lightbox = document.getElementById('lightbox');
+        if (lightbox && lightbox.style.display === 'flex') {
+            closeLightbox();
+        }
+    }
+    
+    // Navigasi dengan panah kiri/kanan
+    if (window.lightboxImages && window.lightboxImages.length > 1) {
+        const lightbox = document.getElementById('lightbox');
+        if (lightbox && lightbox.style.display === 'flex') {
+            if (e.key === 'ArrowLeft') {
+                changeImage(-1);
+            } else if (e.key === 'ArrowRight') {
+                changeImage(1);
+            }
+        }
+    }
+});
+
+// ==============================================
+// VIDEO MODAL FUNCTIONALITY - IMPROVED VERSION
+// ==============================================
+
+// Fungsi global untuk membuka video modal (IMPROVED)
+window.openVideoModal = function(url, title, description) {
+    console.log('🎬 Opening video modal:', title);
+    console.log('📹 Video URL:', url);
+    
+    const modal = document.getElementById('videoModal');
+    const modalTitle = document.getElementById('modalVideoTitle');
+    const modalDescription = document.getElementById('modalVideoDescription');
+    const modalContainer = document.getElementById('modalVideoContainer');
+    
+    if (!modal || !modalContainer) {
+        console.error('❌ Video modal elements not found');
+        // Coba cari modal dengan selector lain
+        const altModal = document.querySelector('.video-modal');
+        if (altModal) {
+            console.log('✅ Found modal with class .video-modal');
+            // Lanjutkan dengan modal alternatif
+        } else {
+            alert('Modal video tidak ditemukan');
+            return;
+        }
+    }
+    
+    // Set title dan description
+    if (modalTitle) modalTitle.innerText = title || 'Video';
+    if (modalDescription) modalDescription.innerText = description || '';
+    
+    // Generate embed URL - PERBAIKAN REGEX
+    let embedUrl = '';
+    let videoId = extractYouTubeId(url);
+    
+    if (videoId) {
+        // YouTube video
+        embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+        console.log('✅ YouTube ID extracted:', videoId);
+    }
+    // CEK VIMEO URL
+    else if (url.includes('vimeo.com')) {
+        const vimeoMatch = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+        if (vimeoMatch && vimeoMatch[1]) {
+            embedUrl = `https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1`;
+        } else {
+            alert('URL Vimeo tidak valid');
+            return;
+        }
+    }
+    // CEK VIDEO FILE LANGSUNG (MP4, dll)
+    else if (url.match(/\.(mp4|webm|ogg|mov)$/i)) {
+        embedUrl = url;
+    }
+    // CEK embed langsung
+    else if (url.includes('/embed/')) {
+        embedUrl = url + (url.includes('?') ? '&autoplay=1' : '?autoplay=1');
+    }
+    // URL tidak dikenal
+    else {
+        console.error('❌ Unknown video URL type:', url);
+        alert('Format URL video tidak didukung. Gunakan YouTube, Vimeo, atau file video langsung.');
+        return;
+    }
+    
+    // Kosongkan container dengan aman
+    modalContainer.innerHTML = '';
+    
+    // Reset style container
+    modalContainer.style.position = '';
+    modalContainer.style.paddingBottom = '';
+    modalContainer.style.height = '';
+    modalContainer.style.overflow = '';
+    
+    // Buat elemen video/iframe
+    if (embedUrl.includes('youtube.com') || embedUrl.includes('vimeo.com') || embedUrl.includes('/embed/')) {
+        // Untuk YouTube/Vimeo - gunakan iframe dengan aspect ratio
+        const iframeWrapper = document.createElement('div');
+        iframeWrapper.style.position = 'relative';
+        iframeWrapper.style.paddingBottom = '56.25%'; // 16:9 aspect ratio
+        iframeWrapper.style.height = '0';
+        iframeWrapper.style.overflow = 'hidden';
+        iframeWrapper.style.width = '100%';
+        
+        const iframe = document.createElement('iframe');
+        iframe.src = embedUrl;
+        iframe.setAttribute('frameborder', '0');
+        iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+        iframe.setAttribute('allowfullscreen', 'true');
+        iframe.style.position = 'absolute';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        
+        iframeWrapper.appendChild(iframe);
+        modalContainer.appendChild(iframeWrapper);
+    } 
+    else if (embedUrl.match(/\.(mp4|webm|ogg|mov)$/i)) {
+        // Untuk file video langsung
+        const video = document.createElement('video');
+        video.src = embedUrl;
+        video.controls = true;
+        video.autoplay = true;
+        video.style.width = '100%';
+        video.style.borderRadius = '0';
+        
+        // Tambahkan poster jika ada (opsional)
+        modalContainer.appendChild(video);
+    }
+    
+    // Tampilkan modal
+    const targetModal = modal || document.querySelector('.video-modal');
+    if (targetModal) {
+        targetModal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    
+    console.log('✅ Video modal opened successfully');
+};
+
+// Fungsi helper untuk extract YouTube ID (LEBIH ROBUST)
+function extractYouTubeId(url) {
+    if (!url) return null;
+    
+    // Pattern untuk berbagai format YouTube URL
+    const patterns = [
+        /(?:youtube\.com\/watch\?v=)([^&]+)/i,           // youtube.com/watch?v=ID
+        /(?:youtube\.com\/watch\?.+&v=)([^&]+)/i,        // youtube.com/watch?foo=bar&v=ID
+        /(?:youtube\.com\/v\/)([^?]+)/i,                 // youtube.com/v/ID
+        /(?:youtube\.com\/embed\/)([^?]+)/i,             // youtube.com/embed/ID
+        /(?:youtu\.be\/)([^?]+)/i,                       // youtu.be/ID
+        /(?:youtube\.com\/shorts\/)([^?]+)/i,            // youtube.com/shorts/ID
+        /(?:youtube\.com\/live\/)([^?]+)/i,              // youtube.com/live/ID
+        /(?:youtube\.com\/user\/.+\?v=)([^&]+)/i,        // youtube.com/user/xxx?v=ID
+        /(?:youtube\.com\/attribution_link\?.*v%3D)([^&]+)/i, // Attribution link
+    ];
+    
+    for (const pattern of patterns) {
+        const match = url.match(pattern);
+        if (match && match[1]) {
+            // Validasi ID (biasanya 11 karakter)
+            const id = match[1];
+            if (id.match(/^[a-zA-Z0-9_-]{11}$/)) {
+                return id;
+            }
+            // Jika tidak tepat 11 karakter, tetap return
+            return id;
+        }
+    }
+    
+    // Coba cara lain: cari string 11 karakter setelah v= atau be/
+    const shortMatch = url.match(/(?:v=|be\/|\/shorts\/|\/embed\/)([a-zA-Z0-9_-]{11})/);
+    if (shortMatch) return shortMatch[1];
+    
+    return null;
+}
+
+// Fungsi global untuk menutup video modal
+window.closeVideoModal = function() {
+    console.log('🎬 Closing video modal');
+    
+    const modal = document.getElementById('videoModal');
+    const modalContainer = document.getElementById('modalVideoContainer');
+    
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        
+        // Hentikan video dengan menghapus konten
+        if (modalContainer) {
+            modalContainer.innerHTML = '';
+        }
+    }
+};
+
+// Inisialisasi video modal
+function initVideoModal() {
+    console.log('🎬 Video modal initialized');
+    
+    // Event listener untuk tombol close modal
+    const modalClose = document.querySelector('.video-modal-close');
+    if (modalClose) {
+        modalClose.removeEventListener('click', closeVideoModal);
+        modalClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeVideoModal();
+        });
+    }
+    
+    // Tutup modal klik di luar konten
+    const modal = document.getElementById('videoModal');
+    if (modal) {
+        modal.removeEventListener('click', function(e) {
+            if (e.target === modal) closeVideoModal();
+        });
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeVideoModal();
+        });
+    }
+    
+    // Tutup dengan tombol ESC
+    document.removeEventListener('keydown', handleVideoEscKey);
+    document.addEventListener('keydown', handleVideoEscKey);
+}
+
+function handleVideoEscKey(e) {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('videoModal');
+        if (modal && modal.style.display === 'flex') {
+            closeVideoModal();
+        }
+    }
+}
+
+// ==============================================
+// GALERI VIDEO PAGE - PUBLIC
+// ==============================================
+function initGaleriVideoPage() {
+    console.log('🎬 Galeri Video page initialized');
+    
+    // Inisialisasi video modal
+    initVideoModal();
+    
+    // Event listener untuk tombol close modal
+    const modalClose = document.querySelector('.video-modal-close');
+    if (modalClose) {
+        modalClose.addEventListener('click', closeVideoModal);
+    }
+    
+    // Tutup modal klik di luar konten
+    const modal = document.getElementById('videoModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeVideoModal();
+            }
+        });
+    }
+}
+// ==============================================
+// SCROLL TO TOP FUNCTION
+// ==============================================
+function initScrollTop() {
+    const scrollBtn = document.querySelector('.scroll-top');
+    if (!scrollBtn) return;
+    
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 300) {
+            scrollBtn.classList.add('show');
+        } else {
+            scrollBtn.classList.remove('show');
+        }
+    });
+    
+    scrollBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// ==============================================
+// FLOATING BUTTONS (WA & PPDB)
+// ==============================================
+function initFloatingButtons() {
+    console.log('🔄 Floating buttons initialized');
+    // Fungsi ini untuk tombol floating WhatsApp dan PPDB
+    // Jika tidak ada, kosongkan saja
+}
+
+// ==============================================
+// FILTER BUTTONS
+// ==============================================
+function initFilterButtons() {
+    console.log('🔍 Filter buttons initialized');
+    // Fungsi untuk filter di berbagai halaman
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const target = this.getAttribute('data-target');
+            const items = document.querySelectorAll('.filter-item');
+            
+            if (target === 'all') {
+                items.forEach(item => item.style.display = 'block');
+            } else {
+                items.forEach(item => {
+                    if (item.getAttribute('data-category') === target) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+            
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+}
+
+// ==============================================
+// GALLERY FILTER
+// ==============================================
+function initGalleryFilter() {
+    console.log('🖼️ Gallery filter initialized');
+    // Fungsi untuk filter di halaman galeri
+    const filterButtons = document.querySelectorAll('.gallery-filter .filter-btn');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    
+    if (filterButtons.length === 0) return;
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filter = this.getAttribute('data-filter');
+            
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            galleryItems.forEach(item => {
+                if (filter === 'semua' || filter === 'all') {
+                    item.style.display = 'block';
+                } else {
+                    const kategori = item.getAttribute('data-kategori');
+                    if (kategori === filter) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        });
+    });
+}
+
+// ==============================================
+// AGENDA FILTER
+// ==============================================
+function initAgendaFilter() {
+    console.log('📅 Agenda filter initialized');
+    // Fungsi untuk filter agenda berdasarkan status
+    const filterButtons = document.querySelectorAll('.agenda-filter .filter-btn');
+    const agendaItems = document.querySelectorAll('.agenda-item');
+    
+    if (filterButtons.length === 0) return;
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            agendaItems.forEach(item => {
+                if (filter === 'semua' || filter === 'all') {
+                    item.style.display = 'flex';
+                } else {
+                    const status = item.getAttribute('data-status');
+                    if (status === filter) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        });
+    });
+}

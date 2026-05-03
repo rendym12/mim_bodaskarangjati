@@ -25,6 +25,11 @@ include "../includes/header.php";
         <div class="detail-header">
             <i class="fas fa-user-circle"></i>
             <h2><?= htmlspecialchars($t['nama']) ?></h2>
+            <?php if($t['is_spam'] == 1): ?>
+                <span class="badge-spam" style="margin-left: 10px;">
+                    <i class="fas fa-trash-alt"></i> TERDETEKSI SPAM
+                </span>
+            <?php endif; ?>
         </div>
         <div class="detail-body">
             <div class="detail-info-grid">
@@ -47,7 +52,9 @@ include "../includes/header.php";
                     <div>
                         <span class="info-label">Status</span>
                         <span class="info-value">
-                            <?php if($t['status'] == 'approved'): ?>
+                            <?php if($t['is_spam'] == 1): ?>
+                                <span class="badge-spam">🚫 SPAM</span>
+                            <?php elseif($t['status'] == 'approved'): ?>
                                 <span class="badge badge-success">Disetujui</span>
                             <?php elseif($t['status'] == 'pending'): ?>
                                 <span class="badge badge-warning">Pending</span>
@@ -80,7 +87,7 @@ include "../includes/header.php";
             </div>
         </div>
         <div class="detail-footer">
-            <?php if($t['status'] == 'pending'): ?>
+            <?php if($t['is_spam'] == 0 && $t['status'] == 'pending'): ?>
                 <a href="?approve=<?= $t['id'] ?>" class="btn-success" onclick="return confirm('Setujui testimoni ini?')">
                     <i class="fas fa-check"></i> Setujui
                 </a>
@@ -91,6 +98,11 @@ include "../includes/header.php";
             <a href="?delete=<?= $t['id'] ?>" class="btn-danger" onclick="return confirm('Hapus testimoni ini?')">
                 <i class="fas fa-trash"></i> Hapus
             </a>
+            <?php if($t['is_spam'] == 0): ?>
+                <a href="mark_spam.php?id=<?= $t['id'] ?>" class="btn-warning" onclick="return confirm('Tandai sebagai SPAM?')">
+                    <i class="fas fa-ban"></i> Tandai Spam
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 </div>

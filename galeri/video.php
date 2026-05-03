@@ -1,14 +1,11 @@
 <?php
-// Include config untuk BASE_URL
 require_once '../includes/config.php';
 include '../includes/header.php';
 
-// Ambil data video
 $query = mysqli_query($conn, "SELECT * FROM galeri_video ORDER BY urutan ASC, id DESC");
 ?>
 
-<!-- PAGE HEADER -->
-<div class="page-header">
+<div class="page-header galeri-video-page">
     <div class="container">
         <h1>Galeri Video</h1>
         <p>Dokumentasi kegiatan dalam bentuk video di MI Muhammadiyah Bodaskarangjati</p>
@@ -18,19 +15,20 @@ $query = mysqli_query($conn, "SELECT * FROM galeri_video ORDER BY urutan ASC, id
 <div class="container">
     <?php if (mysqli_num_rows($query) > 0): ?>
         
-        <!-- VIDEO GRID -->
         <div class="video-grid">
             <?php while ($row = mysqli_fetch_assoc($query)): 
-                // Extract YouTube ID jika URL YouTube
                 $video_id = '';
                 $youtube_url = $row['url_video'];
+                
                 if (strpos($youtube_url, 'youtube.com') !== false || strpos($youtube_url, 'youtu.be') !== false) {
                     preg_match('/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/', $youtube_url, $matches);
                     $video_id = $matches[1] ?? '';
                 }
             ?>
             <div class="video-card" data-aos="fade-up">
-                <div class="video-thumbnail" onclick="openVideoModal('<?= $row['url_video'] ?>', '<?= htmlspecialchars($row['judul']) ?>', '<?= htmlspecialchars($row['keterangan'] ?? '') ?>')">
+                <!-- LANGSUNG LINK KE YOUTUBE -->
+                <a href="<?= htmlspecialchars($row['url_video']) ?>" target="_blank" class="video-thumbnail">
+                    
                     <?php if (!empty($row['thumbnail'])): ?>
                         <img src="<?= BASE_URL ?>/uploads/galeri_video/<?= $row['thumbnail'] ?>" 
                              alt="<?= htmlspecialchars($row['judul']) ?>"
@@ -38,6 +36,7 @@ $query = mysqli_query($conn, "SELECT * FROM galeri_video ORDER BY urutan ASC, id
                     <?php elseif (!empty($video_id)): ?>
                         <img src="https://img.youtube.com/vi/<?= $video_id ?>/maxresdefault.jpg" 
                              alt="<?= htmlspecialchars($row['judul']) ?>"
+                             loading="lazy"
                              onerror="this.src='https://img.youtube.com/vi/<?= $video_id ?>/hqdefault.jpg'">
                     <?php else: ?>
                         <div class="video-thumbnail-default">
@@ -49,15 +48,16 @@ $query = mysqli_query($conn, "SELECT * FROM galeri_video ORDER BY urutan ASC, id
                         <i class="fas fa-play"></i>
                     </div>
                     
-                    <div class="video-duration">
-                        <i class="fas fa-clock"></i> 02:30
+                    <div class="video-youtube-badge">
+                        <i class="fab fa-youtube"></i> Buka di YouTube
                     </div>
-                </div>
+                </a>
                 
                 <div class="video-content">
                     <h3 class="video-title">
-                        <a href="javascript:void(0)" onclick="openVideoModal('<?= $row['url_video'] ?>', '<?= htmlspecialchars($row['judul']) ?>', '<?= htmlspecialchars($row['keterangan'] ?? '') ?>')">
+                        <a href="<?= htmlspecialchars($row['url_video']) ?>" target="_blank">
                             <?= htmlspecialchars($row['judul']) ?>
+                            <i class="fab fa-youtube" style="color:#ff0000; font-size:14px; margin-left:5px;"></i>
                         </a>
                     </h3>
                     
@@ -67,11 +67,12 @@ $query = mysqli_query($conn, "SELECT * FROM galeri_video ORDER BY urutan ASC, id
                     
                     <div class="video-meta">
                         <span class="video-date">
-                            <i class="far fa-calendar-alt"></i> <?= date('d M Y', strtotime($row['created_at'] ?? 'now')) ?>
+                            <i class="far fa-calendar-alt"></i> 
+                            <?= date('d M Y', strtotime($row['created_at'] ?? 'now')) ?>
                         </span>
-                        <?php if (!empty($row['urutan'])): ?>
-                        <span class="video-order">#<?= $row['urutan'] ?></span>
-                        <?php endif; ?>
+                        <span class="video-youtube-link">
+                            <i class="fab fa-youtube"></i> Tonton di YouTube
+                        </span>
                     </div>
                 </div>
             </div>
@@ -84,24 +85,6 @@ $query = mysqli_query($conn, "SELECT * FROM galeri_video ORDER BY urutan ASC, id
             <p>Belum ada video</p>
         </div>
     <?php endif; ?>
-</div>
-
-<!-- VIDEO MODAL -->
-<div id="videoModal" class="video-modal" onclick="closeVideoModal()">
-    <div class="video-modal-content" onclick="event.stopPropagation()">
-        <span class="video-modal-close" onclick="closeVideoModal()">&times;</span>
-        <div class="video-modal-header">
-            <h3 id="modalVideoTitle"></h3>
-        </div>
-        <div class="video-modal-body">
-            <div id="modalVideoContainer" class="video-container">
-                <!-- Video akan dimuat di sini -->
-            </div>
-        </div>
-        <div class="video-modal-footer">
-            <p id="modalVideoDescription"></p>
-        </div>
-    </div>
 </div>
 
 <?php include '../includes/footer.php'; ?>

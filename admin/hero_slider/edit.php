@@ -56,6 +56,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $gambar = 'slider_' . time() . '_' . uniqid() . '.' . $ext;
             $upload_path = "../../uploads/hero/" . $gambar;
             
+            // Buat folder jika belum ada
+            if (!is_dir("../../uploads/hero")) {
+                mkdir("../../uploads/hero", 0777, true);
+            }
+            
             if (move_uploaded_file($_FILES['gambar']['tmp_name'], $upload_path)) {
                 // Sukses upload
             } else {
@@ -160,7 +165,7 @@ include "../includes/header.php";
             </div>
 
             <!-- Gambar Lama -->
-            <?php if (!empty($row['gambar'])): ?>
+            <?php if (!empty($row['gambar']) && file_exists("../../uploads/hero/" . $row['gambar'])): ?>
             <div class="form-group">
                 <label><i class="fas fa-image"></i> Gambar Saat Ini</label>
                 <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e1e1e1; margin-bottom: 20px;">
@@ -201,8 +206,8 @@ include "../includes/header.php";
                                   background: #f0f7ff; cursor: pointer; opacity: 0; position: absolute; top: 0; left: 0; z-index: 2;">
                     
                     <div style="width: 100%; padding: 40px 20px; border: 3px dashed #0B3D91; border-radius: 16px; 
-                                background: #f0f7ff; text-align: center; box-sizing: border-box; transition: all 0.3s ease;"
-                         id="fileUploadArea">
+                                background: #f0f7ff; text-align: center; box-sizing: border-box; transition: all 0.3s ease; cursor: pointer;"
+                         id="fileUploadArea" onclick="document.getElementById('gambarInput').click();">
                         <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #0B3D91; opacity: 0.5; margin-bottom: 10px; display: block;"></i>
                         <p style="font-size: 1.1rem; font-weight: 600; color: #0B3D91; margin: 0 0 5px 0;">Klik atau tarik file ke sini</p>
                         <p style="color: #666; font-size: 0.85rem; margin: 0;">Format: JPG, PNG, GIF, WEBP (Maks. 10MB)</p>
@@ -217,6 +222,9 @@ include "../includes/header.php";
                                 <span style="font-weight: 600; color: #2e7d32; display: block; margin-bottom: 3px;" id="fileName"></span>
                                 <span style="color: #2e7d32; font-size: 0.9rem;" id="fileSize"></span>
                             </div>
+                            <button type="button" onclick="resetFileInput()" style="margin-left: auto; background: none; border: none; color: #dc3545; cursor: pointer;">
+                                <i class="fas fa-times-circle"></i> Hapus
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -242,5 +250,138 @@ include "../includes/header.php";
         </form>
     </div>
 </div>
+
+<script>
+// Fungsi untuk reset file input
+function resetFileInput() {
+    document.getElementById('gambarInput').value = '';
+    document.getElementById('fileInfo').style.display = 'none';
+    document.getElementById('previewContainer').style.display = 'none';
+}
+
+// File input change handler
+document.getElementById('gambarInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    
+    if (file) {
+        // Validasi ukuran file (10MB)
+        const maxSize = 10 * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert('Ukuran file terlalu besar! Maksimal 10MB.');
+            resetFileInput();
+            return;
+        }
+        
+        // Validasi tipe file
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file tidak didukung! Gunakan JPG, JPEG, PNG, GIF, atau WEBP.');
+            resetFileInput();
+            return;
+        }
+        
+        // Tampilkan info file
+        document.getElementById('fileName').innerHTML = '<i class="fas fa-file-image"></i> ' + file.name;
+        const fileSizeKB = (file.size / 1024).toFixed(2);
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        const sizeText = file.size > 1024 * 1024 ? fileSizeMB + ' MB' : fileSizeKB + ' KB';
+        document.getElementById('fileSize').innerHTML = 'Ukuran: ' + sizeText;
+        document.getElementById('fileInfo').style.display = 'block';
+        
+        // Preview gambar
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('previewFileSize').innerHTML = sizeText;
+            document.getElementById('previewContainer').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    } else {
+        resetFileInput();
+    }
+});
+
+// Drag and drop support
+const dropArea = document.getElementById('fileUploadArea');
+const fileInput = document.getElementById('gambarInput');
+
+// Prevent default drag behaviors
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+// Highlight drop area when item is dragged over it
+['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+    dropArea.style.background = '#e8f0fe';
+    dropArea.style.borderColor = '#FFD700';
+}
+
+function unhighlight(e) {
+    dropArea.style.background = '#f0f7ff';
+    dropArea.style.borderColor = '#0B3D91';
+}
+
+// Handle dropped files
+dropArea.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files;
+    
+    // Trigger change event
+    const event = new Event('change', { bubbles: true });
+    fileInput.dispatchEvent(event);
+}
+
+// Form submit validation
+document.getElementById('sliderForm').addEventListener('submit', function(e) {
+    const fileInput = document.getElementById('gambarInput');
+    const currentImage = <?= json_encode(!empty($row['gambar']) && file_exists("../../uploads/hero/" . $row['gambar'])) ?>;
+    
+    // Tambahkan indikator loading
+    const submitBtn = document.getElementById('btnSubmit');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+    submitBtn.disabled = true;
+    
+    // Biarkan form submit berjalan normal
+    // Loading akan hilang setelah submit (halaman reload)
+});
+</script>
+
+<style>
+.text-danger {
+    color: #dc3545;
+}
+
+.btn-primary:disabled, .btn-primary.disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+#fileUploadArea {
+    transition: all 0.3s ease;
+}
+
+#fileUploadArea:hover {
+    background: #e8f0fe !important;
+    border-color: #FFD700 !important;
+}
+</style>
 
 <?php include "../includes/footer.php"; ?>

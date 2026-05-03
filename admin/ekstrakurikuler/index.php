@@ -5,8 +5,8 @@ require_once dirname(__DIR__) . '/includes/auth.php';
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Ambil data untuk notifikasi
-    $q = mysqli_query($conn, "SELECT nama_eks FROM ekstrakurikuler WHERE id = $id");
+    // Ambil data untuk notifikasi DAN URUTAN
+    $q = mysqli_query($conn, "SELECT nama_eks, urutan FROM ekstrakurikuler WHERE id = $id");  // + tambahkan ", urutan"
     $data = mysqli_fetch_assoc($q);
     
     // Cek apakah data ada
@@ -14,8 +14,14 @@ if (isset($_GET['delete'])) {
     
     if (mysqli_num_rows($check) > 0) {
         $nama = $data['nama_eks'];
+        $urutan_yang_dihapus = $data['urutan'];  // + tambahkan baris ini
         
         mysqli_query($conn, "DELETE FROM ekstrakurikuler WHERE id = $id");
+        
+        // ========== REORDER URUTAN ==========  // + tambahkan 3 baris ini
+        if ($urutan_yang_dihapus !== null && $urutan_yang_dihapus > 0) {
+            mysqli_query($conn, "UPDATE ekstrakurikuler SET urutan = urutan - 1 WHERE urutan > $urutan_yang_dihapus");
+        }
         
         // Buat pesan notifikasi
         $_SESSION['success'] = [

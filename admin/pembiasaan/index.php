@@ -5,27 +5,50 @@ include "../includes/auth.php";
 if (isset($_GET['delete'])) {
     $id = (int)$_GET['delete'];
     
-    // Ambil data nama kegiatan
-    $q = mysqli_query($conn, "SELECT nama_kegiatan FROM pembiasaan WHERE id = $id");
+    // Ambil data judul, gambar, DAN URUTAN
+    $q = mysqli_query($conn, "SELECT judul, gambar, urutan FROM hero_slider WHERE id = $id");  // + tambahkan ", urutan"
     $data = mysqli_fetch_assoc($q);
     
+    $file_deleted = false;
+    
     // Cek apakah data ada
-    $check = mysqli_query($conn, "SELECT * FROM pembiasaan WHERE id = $id");
+    $check = mysqli_query($conn, "SELECT * FROM hero_slider WHERE id = $id");
     
     if (mysqli_num_rows($check) > 0) {
-        $nama = $data['nama_kegiatan'];
+        $judul = $data['judul'];
+        $urutan_yang_dihapus = $data['urutan'];  // + tambahkan baris ini
         
-        // Hapus data dari database
-        if (mysqli_query($conn, "DELETE FROM pembiasaan WHERE id = $id")) {
-            $_SESSION['success'] = [
-                'message' => "Kegiatan pembiasaan <strong>\"$nama\"</strong> berhasil dihapus",
-                'type' => 'pembiasaan'
-            ];
+        // Hapus file gambar jika ada
+        if ($data && !empty($data['gambar']) && file_exists("../../uploads/hero_slider/" . $data['gambar'])) {
+            if (unlink("../../uploads/hero_slider/" . $data['gambar'])) {
+                $file_deleted = true;
+            }
+        }
+        
+        if (mysqli_query($conn, "DELETE FROM hero_slider WHERE id = $id")) {
+            
+            // ========== REORDER URUTAN ==========  // + tambahkan 3 baris ini
+            if ($urutan_yang_dihapus !== null && $urutan_yang_dihapus > 0) {
+                mysqli_query($conn, "UPDATE hero_slider SET urutan = urutan - 1 WHERE urutan > $urutan_yang_dihapus");
+            }
+            
+            if ($file_deleted) {
+                $_SESSION['success'] = [
+                    'message' => "Slider <strong>\"$judul\"</strong> berhasil dihapus",
+                    'file_deleted' => true,
+                    'type' => 'slider'
+                ];
+            } else {
+                $_SESSION['success'] = [
+                    'message' => "Slider <strong>\"$judul\"</strong> berhasil dihapus",
+                    'type' => 'slider'
+                ];
+            }
         } else {
             $_SESSION['error'] = "Gagal menghapus data: " . mysqli_error($conn);
         }
     } else {
-        $_SESSION['error'] = "Data pembiasaan tidak ditemukan";
+        $_SESSION['error'] = "Data slider tidak ditemukan";
     }
     
     header("Location: index.php");
@@ -38,6 +61,7 @@ $query = mysqli_query($conn, "SELECT * FROM pembiasaan ORDER BY urutan ASC, id D
 include "../includes/header.php";
 ?>
 
+<!-- Sisanya tetap SAMA PERSIS seperti kode Anda yang asli -->
 <div class="content-wrapper pembiasaan-page">
     <div class="content-header">
         <h1><i class="fas fa-sun"></i> Kelola Pembiasaan Pagi</h1>

@@ -6,8 +6,8 @@ include('includes/db.php');
 $query = mysqli_query($conn, "SELECT * FROM kontak LIMIT 1");
 $kontak = mysqli_fetch_assoc($query);
 
-// Ambil data testimoni yang sudah disetujui
-$query_testimoni = mysqli_query($conn, "SELECT * FROM testimoni WHERE status = 'approved' ORDER BY created_at DESC LIMIT 6");
+// Ambil data testimoni yang sudah disetujui (BUKAN SPAM)
+$query_testimoni = mysqli_query($conn, "SELECT * FROM testimoni WHERE status = 'approved' AND is_spam = 0 ORDER BY created_at DESC LIMIT 6");
 $testimonis = [];
 while ($row = mysqli_fetch_assoc($query_testimoni)) {
     $testimonis[] = $row;
@@ -15,6 +15,21 @@ while ($row = mysqli_fetch_assoc($query_testimoni)) {
 
 // Tentukan BASE URL
 $base_url = (isset($_SERVER['HTTPS']) ? "https://" : "http://") . $_SERVER['HTTP_HOST'] . '/mim_bodaskarangjati';
+
+// Cek parameter error dari proses_testimoni.php
+$error_type = $_GET['error'] ?? '';
+$error_message = '';
+if ($error_type == 'spam_detected') {
+    $error_message = '⚠️ Email ini sudah pernah mengirim testimoni sebelumnya. Hanya satu testimoni per email yang diperbolehkan.';
+} elseif ($error_type == 'already_submitted') {
+    $error_message = '⚠️ Anda sudah pernah mengirim testimoni dengan email ini. Terima kasih atas partisipasinya!';
+} elseif ($error_type == 'email_required') {
+    $error_message = '❌ Email wajib diisi untuk mencegah spam.';
+} elseif ($error_type == 'invalid_email') {
+    $error_message = '❌ Format email tidak valid.';
+} elseif ($error_type == 'db_error') {
+    $error_message = '❌ Terjadi kesalahan sistem. Silakan coba lagi.';
+}
 ?>
 <link rel="stylesheet" href="<?= $base_url ?>/assets/css/style.css?v=<?= time() ?>">
 
@@ -143,114 +158,117 @@ document.body.classList.add('kontak-page');
         </div>
     </div>
 
- <!-- FORM KRITIK & SARAN + TESTIMONI - LAYOUT 2 KOLOM -->
-<div class="kontak-testimoni-wrapper">
-    
-    <!-- KOLOM KIRI: FORM KRITIK & SARAN -->
-    <div class="form-testimoni-section">
-        <div class="section-header">
-            <span class="section-tag">BERIKAN ULASAN</span>
-            <h2 class="section-title">Kritik & Saran</h2>
-            <p class="section-subtitle">Kami senang mendengar pendapat Anda</p>
-        </div>
-
-        <?php if(isset($_GET['success'])): ?>
-            <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i> Terima kasih! Ulasan Anda akan kami proses.
+    <!-- FORM KRITIK & SARAN + TESTIMONI - LAYOUT 2 KOLOM -->
+    <div class="kontak-testimoni-wrapper">
+        
+        <!-- KOLOM KIRI: FORM KRITIK & SARAN -->
+        <div class="form-testimoni-section">
+            <div class="section-header">
+                <span class="section-tag">BERIKAN ULASAN</span>
+                <h2 class="section-title">Kritik & Saran</h2>
+                <p class="section-subtitle">Kami senang mendengar pendapat Anda</p>
             </div>
-            <script>window.history.replaceState({}, document.title, window.location.pathname);</script>
-        <?php endif; ?>
 
-        <?php if(isset($_GET['error'])): ?>
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-circle"></i> Gagal mengirim ulasan. Silakan coba lagi.
-            </div>
-            <script>window.history.replaceState({}, document.title, window.location.pathname);</script>
-        <?php endif; ?>
-
-        <div class="testimoni-form-wrapper">
-            <form method="POST" action="proses_testimoni.php">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Nama Lengkap <span style="color: red;">*</span></label>
-                        <input type="text" name="nama" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email <span style="color: #6c757d;">(Opsional)</span></label>
-                        <input type="email" name="email" class="form-control">
-                        <small>Email tidak akan ditampilkan di publik</small>
-                    </div>
+            <?php if(isset($_GET['success'])): ?>
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> Terima kasih! Ulasan Anda akan kami proses.
                 </div>
+                <script>window.history.replaceState({}, document.title, window.location.pathname);</script>
+            <?php endif; ?>
 
-                <div class="form-group">
-                    <label>Rating <span style="color: red;">*</span></label>
-                    <select name="rating" class="form-control" required>
-                        <option value="5">⭐⭐⭐⭐⭐ (5) - Sangat Baik</option>
-                        <option value="4">⭐⭐⭐⭐ (4) - Baik</option>
-                        <option value="3">⭐⭐⭐ (3) - Cukup</option>
-                        <option value="2">⭐⭐ (2) - Kurang</option>
-                        <option value="1">⭐ (1) - Buruk</option>
-                    </select>
+            <?php if($error_message): ?>
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <?= $error_message ?>
                 </div>
+                <script>window.history.replaceState({}, document.title, window.location.pathname);</script>
+            <?php endif; ?>
 
-                <div class="form-group">
-                    <label>Ulasan / Kritik & Saran <span style="color: red;">*</span></label>
-                    <textarea name="ulasan" class="form-control" rows="4" required placeholder="Tulis ulasan, kritik, atau saran Anda di sini..."></textarea>
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-paper-plane"></i> Kirim Ulasan
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- KOLOM KANAN: TESTIMONI -->
-    <div class="testimoni-section">
-        <div class="section-header">
-            <span class="section-tag">TESTIMONI</span>
-            <h2 class="section-title">Apa Kata Mereka?</h2>
-            <p class="section-subtitle">Ulasan dari orang tua siswa dan masyarakat</p>
-        </div>
-
-        <div class="testimoni-grid">
-            <?php if (count($testimonis) > 0): ?>
-                <?php foreach ($testimonis as $testi): ?>
-                <div class="testimoni-card">
-                    <div class="testimoni-header">
-                        <div class="testimoni-avatar">
-                            <i class="fas fa-user-circle"></i>
+            <div class="testimoni-form-wrapper">
+                <form method="POST" action="proses_testimoni.php">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nama Lengkap <span style="color: red;">*</span></label>
+                            <input type="text" name="nama" class="form-control" required>
                         </div>
-                        <div class="testimoni-info">
-                            <h4><?= htmlspecialchars($testi['nama']) ?></h4>
-                            <div class="testimoni-rating">
-                                <?php for($i=1; $i<=5; $i++): ?>
-                                    <?php if($i <= $testi['rating']): ?>
-                                        <i class="fas fa-star"></i>
-                                    <?php else: ?>
-                                        <i class="far fa-star"></i>
-                                    <?php endif; ?>
-                                <?php endfor; ?>
+                        <div class="form-group">
+                            <label>Email <span style="color: red;">*</span></label>
+                            <input type="email" name="email" class="form-control" required>
+                            <small>Email wajib diisi dan hanya Satu testimoni per email</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Rating <span style="color: red;">*</span></label>
+                        <select name="rating" class="form-control" required>
+                            <option value="5">⭐⭐⭐⭐⭐ (5) - Sangat Baik</option>
+                            <option value="4">⭐⭐⭐⭐ (4) - Baik</option>
+                            <option value="3">⭐⭐⭐ (3) - Cukup</option>
+                            <option value="2">⭐⭐ (2) - Kurang</option>
+                            <option value="1">⭐ (1) - Buruk</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ulasan / Kritik & Saran <span style="color: red;">*</span></label>
+                        <textarea name="ulasan" class="form-control" rows="4" required placeholder="Tulis ulasan, kritik, atau saran Anda di sini..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Kirim Ulasan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- KOLOM KANAN: TESTIMONI -->
+        <div class="testimoni-section">
+            <div class="section-header">
+                <span class="section-tag">TESTIMONI</span>
+                <h2 class="section-title">Apa Kata Mereka?</h2>
+                <p class="section-subtitle">Ulasan dari orang tua siswa dan masyarakat</p>
+            </div>
+
+            <div class="testimoni-grid">
+                <?php if (count($testimonis) > 0): ?>
+                    <?php foreach ($testimonis as $testi): ?>
+                    <div class="testimoni-card">
+                        <div class="testimoni-header">
+                            <div class="testimoni-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="testimoni-info">
+                                <h4><?= htmlspecialchars($testi['nama']) ?></h4>
+                                <div class="testimoni-rating">
+                                    <?php for($i=1; $i<=5; $i++): ?>
+                                        <?php if($i <= $testi['rating']): ?>
+                                            <i class="fas fa-star"></i>
+                                        <?php else: ?>
+                                            <i class="far fa-star"></i>
+                                        <?php endif; ?>
+                                    <?php endfor; ?>
+                                </div>
                             </div>
                         </div>
+                        <div class="testimoni-body">
+                            <i class="fas fa-quote-left"></i>
+                            <p><?= htmlspecialchars($testi['ulasan']) ?></p>
+                        </div>
+                        <div class="testimoni-footer">
+                            <small><?= date('d F Y', strtotime($testi['created_at'])) ?></small>
+                        </div>
                     </div>
-                    <div class="testimoni-body">
-                        <i class="fas fa-quote-left"></i>
-                        <p><?= htmlspecialchars($testi['ulasan']) ?></p>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="testimoni-empty">
+                        <i class="fas fa-star"></i>
+                        <p>Belum ada testimoni. Jadilah yang pertama!</p>
                     </div>
-                </div>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="testimoni-empty">
-                    <i class="fas fa-star"></i>
-                    <p>Belum ada testimoni. Jadilah yang pertama!</p>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
-</div>
 </main>
 
 <?php include('includes/footer.php'); ?>

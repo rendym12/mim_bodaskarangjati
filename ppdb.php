@@ -44,7 +44,7 @@ function getActivePpdb($conn) {
 }
 
 function getFasilitasList($conn) {
-    $query = mysqli_query($conn, "SELECT * FROM sarana ORDER BY urutan ASC LIMIT 6");
+    $query = mysqli_query($conn, "SELECT * FROM sarana ORDER BY urutan ASC");
     $fasilitas = [];
     
     while ($row = mysqli_fetch_assoc($query)) {
@@ -257,21 +257,19 @@ $badge_text = ($ppdb['status'] ?? '') == 'aktif' ? 'Pendaftaran Dibuka' : 'Penda
             </div>
         </div>
 
-        <!-- Fasilitas Unggulan -->
+        <!-- Sarana Prasarana -->
         <?php if (!empty($fasilitas)): ?>
         <div class="fasilitas-wrapper">
             <div class="section-title">
-                <h2>Fasilitas Unggulan</h2>
-                <p>Berbagai fasilitas pendukung kegiatan belajar mengajar</p>
+                <h2>Sarana Prasarana</h2>
+                <p>Sarana dan prasarana pendukung kegiatan belajar mengajar di MI Muhammadiyah Bodaskarangjati</p>
             </div>
             <div class="fasilitas-grid">
                 <?php foreach ($fasilitas as $f): ?>
                 <div class="fasilitas-card">
                     <div class="fasilitas-icon"><i class="fas <?= getFasilitasIcon($f) ?>"></i></div>
                     <h4><?= getFasilitasNama($f) ?></h4>
-                    <?php if (!empty($f['keterangan'])): ?>
-                        <p class="fasilitas-desc"><?= htmlspecialchars(substr($f['keterangan'], 0, 60)) ?>...</p>
-                    <?php endif; ?>
+                    <!-- DESKRIPSI DIHAPUS -->
                 </div>
                 <?php endforeach; ?>
             </div>

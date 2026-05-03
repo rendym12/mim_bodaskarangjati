@@ -8,24 +8,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['simpan'])) {
     $tahun_ajaran = mysqli_real_escape_string($conn, $_POST['tahun_ajaran']);
     
     $kelas_list = ['1', '2', '3', '4', '5', '6'];
+    $perubahan_terjadi = false;
     
     foreach ($kelas_list as $kelas) {
-        $laki = (int) ($_POST['laki_' . $kelas] ?? 0);
-        $perempuan = (int) ($_POST['perempuan_' . $kelas] ?? 0);
-        $total = $laki + $perempuan;
+        $laki_baru = (int) ($_POST['laki_' . $kelas] ?? 0);
+        $perempuan_baru = (int) ($_POST['perempuan_' . $kelas] ?? 0);
+        $total_baru = $laki_baru + $perempuan_baru;
         
         $check = mysqli_query($conn, "SELECT id FROM data_siswa WHERE kelas = '$kelas' AND tahun_ajaran = '$tahun_ajaran'");
         
         if (mysqli_num_rows($check) > 0) {
-            mysqli_query($conn, "UPDATE data_siswa SET laki_laki = $laki, perempuan = $perempuan, total = $total WHERE kelas = '$kelas' AND tahun_ajaran = '$tahun_ajaran'");
+            mysqli_query($conn, "UPDATE data_siswa SET laki_laki = $laki_baru, perempuan = $perempuan_baru, total = $total_baru WHERE kelas = '$kelas' AND tahun_ajaran = '$tahun_ajaran'");
+            $perubahan_terjadi = true;
         } else {
-            mysqli_query($conn, "INSERT INTO data_siswa (kelas, laki_laki, perempuan, total, tahun_ajaran) VALUES ('$kelas', $laki, $perempuan, $total, '$tahun_ajaran')");
+            if ($laki_baru > 0 || $perempuan_baru > 0) {
+                mysqli_query($conn, "INSERT INTO data_siswa (kelas, laki_laki, perempuan, total, tahun_ajaran) VALUES ('$kelas', $laki_baru, $perempuan_baru, $total_baru, '$tahun_ajaran')");
+                $perubahan_terjadi = true;
+            }
         }
     }
     
-    $_SESSION['success'] = "Data siswa berhasil disimpan!";
+    if ($perubahan_terjadi) {
+        $_SESSION['success'] = "✅ Data siswa berhasil disimpan!";
+    } else {
+        $_SESSION['info'] = "ℹ️ Tidak ada perubahan data yang disimpan.";
+    }
     
-    // 🔥 REDIRECT KE TAHUN YANG SAMA (bukan pindah ke tahun lain)
     header("Location: index.php?tahun=" . urlencode($tahun_ajaran));
     exit;
 }
@@ -41,19 +49,18 @@ if (isset($_GET['delete'])) {
         $tahun = $row['tahun_ajaran'];
         
         mysqli_query($conn, "DELETE FROM data_siswa WHERE id = $id");
-        $_SESSION['success'] = "Data siswa kelas $kelas tahun $tahun berhasil dihapus";
+        $_SESSION['success'] = "🗑️ Data siswa kelas $kelas tahun $tahun berhasil dihapus";
         
-        // Redirect kembali ke tahun yang sama
         header("Location: index.php?tahun=" . urlencode($tahun));
         exit;
     } else {
-        $_SESSION['error'] = "Data siswa tidak ditemukan";
+        $_SESSION['error'] = "❌ Data siswa tidak ditemukan";
     }
     header("Location: index.php");
     exit;
 }
 
-// ========== AMBIL SEMUA TAHUN AJARAN UNTUK DROPDOWN ==========
+// ========== AMBIL SEMUA TAHUN AJARAN ==========
 $tahun_list = [];
 $result_tahun = mysqli_query($conn, "SELECT DISTINCT tahun_ajaran FROM data_siswa ORDER BY tahun_ajaran DESC");
 if ($result_tahun) {
@@ -63,15 +70,12 @@ if ($result_tahun) {
 }
 
 // ========== TENTUKAN TAHUN AKTIF ==========
-// Prioritas: 1. GET['tahun']  2. Tahun terbaru dari DB  3. Tahun default
 $tahun_ajaran_aktif = $_GET['tahun'] ?? null;
 
-// Jika tidak ada parameter tahun, ambil tahun terbaru dari database
 if (!$tahun_ajaran_aktif && !empty($tahun_list)) {
     $tahun_ajaran_aktif = $tahun_list[0];
 }
 
-// Jika masih kosong, gunakan tahun default
 if (!$tahun_ajaran_aktif) {
     $tahun_ajaran_aktif = date('Y') . '/' . (date('Y') + 1);
 }
@@ -109,29 +113,36 @@ include "../includes/header.php";
     <div class="notification-container">
         <?php if (isset($_SESSION['success'])): ?>
             <div class="alert alert-success alert-dismissible">
-                <i class="fas fa-check-circle"></i> <?= $_SESSION['success'] ?>
+                <i class="fas fa-check-circle"></i> <?= htmlspecialchars($_SESSION['success']) ?>
                 <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
             </div>
             <?php unset($_SESSION['success']); ?>
         <?php endif; ?>
         <?php if (isset($_SESSION['error'])): ?>
             <div class="alert alert-danger alert-dismissible">
-                <i class="fas fa-exclamation-circle"></i> <?= $_SESSION['error'] ?>
+                <i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($_SESSION['error']) ?>
                 <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
             </div>
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
+        <?php if (isset($_SESSION['info'])): ?>
+            <div class="alert alert-info alert-dismissible">
+                <i class="fas fa-info-circle"></i> <?= htmlspecialchars($_SESSION['info']) ?>
+                <button type="button" class="close" onclick="this.parentElement.style.display='none'">&times;</button>
+            </div>
+            <?php unset($_SESSION['info']); ?>
+        <?php endif; ?>
     </div>
 
-    <!-- FILTER TAHUN AJARAN DENGAN DROPDOWN -->
+    <!-- FILTER TAHUN AJARAN -->
     <div class="card">
         <div class="card-header">
             <h3><i class="fas fa-calendar-alt"></i> Filter Tahun Ajaran</h3>
         </div>
         <div class="card-body">
             <div class="tahun-filter">
-                <form method="GET" action="" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <select name="tahun" class="tahun-select" id="tahunSelect" style="padding: 10px 15px; border-radius: 30px; border: 1px solid #e2e8f0; background: white;">
+                <form method="GET" action="" id="filterForm">
+                    <select name="tahun" class="tahun-select" id="tahunSelect">
                         <?php if (empty($tahun_list)): ?>
                             <option value="<?= $tahun_ajaran_aktif ?>"><?= $tahun_ajaran_aktif ?></option>
                         <?php else: ?>
@@ -177,22 +188,34 @@ include "../includes/header.php";
                         <tbody>
                             <?php for ($i = 1; $i <= 6; $i++): 
                                 $kelas = (string)$i;
-                                $laki = $data_siswa[$kelas]['laki_laki'] ?? 0;
-                                $perempuan = $data_siswa[$kelas]['perempuan'] ?? 0;
-                                $data_id = $data_siswa[$kelas]['id'] ?? 0;
+                                $laki = isset($data_siswa[$kelas]['laki_laki']) ? $data_siswa[$kelas]['laki_laki'] : 0;
+                                $perempuan = isset($data_siswa[$kelas]['perempuan']) ? $data_siswa[$kelas]['perempuan'] : 0;
+                                $data_id = isset($data_siswa[$kelas]['id']) ? $data_siswa[$kelas]['id'] : 0;
                             ?>
                             <tr data-kelas="<?= $kelas ?>">
                                 <td class="kelas-label"><strong>Kelas <?= $kelas ?></strong></td>
-                                <td>
-                                    <input type="number" name="laki_<?= $kelas ?>" id="laki_<?= $kelas ?>" class="input-siswa laki-input" data-kelas="<?= $kelas ?>" value="<?= $laki ?>" min="0">
-                                 </td>
-                                <td>
-                                    <input type="number" name="perempuan_<?= $kelas ?>" id="perempuan_<?= $kelas ?>" class="input-siswa perempuan-input" data-kelas="<?= $kelas ?>" value="<?= $perempuan ?>" min="0">
-                                 </td>
+                                <td class="input-cell">
+                                    <input type="number" 
+                                           name="laki_<?= $kelas ?>" 
+                                           id="laki_<?= $kelas ?>" 
+                                           class="input-siswa laki-input auto-calc-input" 
+                                           value="<?= $laki ?>" 
+                                           min="0" 
+                                           step="1">
+                                </td>
+                                <td class="input-cell">
+                                    <input type="number" 
+                                           name="perempuan_<?= $kelas ?>" 
+                                           id="perempuan_<?= $kelas ?>" 
+                                           class="input-siswa perempuan-input auto-calc-input" 
+                                           value="<?= $perempuan ?>" 
+                                           min="0" 
+                                           step="1">
+                                </td>
                                 <td class="total-kelas" id="total_<?= $kelas ?>"><strong><?= number_format($laki + $perempuan) ?></strong></td>
-                                <td>
+                                <td class="aksi-cell">
                                     <?php if($data_id): ?>
-                                        <a href="?delete=<?= $data_id ?>" class="btn-delete" data-id="<?= $data_id ?>" data-kelas="<?= $kelas ?>" data-tahun="<?= $tahun_ajaran_aktif ?>" onclick="return confirm('Hapus data kelas <?= $kelas ?>?')"><i class="fas fa-trash"></i></a>
+                                        <a href="?delete=<?= $data_id ?>" class="btn-delete" data-id="<?= $data_id ?>" data-kelas="<?= $kelas ?>" data-tahun="<?= $tahun_ajaran_aktif ?>"><i class="fas fa-trash"></i></a>
                                     <?php else: ?>
                                         -
                                     <?php endif; ?>
@@ -213,7 +236,8 @@ include "../includes/header.php";
                 </div>
                 
                 <div class="text-right">
-                    <button type="submit" name="simpan" class="btn-simpan"><i class="fas fa-save"></i> Simpan Data</button>
+                    <button type="button" id="previewBtn" class="btn-preview"><i class="fas fa-eye"></i> Preview Perubahan</button>
+                    <button type="button" id="saveBtn" class="btn-simpan"><i class="fas fa-save"></i> Simpan Data</button>
                 </div>
             </form>
             
@@ -227,108 +251,51 @@ include "../includes/header.php";
     </div>
 </div>
 
-<!-- SCRIPT AUTO-CALCULATE - VERSI AGGRESIF -->
+<!-- MODAL PREVIEW -->
+<div id="previewModal" class="modal-confirm" style="display: none;">
+    <div class="modal-confirm-content">
+        <div class="modal-confirm-header">
+            <i class="fas fa-eye" style="font-size: 24px; color: #0B3D91;"></i>
+            <h3>Preview Perubahan Data</h3>
+        </div>
+        <div class="modal-confirm-body">
+            <div id="previewContent"></div>
+        </div>
+        <div class="modal-confirm-footer">
+            <button type="button" class="btn-batal" onclick="window.closePreviewModal()"><i class="fas fa-times"></i> Tutup Preview</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL KONFIRMASI SIMPAN -->
+<div id="confirmSaveModal" class="modal-confirm" style="display: none;">
+    <div class="modal-confirm-content">
+        <div class="modal-confirm-header">
+            <i class="fas fa-question-circle" style="font-size: 24px; color: #FFD700;"></i>
+            <h3>Konfirmasi Simpan Data</h3>
+        </div>
+        <div class="modal-confirm-body">
+            <div id="confirmSaveContent"></div>
+        </div>
+        <div class="modal-confirm-footer">
+            <button type="button" class="btn-batal" onclick="window.closeConfirmSaveModal()"><i class="fas fa-times"></i> Batal</button>
+            <button type="button" class="btn-confirm" onclick="window.submitForm()"><i class="fas fa-check"></i> Ya, Simpan Data</button>
+        </div>
+    </div>
+</div>
+
 <script>
-// Fungsi untuk format angka
-function formatAngka(angka) {
-    return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-}
-
-// Fungsi hitung total
-function hitungTotal() {
-    console.log('🔄 hitungTotal dipanggil');
-    
-    let totalLaki = 0;
-    let totalPerempuan = 0;
-    
-    for (let i = 1; i <= 6; i++) {
-        let inputLaki = document.getElementById('laki_' + i);
-        let inputPerempuan = document.getElementById('perempuan_' + i);
-        let spanTotal = document.getElementById('total_' + i);
-        
-        if (inputLaki && inputPerempuan && spanTotal) {
-            let nilaiLaki = parseInt(inputLaki.value) || 0;
-            let nilaiPerempuan = parseInt(inputPerempuan.value) || 0;
-            let jumlah = nilaiLaki + nilaiPerempuan;
-            
-            spanTotal.innerHTML = '<strong>' + formatAngka(jumlah) + '</strong>';
-            
-            totalLaki += nilaiLaki;
-            totalPerempuan += nilaiPerempuan;
-        }
-    }
-    
-    let totalSemua = totalLaki + totalPerempuan;
-    
-    // Update footer
-    let elTotalLaki = document.getElementById('total_laki_semua');
-    let elTotalPerempuan = document.getElementById('total_perempuan_semua');
-    let elTotalSemua = document.getElementById('total_semua');
-    
-    if (elTotalLaki) elTotalLaki.innerHTML = formatAngka(totalLaki);
-    if (elTotalPerempuan) elTotalPerempuan.innerHTML = formatAngka(totalPerempuan);
-    if (elTotalSemua) elTotalSemua.innerHTML = formatAngka(totalSemua);
-    
-    // Update summary card
-    let elSummaryTotal = document.getElementById('summary_total');
-    let elSummaryLaki = document.getElementById('summary_laki');
-    let elSummaryPerempuan = document.getElementById('summary_perempuan');
-    
-    if (elSummaryTotal) elSummaryTotal.innerHTML = formatAngka(totalSemua) + ' Siswa';
-    if (elSummaryLaki) elSummaryLaki.innerHTML = formatAngka(totalLaki);
-    if (elSummaryPerempuan) elSummaryPerempuan.innerHTML = formatAngka(totalPerempuan);
-    
-    console.log('Total Laki: ' + totalLaki + ', Perempuan: ' + totalPerempuan + ', Total: ' + totalSemua);
-}
-
-// ========== CARA 1: Event Listener Langsung ==========
-document.querySelectorAll('#dataSiswaTable input[type="number"]').forEach(function(input) {
-    input.addEventListener('input', hitungTotal);
-    input.addEventListener('change', hitungTotal);
-    input.addEventListener('keyup', hitungTotal);
-    input.addEventListener('click', hitungTotal);
-});
-
-// ========== CARA 2: Pantau perubahan setiap 0.3 detik (PASTI BERHASIL) ==========
-// Simpan nilai sebelumnya
-let nilaiSebelumnya = {};
-
-for (let i = 1; i <= 6; i++) {
-    let inputLaki = document.getElementById('laki_' + i);
-    let inputPerempuan = document.getElementById('perempuan_' + i);
-    if (inputLaki) nilaiSebelumnya['laki_' + i] = inputLaki.value;
-    if (inputPerempuan) nilaiSebelumnya['perempuan_' + i] = inputPerempuan.value;
-}
-
-// Cek perubahan setiap 0.3 detik
-setInterval(function() {
-    let adaPerubahan = false;
-    
-    for (let i = 1; i <= 6; i++) {
-        let inputLaki = document.getElementById('laki_' + i);
-        let inputPerempuan = document.getElementById('perempuan_' + i);
-        
-        if (inputLaki && nilaiSebelumnya['laki_' + i] != inputLaki.value) {
-            nilaiSebelumnya['laki_' + i] = inputLaki.value;
-            adaPerubahan = true;
-        }
-        
-        if (inputPerempuan && nilaiSebelumnya['perempuan_' + i] != inputPerempuan.value) {
-            nilaiSebelumnya['perempuan_' + i] = inputPerempuan.value;
-            adaPerubahan = true;
-        }
-    }
-    
-    if (adaPerubahan) {
-        console.log('📊 Deteksi perubahan via interval');
-        hitungTotal();
-    }
-}, 300);
-
-// Panggil pertama kali
-hitungTotal();
-
-console.log('✅ Auto-calculate Data Siswa AKTIF (dengan interval monitor)');
+// Data awal untuk perbandingan
+window.dataAwal = {
+    <?php for ($i = 1; $i <= 6; $i++): 
+        $kelas = (string)$i;
+        $laki_awal = isset($data_siswa[$kelas]['laki_laki']) ? $data_siswa[$kelas]['laki_laki'] : 0;
+        $perempuan_awal = isset($data_siswa[$kelas]['perempuan']) ? $data_siswa[$kelas]['perempuan'] : 0;
+    ?>
+    <?= $i ?>: { laki: <?= $laki_awal ?>, perempuan: <?= $perempuan_awal ?> },
+    <?php endfor; ?>
+};
+console.log('✅ dataAwal loaded:', window.dataAwal);
 </script>
 
 <?php include "../includes/footer.php"; ?>

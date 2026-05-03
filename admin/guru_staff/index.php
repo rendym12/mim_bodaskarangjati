@@ -35,6 +35,11 @@ if (isset($_GET['delete'])) {
         mysqli_stmt_bind_param($delete_stmt, "i", $id);
         mysqli_stmt_execute($delete_stmt);
         mysqli_stmt_close($delete_stmt);
+
+                // ========== REORDER URUTAN ==========  // + tambahkan 3 baris ini
+        if ($urutan_yang_dihapus !== null && $urutan_yang_dihapus > 0) {
+            mysqli_query($conn, "UPDATE guru_staff SET urutan = urutan - 1 WHERE urutan > $urutan_yang_dihapus");
+        }
         
         $_SESSION['success'] = [
             'message' => "Data guru/staff <strong>\"$nama\"</strong> berhasil dihapus",
